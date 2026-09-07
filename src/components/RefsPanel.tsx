@@ -1,3 +1,6 @@
+import calendarSrc from '../assets/refs/calendar'
+import timetableSrc from '../assets/refs/timetable'
+
 const PERIODS: { n: string; t: string; note?: string }[] = [
   { n: '第一节', t: '8:00 – 8:50' },
   { n: '第二节', t: '9:00 – 9:50' },
@@ -39,6 +42,7 @@ const TERM_NOTES: { title: string; lines: string[] }[] = [
 export function RefsPanel() {
   return (
     <section className="panel refs-panel" aria-label="课表与校历">
+      <div className="sheet-scroll">
       <div className="cal-head">
         <h2>资料</h2>
       </div>
@@ -65,9 +69,10 @@ export function RefsPanel() {
         </div>
       ))}
       <h3 className="refs-h">学期课程表</h3>
-      <img className="refs-shot-img" src={`${import.meta.env.BASE_URL}refs/timetable.jpg`} alt="本学期课程表照片" />
+      <img className="refs-shot-img" src={timetableSrc} alt="本学期课程表照片" />
       <h3 className="refs-h">校历（2026–2027）</h3>
-      <img className="refs-shot-img" src={`${import.meta.env.BASE_URL}refs/calendar.jpg`} alt="北京大学 2026 至 2027 学年校历" />
+      <img className="refs-shot-img" src={calendarSrc} alt="北京大学 2026 至 2027 学年校历" />
+      </div>
     </section>
   )
 }
