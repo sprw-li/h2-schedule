@@ -221,13 +221,15 @@ function bandStyle(band: ScaleBand): CSSProperties {
   const solid = `${color}${fade}`
   let background = solid
   if (band.mode === 'from') {
-    background = `linear-gradient(90deg, ${solid} 0%, ${color}00 100%)`
+    background = `linear-gradient(90deg, ${solid} 0%, ${solid} 10%, ${color}00 36%)`
   } else if (band.mode === 'until') {
-    background = `linear-gradient(90deg, ${color}00 0%, ${solid} 100%)`
+    background = `linear-gradient(90deg, ${color}00 64%, ${solid} 90%, ${solid} 100%)`
   }
+  const from = Math.min(100, Math.max(0, band.from))
+  const to = Math.min(100, Math.max(from, band.to))
   return {
-    left: `${band.from}%`,
-    width: `${Math.max(band.to - band.from, 0.4)}%`,
+    left: `${from}%`,
+    width: `${Math.max(to - from, 0.4)}%`,
     background,
   }
 }
