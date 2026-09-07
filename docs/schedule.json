@@ -22,7 +22,7 @@
       "id": "691fd6c7-d207-428a-a6cc-ffe036a7f76b",
       "date": "2026-09-07",
       "title": "内务检查",
-      "done": true,
+      "done": false,
       "kind": "task"
     },
     {
@@ -68,13 +68,6 @@
       "end": "18:00"
     },
     {
-      "id": "fdda6c0f-7579-4455-b5ae-ddd1fd9f4291",
-      "date": "2026-09-08",
-      "title": "快递",
-      "done": false,
-      "kind": "task"
-    },
-    {
       "id": "4ed6236e-a37e-4f17-a8fd-34558dd32386",
       "date": "2026-09-08",
       "title": "内务检查",
@@ -107,15 +100,6 @@
       "kind": "task",
       "start": "13:00",
       "end": "14:50"
-    },
-    {
-      "id": "6ca9478e-a3b5-4a85-9c5d-da4c4546de7b",
-      "date": "2026-09-09",
-      "title": "洗衣服！",
-      "done": false,
-      "kind": "task",
-      "start": "13:00",
-      "end": "19:00"
     },
     {
       "id": "ce0c0a78-49c5-42e0-bffa-404397c88e38",
@@ -199,14 +183,6 @@
       "kind": "task",
       "start": "18:40",
       "end": "20:30"
-    },
-    {
-      "id": "d84a869f-6c4d-48a2-a78a-53c33b3edcfb",
-      "date": "2026-09-12",
-      "title": "被子",
-      "done": false,
-      "kind": "task",
-      "allDay": true
     },
     {
       "id": "df0c4b5d-83f3-4594-b97b-d82f4eae9b67",
@@ -730,13 +706,6 @@
       "kind": "task",
       "start": "18:30",
       "end": "20:30"
-    },
-    {
-      "id": "e41a59ac-7533-4400-8e66-e86218a119ab",
-      "date": "2026-10-12",
-      "title": "周刊",
-      "done": false,
-      "kind": "deadline"
     },
     {
       "id": "e13b1bb0-e56d-4d2f-a0d8-0ba74bbd097b",
@@ -1878,13 +1847,6 @@
       "kind": "task",
       "start": "18:40",
       "end": "20:30"
-    },
-    {
-      "id": "fa49e339-f39c-4daf-8091-bd8d2c914d1e",
-      "date": "2026-12-06",
-      "title": "周刊",
-      "done": false,
-      "kind": "deadline"
     },
     {
       "id": "86e291cc-8759-4850-b7f9-a55ad8252f90",
