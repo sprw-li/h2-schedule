@@ -182,7 +182,7 @@ button {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
   min-width: 0;
   max-width: 100%;
 }
@@ -249,11 +249,41 @@ button {
   padding: 8px 14px;
 }
 
+.mode-toggle {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.mode-toggle button {
+  width: auto;
+  min-width: 0;
+  height: auto;
+  min-height: 36px;
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+
+.weather-panel,
+.refs-panel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  align-self: stretch;
+}
+
+.sheet-scroll {
+  min-width: 0;
+  max-width: 100%;
+  touch-action: pan-y;
+}
+
 .place-tabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
   margin-bottom: 12px;
+  min-width: 0;
 }
 
 .place-tabs button {
@@ -272,6 +302,9 @@ button {
 
 .place-tabs button b {
   font-weight: 600;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .place-tabs button span {
@@ -302,10 +335,12 @@ button {
 
 .weather-day {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.8fr) auto minmax(0, 1fr);
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto auto;
+  gap: 2px 8px;
   align-items: center;
   width: 100%;
+  max-width: 100%;
   min-width: 0;
   padding: 10px 12px;
   border: 1px solid var(--line);
@@ -319,19 +354,34 @@ button {
   border-color: var(--ink);
 }
 
-.wd-when,
-.wd-temp {
+.wd-when {
+  grid-column: 1;
+  grid-row: 1;
   font-variant-numeric: tabular-nums;
 }
 
 .wd-label {
+  grid-column: 1;
+  grid-row: 2;
   color: var(--mute);
 }
 
+.wd-temp {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  justify-self: end;
+  align-self: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 .wd-rain {
+  grid-column: 1 / -1;
+  grid-row: 3;
   font-size: 12px;
   color: var(--soft);
-  justify-self: end;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .weather-day-picker {
@@ -348,13 +398,19 @@ button {
 
 .weather-hour {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) 48px 40px;
+  grid-template-columns: 48px minmax(0, 1fr) 44px 36px;
   gap: 8px;
   align-items: center;
+  min-width: 0;
   padding: 6px 8px;
   border-bottom: 1px solid var(--line);
   font-variant-numeric: tabular-nums;
   font-size: 14px;
+}
+
+.weather-hour span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .weather-hour span:last-child {
@@ -370,6 +426,8 @@ button {
 
 .period-table {
   width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
 }
@@ -412,6 +470,7 @@ button {
 .refs-shot-img {
   display: block;
   width: 100%;
+  max-width: 100%;
   height: auto;
   margin: 0 0 16px;
   border: 1px solid var(--line);
@@ -432,7 +491,9 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   margin-bottom: 18px;
+  min-width: 0;
 }
 
 .cal-head h2 {
@@ -1048,8 +1109,16 @@ button {
 
   .weather-panel,
   .refs-panel {
-    overflow-y: auto;
+    overflow: hidden;
     max-height: calc(100dvh - 160px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sheet-scroll {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
   }
 }
 
@@ -1169,6 +1238,7 @@ button {
     min-height: 0;
     overflow: hidden;
     gap: 0;
+    align-items: stretch;
   }
 
   .layout.pane-calendar .day-panel,
@@ -1188,30 +1258,24 @@ button {
 
   .weather-panel,
   .refs-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sheet-scroll {
+    flex: 1 1 0;
+    min-height: 0;
+    min-width: 0;
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+    padding-bottom: 28px;
   }
 
   .place-tabs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .weather-day {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: auto auto;
-  }
-
-  .wd-label,
-  .wd-rain {
-    justify-self: start;
-  }
-
-  .wd-temp {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    justify-self: end;
   }
 
   .panel {
