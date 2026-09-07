@@ -52,6 +52,7 @@ export function CalendarPanel({
         {cells.map((d) => {
           const key = toDateKey(d)
           const items = schedule[key] ?? []
+          const hasHoliday = items.some((i) => i.kind === 'holiday')
           const hasTask = items.some((i) => i.kind === 'task')
           const hasDeadline = items.some((i) => i.kind === 'deadline')
           const out = d.getMonth() !== view.getMonth()
@@ -74,6 +75,7 @@ export function CalendarPanel({
             >
               <span className="day-num">{d.getDate()}</span>
               <span className="dots">
+                {hasHoliday ? <span className="dot holiday" /> : null}
                 {hasTask ? <span className="dot" /> : null}
                 {hasDeadline ? <span className="dot deadline" /> : null}
               </span>
@@ -83,11 +85,15 @@ export function CalendarPanel({
       </div>
       <div className="legend">
         <span>
-          <i /> 普通事项
+          <i className="holi" /> 绿
         </span>
         <span>
-          <i className="dead" /> 截止日期
+          <i /> 灰
         </span>
+        <span>
+          <i className="dead" /> 红
+        </span>
+        <span className="legend-note">同一天可同时出现，事项里可改</span>
       </div>
     </section>
   )

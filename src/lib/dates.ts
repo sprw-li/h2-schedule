@@ -28,12 +28,26 @@ export function addMonths(d: Date, delta: number) {
   return new Date(d.getFullYear(), d.getMonth() + delta, 1)
 }
 
-export function resolveTimes(item: {
+export function isAllDay(item: {
+  allDay?: boolean
   start?: string
   end?: string
   time?: string
   kind: string
 }) {
+  if (item.allDay) return true
+  const { start, end } = resolveTimes(item)
+  return item.kind === 'holiday' && !start && !end
+}
+
+export function resolveTimes(item: {
+  start?: string
+  end?: string
+  time?: string
+  kind: string
+  allDay?: boolean
+}) {
+  if (item.allDay) return { start: undefined, end: undefined }
   const start = (item.start || (item.kind === 'deadline' ? '' : item.time || '')).trim()
   const end = (item.end || (item.kind === 'deadline' ? item.time || '' : '')).trim()
   return {
@@ -49,12 +63,31 @@ export function formatWhen(start?: string, end?: string) {
   return ''
 }
 
+/** HH:mm → 当日占比 0–100；24:00 记为 100 */
+export function hmToDayPercent(hm: string): number | undefined {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(hm.trim())
+  if (!m) return undefined
+  const h = Number(m[1])
+  const min = Number(m[2])
+  if (min > 59) return undefined
+  if (h === 24 && min === 0) return 100
+  if (h > 23) return undefined
+  return ((h * 60 + min) / (24 * 60)) * 100
+}
+
+export function nowDayPercent(now = new Date()) {
+  const sec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()
+  return (sec / 86400) * 100
+}
+
 export function timeSortKey(item: {
   start?: string
   end?: string
   time?: string
   kind: string
+  allDay?: boolean
 }) {
+  if (isAllDay(item)) return '00:00'
   const { start, end } = resolveTimes(item)
   return start ?? end ?? '99:99'
 }
