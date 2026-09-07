@@ -1,6 +1,14 @@
 {
   "items": [
     {
+      "id": "d8a785d0-9a49-41e8-b251-ee9728eb5abe",
+      "date": "2026-09-07",
+      "title": "红渐变截止",
+      "done": false,
+      "kind": "deadline",
+      "end": "08:00"
+    },
+    {
       "id": "655205dc-683c-46a7-9502-a9b1195781ac",
       "date": "2026-09-07",
       "title": "普通化学 · 理教201",
@@ -19,6 +27,14 @@
       "end": "17:00"
     },
     {
+      "id": "10fe75bf-ebf4-40e5-b75c-5c409dec40c2",
+      "date": "2026-09-07",
+      "title": "灰渐变起",
+      "done": false,
+      "kind": "task",
+      "start": "20:00"
+    },
+    {
       "id": "691fd6c7-d207-428a-a6cc-ffe036a7f76b",
       "date": "2026-09-07",
       "title": "内务检查",
@@ -29,7 +45,7 @@
       "id": "a7f689bc-00f8-4046-98a2-093d06ee9ff2",
       "date": "2026-09-07",
       "title": "找到小组加人",
-      "done": true,
+      "done": false,
       "kind": "task"
     },
     {
@@ -141,13 +157,13 @@
       "start": "08:00"
     },
     {
-      "id": "84893066-97d8-4bd3-8ea3-332b9ed113eb",
+      "id": "1b9f2c30-794f-45d2-b841-cce8c039450e",
       "date": "2026-09-10",
-      "title": "MRI-证明-申请",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
       "done": false,
       "kind": "task",
-      "start": "13:30",
-      "end": "17:30"
+      "start": "15:10",
+      "end": "17:00"
     },
     {
       "id": "48e5fb34-f3a2-472d-8434-3de0b7cb3fa1",
@@ -166,6 +182,14 @@
       "kind": "task",
       "start": "10:10",
       "end": "12:00"
+    },
+    {
+      "id": "a9c26ad3-a258-446b-9b4d-8081da750db9",
+      "date": "2026-09-11",
+      "title": "医院 MRI / 开证明并申请保健课",
+      "done": false,
+      "kind": "task",
+      "start": "13:00"
     },
     {
       "id": "03c17be2-74bb-42d6-ba15-a2e06440268c",
