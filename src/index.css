@@ -26,6 +26,8 @@ body,
 #root {
   min-height: 100%;
   min-height: 100dvh;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 html {
@@ -38,8 +40,6 @@ body {
   color: var(--ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
 }
 
 button,
@@ -56,7 +56,11 @@ button {
   max-width: 1180px;
   margin: 0 auto;
   padding: 28px 24px 40px;
+  padding-left: max(24px, env(safe-area-inset-left));
+  padding-right: max(24px, env(safe-area-inset-right));
   position: relative;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 .sync-progress {
@@ -176,9 +180,11 @@ button {
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   gap: 16px;
   align-items: start;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .panel {
@@ -187,6 +193,8 @@ button {
   border-radius: var(--radius);
   padding: 22px;
   min-height: 560px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .cal-head {
@@ -221,7 +229,7 @@ button {
 .weekdays,
 .grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .weekdays {
@@ -775,7 +783,7 @@ button {
 
 .token-bar input {
   flex: 1;
-  min-width: 180px;
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 8px 12px;
@@ -803,7 +811,7 @@ button {
   .app {
     position: fixed;
     inset: 0;
-    width: 100%;
+    width: auto;
     max-width: none;
     height: auto;
     min-height: 0;
@@ -814,7 +822,11 @@ button {
   .app {
     display: flex;
     flex-direction: column;
-    padding: 10px 12px calc(8px + env(safe-area-inset-bottom));
+    min-width: 0;
+    padding-top: 10px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
   }
 
   .sync-progress {
@@ -1065,10 +1077,11 @@ button {
   .empty {
     flex: 1 1 0;
     min-height: 0;
-    overflow-y: scroll;
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    padding-right: 2px;
   }
 
   .toast {
