@@ -1,5 +1,4 @@
 import type { ScheduleItem, ScheduleMap } from '../types'
-import { todayKey } from './dates'
 
 const KEY = 'h2-schedule.v1'
 
@@ -17,38 +16,15 @@ function uid() {
   return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
-function seed(): ScheduleMap {
-  const today = todayKey()
-  const items: ScheduleItem[] = [
-    {
-      id: uid(),
-      date: today,
-      title: '上午实验记录整理',
-      done: false,
-      kind: 'task',
-      time: '09:30',
-    },
-    {
-      id: uid(),
-      date: today,
-      title: '交周报',
-      done: false,
-      kind: 'deadline',
-      time: '18:00',
-    },
-  ]
-  return { [today]: items }
-}
-
 export function loadSchedule(): ScheduleMap {
   try {
     const raw = localStorage.getItem(KEY)
-    if (!raw) return seed()
+    if (!raw) return {}
     const parsed = JSON.parse(raw) as ScheduleMap
-    if (!parsed || typeof parsed !== 'object') return seed()
+    if (!parsed || typeof parsed !== 'object') return {}
     return parsed
   } catch {
-    return seed()
+    return {}
   }
 }
 

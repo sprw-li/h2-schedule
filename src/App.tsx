@@ -1,49 +1,108 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CalendarPanel } from './components/CalendarPanel'
 import { DayPanel } from './components/DayPanel'
-import {
-  decryptBackup,
-  encryptBackup,
-  fingerprint,
-  flattenItems,
-  isEncryptedBackup,
-  replaceSchedule,
-} from './lib/backup'
+import { fingerprint } from './lib/backup'
+import { getWriteToken, pullCloud, pushCloud, setWriteToken } from './lib/cloud'
 import { addMonths, parseDateKey, toDateKey, todayKey } from './lib/dates'
-import { parseImportFile } from './lib/importSchedule'
-import { loadSchedule, mergeItems, saveSchedule, uid } from './lib/storage'
+import { loadSchedule, saveSchedule, uid } from './lib/storage'
 import type { ItemKind, ScheduleMap } from './types'
-
-function downloadText(filename: string, text: string, type: string) {
-  const blob = new Blob([text], { type })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
 
 export default function App() {
   const [cursor, setCursor] = useState(() => new Date())
   const [selectedKey, setSelectedKey] = useState(todayKey)
   const [schedule, setSchedule] = useState<ScheduleMap>(loadSchedule)
-  const [message, setMessage] = useState('')
+  const [message, setMessage] = useState('正在读取公开日程…')
   const [pane, setPane] = useState<'calendar' | 'day'>('calendar')
-  const [syncOpen, setSyncOpen] = useState(false)
-  const [password, setPassword] = useState('')
   const [fp, setFp] = useState('')
-  const fileRef = useRef<HTMLInputElement>(null)
-  const syncFileRef = useRef<HTMLInputElement>(null)
+  const [token, setToken] = useState(getWriteToken)
+  const [needToken, setNeedToken] = useState(!getWriteToken())
+  const shaRef = useRef('')
+  const pushTimer = useRef(0)
+  const dirtyRef = useRef(false)
   const today = useMemo(() => new Date(), [])
 
   useEffect(() => {
     void fingerprint(schedule).then(setFp)
   }, [schedule])
 
+  useEffect(() => {
+    let stop = false
+    async function hydrate() {
+      try {
+        const remote = await pullCloud()
+        if (stop || !remote) return
+        shaRef.current = remote.sha
+        const remoteCount = Object.values(remote.map).flat().length
+        if (remoteCount > 0) {
+          setSchedule(remote.map)
+          saveSchedule(remote.map)
+          setMessage('已载入公开日程')
+        } else {
+          setMessage('公开日程还是空的，记下后会自动同步')
+        }
+      } catch (err) {
+        setMessage(err instanceof Error ? err.message : '公开日程读取失败，先用本机缓存')
+      }
+    }
+    void hydrate()
+    const tick = window.setInterval(() => {
+      if (dirtyRef.current) return
+      void pullCloud()
+        .then((remote) => {
+          if (!remote) return
+          shaRef.current = remote.sha || shaRef.current
+          setSchedule((cur) => {
+            const a = JSON.stringify(cur)
+            const b = JSON.stringify(remote.map)
+            if (a === b) return cur
+            saveSchedule(remote.map)
+            return remote.map
+          })
+        })
+        .catch(() => {})
+    }, 12000)
+    return () => {
+      stop = true
+      window.clearInterval(tick)
+    }
+    // only on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   function commit(next: ScheduleMap) {
+    dirtyRef.current = true
     setSchedule(next)
     saveSchedule(next)
+    window.clearTimeout(pushTimer.current)
+    pushTimer.current = window.setTimeout(() => {
+      void pushCloud(next, shaRef.current)
+        .then((sha) => {
+          shaRef.current = sha
+          dirtyRef.current = false
+          setNeedToken(false)
+          setMessage('已同步到公开仓库')
+        })
+        .catch(async (err) => {
+          const text = err instanceof Error ? err.message : '同步失败'
+          if (text.includes('令牌')) setNeedToken(true)
+          if (text === '冲突') {
+            try {
+              const remote = await pullCloud()
+              if (remote) {
+                shaRef.current = remote.sha
+                await pushCloud(next, remote.sha).then((sha) => {
+                  shaRef.current = sha
+                  setMessage('已同步到公开仓库')
+                })
+                return
+              }
+            } catch {
+              /* fall through */
+            }
+          }
+          setMessage(text)
+        })
+    }, 800)
   }
 
   const selected = parseDateKey(selectedKey)
@@ -76,93 +135,6 @@ export default function App() {
           >
             今天
           </button>
-          <button type="button" className="ghost" onClick={() => fileRef.current?.click()}>
-            导入
-          </button>
-          <button
-            type="button"
-            className="ghost"
-            onClick={() => {
-              const all = flattenItems(schedule)
-              downloadText(
-                `h2-schedule-${todayKey()}.json`,
-                JSON.stringify({ items: all }, null, 2),
-                'application/json',
-              )
-              setMessage(`已导出明文 ${all.length} 条。同步请用「同步」并设密码。`)
-            }}
-          >
-            导出
-          </button>
-          <button type="button" className="solid" onClick={() => setSyncOpen(true)}>
-            同步
-          </button>
-          <input
-            ref={fileRef}
-            className="hidden-input"
-            type="file"
-            accept=".csv,.ics,.json,text/csv,text/calendar,application/json"
-            onChange={async (e) => {
-              const file = e.target.files?.[0]
-              e.target.value = ''
-              if (!file) return
-              try {
-                const raw = await file.text()
-                if (isEncryptedBackup(raw)) {
-                  setMessage('这是加密备份。请点「同步」导入，并输入密码。')
-                  return
-                }
-                const imported = parseImportFile(file.name, raw)
-                if (imported.length === 0) {
-                  setMessage('没有解析到可导入的事项。请使用 CSV / ICS / JSON。')
-                  return
-                }
-                commit(mergeItems(schedule, imported))
-                setSelectedKey(imported[0].date)
-                setCursor(parseDateKey(imported[0].date))
-                setPane('day')
-                setMessage(`已合并导入 ${imported.length} 条。`)
-              } catch (err) {
-                setMessage(err instanceof Error ? err.message : '导入失败')
-              }
-            }}
-          />
-          <input
-            ref={syncFileRef}
-            className="hidden-input"
-            type="file"
-            accept=".json,.h2bak,application/json"
-            onChange={async (e) => {
-              const file = e.target.files?.[0]
-              e.target.value = ''
-              if (!file) return
-              const pwd = password.trim()
-              if (!pwd) {
-                setMessage('请先填写同步密码。')
-                return
-              }
-              try {
-                const raw = await file.text()
-                const incoming = isEncryptedBackup(raw)
-                  ? await decryptBackup(raw, pwd)
-                  : parseImportFile(file.name, raw)
-                if (incoming.length === 0) {
-                  setMessage('备份里没有事项。')
-                  return
-                }
-                const next = replaceSchedule(incoming)
-                commit(next)
-                const mark = await fingerprint(next)
-                setSelectedKey(Object.keys(next).sort()[0] ?? todayKey())
-                setPane('day')
-                setSyncOpen(false)
-                setPassword('')
-                setMessage(`已覆盖同步 ${incoming.length} 条。指纹 ${mark}，请与另一端核对。`)
-              } catch (err) {
-                setMessage(err instanceof Error ? err.message : '同步导入失败')
-              }
-            }}
-          />
         </div>
       </header>
       <nav className="mobile-tabs" aria-label="视图切换">
@@ -230,66 +202,29 @@ export default function App() {
         />
       </div>
       {message ? <div className="toast">{message}</div> : null}
-      {syncOpen ? (
-        <div className="sync-scrim" onClick={() => setSyncOpen(false)}>
-          <div
-            className="sync-card"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-labelledby="sync-title"
-          >
-            <h2 id="sync-title">双端同步</h2>
-            <p>
-              密码只用来加密备份文件，不会上传 Git。两端用同一密码；导入后覆盖本机清单，指纹一致即同步成功。
-            </p>
-            <label htmlFor="sync-pass">同步密码</label>
-            <input
-              id="sync-pass"
-              type="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <div className="sync-actions">
-              <button
-                type="button"
-                className="solid"
-                onClick={async () => {
-                  const pwd = password.trim()
-                  if (pwd.length < 4) {
-                    setMessage('密码至少 4 位。')
-                    return
-                  }
-                  try {
-                    const text = await encryptBackup(schedule, pwd)
-                    downloadText(`h2-schedule-${todayKey()}.h2bak.json`, text, 'application/json')
-                    setMessage(`已导出加密备份。指纹 ${fp}。把文件拷到另一端再导入。`)
-                  } catch (err) {
-                    setMessage(err instanceof Error ? err.message : '加密导出失败')
-                  }
-                }}
-              >
-                导出加密备份
-              </button>
-              <button
-                type="button"
-                className="ghost"
-                onClick={() => {
-                  if (password.trim().length < 4) {
-                    setMessage('请先填写同一同步密码。')
-                    return
-                  }
-                  syncFileRef.current?.click()
-                }}
-              >
-                导入加密备份
-              </button>
-              <button type="button" className="ghost" onClick={() => setSyncOpen(false)}>
-                关闭
-              </button>
-            </div>
-          </div>
-        </div>
+      {needToken ? (
+        <form
+          className="token-bar"
+          onSubmit={(e) => {
+            e.preventDefault()
+            setWriteToken(token)
+            setNeedToken(!token.trim())
+            setMessage(token.trim() ? '写入令牌已保存在本机，改日程会自动同步。' : '已清除令牌')
+            commit(schedule)
+          }}
+        >
+          <span>公开仓库写入（只存在这台设备，不进 Git）</span>
+          <input
+            type="password"
+            autoComplete="off"
+            placeholder="GitHub Token，Contents 权限"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+          />
+          <button className="solid" type="submit">
+            保存
+          </button>
+        </form>
       ) : null}
     </div>
   )
