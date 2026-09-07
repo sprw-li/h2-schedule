@@ -368,6 +368,9 @@ button {
 
 .day-scale {
   margin: 0 0 16px;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .day-scale-track {
@@ -505,6 +508,8 @@ button {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .kind-scale {
@@ -574,6 +579,8 @@ button {
 .item.holiday {
   border-color: #c5e6d0;
   background: var(--holiday-soft);
+  max-width: 100%;
+  min-width: 0;
 }
 
 .check {
@@ -1026,25 +1033,34 @@ button {
 
   .composer-flags {
     flex-wrap: nowrap;
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
   }
 
   .kind-scale {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-width: 0;
+    max-width: 100%;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: center;
     gap: 6px;
     height: 40px;
-    padding: 12px 10px;
+    padding: 12px 8px;
     border-radius: 99px;
     background: #efefe9;
     flex-wrap: nowrap;
+    overflow: hidden;
   }
 
-  .kind-scale .chip {
+  .kind-scale .chip,
+  .kind-scale .chip.holiday.on,
+  .kind-scale .chip.task.on,
+  .kind-scale .chip.deadline.on {
     min-width: 0;
-    width: 100%;
+    width: auto;
+    max-width: 100%;
     height: 12px;
     min-height: 12px;
     padding: 0;
@@ -1054,18 +1070,26 @@ button {
     line-height: 0;
     color: transparent;
     overflow: hidden;
+    text-indent: 100%;
+    white-space: nowrap;
+  }
+
+  .kind-scale .chip {
     opacity: 0.28;
   }
 
-  .kind-scale .chip.holiday {
+  .kind-scale .chip.holiday,
+  .kind-scale .chip.holiday.on {
     background: var(--holiday);
   }
 
-  .kind-scale .chip.task {
+  .kind-scale .chip.task,
+  .kind-scale .chip.task.on {
     background: #8c8c86;
   }
 
-  .kind-scale .chip.deadline {
+  .kind-scale .chip.deadline,
+  .kind-scale .chip.deadline.on {
     background: var(--deadline);
   }
 
@@ -1102,7 +1126,10 @@ button {
     min-height: 44px;
   }
 
-  .kind-scale .chip {
+  .kind-scale .chip,
+  .kind-scale .chip.holiday.on,
+  .kind-scale .chip.task.on,
+  .kind-scale .chip.deadline.on {
     min-height: 12px;
   }
 }
