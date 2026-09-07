@@ -21,26 +21,53 @@ export function setWriteToken(token: string) {
   else localStorage.setItem(TOKEN_KEY, t)
 }
 
+const PUBLIC_JSON = `${import.meta.env.BASE_URL}schedule.json`
+
 export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | null> {
-  const res = await fetch(`${API}?ts=${Date.now()}`, {
-    headers: { Accept: 'application/vnd.github+json' },
-  })
+  const token = getWriteToken()
+  if (token) {
+    const res = await fetch(`${API}?ts=${Date.now()}`, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    if (res.ok) {
+      const body = (await res.json()) as { content?: string; sha?: string }
+      if (body.content && body.sha) {
+        const parsed = JSON.parse(decodeBase64(body.content.replace(/\n/g, ''))) as { items?: unknown }
+        const items = Array.isArray(parsed.items) ? parsed.items : []
+        return { map: replaceSchedule(items as Parameters<typeof replaceSchedule>[0]), sha: body.sha }
+      }
+    }
+  }
+  const res = await fetch(`${PUBLIC_JSON}?ts=${Date.now()}`)
   if (res.status === 404) return { map: {}, sha: '' }
   if (!res.ok) throw new Error('读取公开日程失败')
-  const body = (await res.json()) as { content?: string; sha?: string; encoding?: string }
-  if (!body.content || !body.sha) return { map: {}, sha: body.sha ?? '' }
-  const json = decodeBase64(body.content.replace(/\n/g, ''))
-  const parsed = JSON.parse(json) as { items?: unknown }
+  const parsed = (await res.json()) as { items?: unknown }
   const items = Array.isArray(parsed.items) ? parsed.items : []
   return {
     map: replaceSchedule(items as Parameters<typeof replaceSchedule>[0]),
-    sha: body.sha,
+    sha: '',
   }
 }
 
 export async function pushCloud(map: ScheduleMap, sha: string) {
   const token = getWriteToken()
   if (!token) throw new Error('需要写入令牌才能同步到公开仓库')
+  let useSha = sha
+  if (!useSha) {
+    const meta = await fetch(`${API}?ts=${Date.now()}`, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    if (meta.ok) {
+      const body = (await meta.json()) as { sha?: string }
+      useSha = body.sha ?? ''
+    }
+  }
   const payload = JSON.stringify({ items: flattenItems(map) }, null, 2)
   const res = await fetch(API, {
     method: 'PUT',
@@ -53,7 +80,7 @@ export async function pushCloud(map: ScheduleMap, sha: string) {
       message: 'Update public schedule',
       content: encodeBase64(payload),
       branch: 'main',
-      ...(sha ? { sha } : {}),
+      ...(useSha ? { sha: useSha } : {}),
     }),
   })
   if (res.status === 409) throw new Error('冲突')

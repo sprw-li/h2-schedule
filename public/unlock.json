@@ -1,0 +1,7 @@
+{
+  "h2": 1,
+  "kind": "write-unlock",
+  "salt": "REDACTED_OLD_PACK",
+  "iv": "REDACTED_OLD_PACK",
+  "data": "REDACTED_OLD_PACK"
+}

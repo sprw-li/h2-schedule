@@ -4,21 +4,29 @@ import { DayPanel } from './components/DayPanel'
 import { fingerprint } from './lib/backup'
 import { getWriteToken, pullCloud, pushCloud, setWriteToken } from './lib/cloud'
 import { addDays, addMonths, parseDateKey, timeSortKey, toDateKey, todayKey } from './lib/dates'
-import { loadSchedule, saveSchedule, uid } from './lib/storage'
-import type { ItemKind, ScheduleMap } from './types'
+import { applyOverlay, emptyOverlay, loadOverlay, overlayBusy, saveOverlay } from './lib/overlay'
+import { uid } from './lib/storage'
+import { unlockFromPublic } from './lib/unlock'
+import type { ScheduleMap } from './types'
+
+type SyncPhase = 'off' | 'pull' | 'push' | 'ok' | 'err'
 
 export default function App() {
   const [cursor, setCursor] = useState(() => new Date())
   const [selectedKey, setSelectedKey] = useState(todayKey)
-  const [schedule, setSchedule] = useState<ScheduleMap>(loadSchedule)
+  const [schedule, setSchedule] = useState<ScheduleMap>({})
   const [message, setMessage] = useState('正在读取公开日程…')
   const [pane, setPane] = useState<'calendar' | 'day'>('calendar')
   const [fp, setFp] = useState('')
-  const [token, setToken] = useState(getWriteToken)
-  const [needToken, setNeedToken] = useState(!getWriteToken())
+  const [phrase, setPhrase] = useState('')
+  const [askPhrase, setAskPhrase] = useState(false)
+  const [unlocking, setUnlocking] = useState(false)
+  const [unlockError, setUnlockError] = useState('')
+  const [phase, setPhase] = useState<SyncPhase>('pull')
   const shaRef = useRef('')
   const pushTimer = useRef(0)
   const dirtyRef = useRef(false)
+  const pendingRef = useRef<ScheduleMap | null>(null)
   const today = useMemo(() => new Date(), [])
 
   useEffect(() => {
@@ -26,21 +34,36 @@ export default function App() {
   }, [schedule])
 
   useEffect(() => {
+    if (phase !== 'ok') return
+    const t = window.setTimeout(() => setPhase('off'), 1400)
+    return () => window.clearTimeout(t)
+  }, [phase])
+
+  useEffect(() => {
     let stop = false
     async function hydrate() {
+      setPhase('pull')
       try {
         const remote = await pullCloud()
         if (stop || !remote) return
-        shaRef.current = remote.sha
-        const remoteCount = Object.values(remote.map).flat().length
-        if (remoteCount > 0) {
-          setSchedule(remote.map)
-          saveSchedule(remote.map)
-          setMessage('已载入公开日程')
-        } else {
-          setMessage('公开日程还是空的，记下后会自动同步')
+        shaRef.current = remote.sha || shaRef.current
+        if (dirtyRef.current) {
+          setPhase('off')
+          return
+        }
+        const over = loadOverlay()
+        const merged = overlayBusy(over) ? applyOverlay(remote.map, over) : remote.map
+        setSchedule(merged)
+        const n = Object.values(remote.map).flat().length
+        setMessage(n > 0 ? '已载入公开日程' : '公开日程还是空的')
+        setPhase('ok')
+        if (overlayBusy(over) && getWriteToken()) {
+          pendingRef.current = merged
+          dirtyRef.current = true
+          flush(merged)
         }
       } catch (err) {
+        setPhase('err')
         setMessage(err instanceof Error ? err.message : '公开日程读取失败，先用本机缓存')
       }
     }
@@ -49,60 +72,80 @@ export default function App() {
       if (dirtyRef.current) return
       void pullCloud()
         .then((remote) => {
-          if (!remote) return
+          if (!remote || dirtyRef.current) return
           shaRef.current = remote.sha || shaRef.current
           setSchedule((cur) => {
             const a = JSON.stringify(cur)
             const b = JSON.stringify(remote.map)
             if (a === b) return cur
-            saveSchedule(remote.map)
             return remote.map
           })
         })
         .catch(() => {})
-    }, 12000)
+    }, 8000)
     return () => {
       stop = true
       window.clearInterval(tick)
     }
-    // only on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  function flush(map: ScheduleMap) {
+    if (!getWriteToken()) {
+      dirtyRef.current = true
+      pendingRef.current = map
+      setAskPhrase(true)
+      setPhase('err')
+      setMessage('改动已记下，输入同步口令后电脑也能看见')
+      return
+    }
+    setPhase('push')
+    void pushCloud(map, shaRef.current)
+      .then((sha) => {
+        shaRef.current = sha
+        dirtyRef.current = false
+        pendingRef.current = null
+        saveOverlay(emptyOverlay())
+        setAskPhrase(false)
+        setPhase('ok')
+        setMessage('已同步到电脑和手机')
+      })
+      .catch(async (err) => {
+        const text = err instanceof Error ? err.message : '同步失败'
+        if (text.includes('令牌')) {
+          setAskPhrase(true)
+          setPhase('err')
+          setMessage('需要同步口令才能写到公开课表')
+          return
+        }
+        if (text === '冲突') {
+          try {
+            const remote = await pullCloud()
+            if (remote) {
+              shaRef.current = remote.sha
+              const sha = await pushCloud(map, remote.sha)
+              shaRef.current = sha
+              dirtyRef.current = false
+              pendingRef.current = null
+              saveOverlay(emptyOverlay())
+              setPhase('ok')
+              setMessage('已同步到电脑和手机')
+              return
+            }
+          } catch {
+            /* fall through */
+          }
+        }
+        setPhase('err')
+        setMessage(text)
+      })
+  }
 
   function commit(next: ScheduleMap) {
     dirtyRef.current = true
+    pendingRef.current = next
     setSchedule(next)
-    saveSchedule(next)
     window.clearTimeout(pushTimer.current)
-    pushTimer.current = window.setTimeout(() => {
-      void pushCloud(next, shaRef.current)
-        .then((sha) => {
-          shaRef.current = sha
-          dirtyRef.current = false
-          setNeedToken(false)
-          setMessage('已同步到公开仓库')
-        })
-        .catch(async (err) => {
-          const text = err instanceof Error ? err.message : '同步失败'
-          if (text.includes('令牌')) setNeedToken(true)
-          if (text === '冲突') {
-            try {
-              const remote = await pullCloud()
-              if (remote) {
-                shaRef.current = remote.sha
-                await pushCloud(next, remote.sha).then((sha) => {
-                  shaRef.current = sha
-                  setMessage('已同步到公开仓库')
-                })
-                return
-              }
-            } catch {
-              /* fall through */
-            }
-          }
-          setMessage(text)
-        })
-    }, 800)
+    pushTimer.current = window.setTimeout(() => flush(next), 400)
   }
 
   const selected = parseDateKey(selectedKey)
@@ -110,12 +153,26 @@ export default function App() {
     const ta = timeSortKey(a)
     const tb = timeSortKey(b)
     if (ta !== tb) return ta.localeCompare(tb)
+    const ad = a.allDay || a.kind === 'holiday'
+    const bd = b.allDay || b.kind === 'holiday'
+    if (ad && !bd) return -1
+    if (!ad && bd) return 1
     if (a.kind !== b.kind) return a.kind === 'deadline' ? -1 : 1
     return a.title.localeCompare(b.title, 'zh')
   })
 
   return (
     <div className="app">
+      <div
+        className={`sync-progress ${phase}`}
+        role="progressbar"
+        aria-label={
+          phase === 'pull' ? '正在读取' : phase === 'push' ? '正在保存' : phase === 'err' ? '同步出错' : '同步'
+        }
+        aria-busy={phase === 'pull' || phase === 'push'}
+      >
+        <i />
+      </div>
       <header className="topbar">
         <div className="brand">
           <span className="brand-kicker">Daily checklist</span>
@@ -197,47 +254,114 @@ export default function App() {
             else next[selectedKey] = list
             commit(next)
           }}
-          onAdd={(title, start, end, kind: ItemKind) => {
-            const item = {
-              id: uid(),
-              date: selectedKey,
-              title,
-              done: false,
-              kind,
-              start: start || undefined,
-              end: end || undefined,
-            }
+          onAdd={(draft) => {
             commit({
               ...schedule,
-              [selectedKey]: [...(schedule[selectedKey] ?? []), item],
+              [selectedKey]: [
+                ...(schedule[selectedKey] ?? []),
+                {
+                  id: uid(),
+                  date: selectedKey,
+                  title: draft.title,
+                  done: false,
+                  kind: draft.kind,
+                  allDay: draft.allDay || undefined,
+                  start: draft.allDay ? undefined : draft.start || undefined,
+                  end: draft.allDay ? undefined : draft.end || undefined,
+                },
+              ],
             })
+          }}
+          onUpdate={(id, draft) => {
+            const list = (schedule[selectedKey] ?? []).map((item) =>
+              item.id === id
+                ? {
+                    ...item,
+                    title: draft.title,
+                    kind: draft.kind,
+                    allDay: draft.allDay || undefined,
+                    start: draft.allDay ? undefined : draft.start || undefined,
+                    end: draft.allDay ? undefined : draft.end || undefined,
+                  }
+                : item,
+            )
+            commit({ ...schedule, [selectedKey]: list })
           }}
         />
       </div>
       {message ? <div className="toast">{message}</div> : null}
-      {needToken ? (
-        <form
-          className="token-bar"
-          onSubmit={(e) => {
-            e.preventDefault()
-            setWriteToken(token)
-            setNeedToken(!token.trim())
-            setMessage(token.trim() ? '写入令牌已保存在本机，改日程会自动同步。' : '已清除令牌')
-            commit(schedule)
-          }}
-        >
-          <span>公开仓库写入（只存在这台设备，不进 Git）</span>
-          <input
-            type="password"
-            autoComplete="off"
-            placeholder="GitHub Token，Contents 权限"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-          />
-          <button className="solid" type="submit">
-            保存
-          </button>
-        </form>
+      {askPhrase ? (
+        <div className="sync-scrim">
+          <form
+            className="sync-card"
+            onSubmit={(e) => {
+              e.preventDefault()
+              const p = phrase.trim()
+              if (!p) {
+                setUnlockError('还没填口令')
+                return
+              }
+              setUnlockError('')
+              setUnlocking(true)
+              window.setTimeout(() => {
+                void unlockFromPublic(p)
+                  .then((token) => {
+                    setWriteToken(token)
+                    setPhrase('')
+                    setMessage('口令正确，正在同步…')
+                    return pushCloud(pendingRef.current ?? schedule, shaRef.current)
+                  })
+                  .then((sha) => {
+                    shaRef.current = sha
+                    dirtyRef.current = false
+                    pendingRef.current = null
+                    saveOverlay(emptyOverlay())
+                    setAskPhrase(false)
+                    setUnlocking(false)
+                    setPhase('ok')
+                    setMessage('已同步到电脑和手机')
+                  })
+                  .catch((err: unknown) => {
+                    setUnlocking(false)
+                    setUnlockError(err instanceof Error ? err.message : '开通失败')
+                    setPhase('err')
+                  })
+              }, 50)
+            }}
+          >
+            <h2>同步口令</h2>
+            <p>
+              手机和电脑用同一句口令。点开通后请等一两秒，顶上绿条走完就成功了。
+            </p>
+            <label htmlFor="sync-phrase">口令</label>
+            <input
+              id="sync-phrase"
+              type="text"
+              autoComplete="off"
+              autoCapitalize="characters"
+              autoCorrect="off"
+              spellCheck={false}
+              placeholder="例如 5BVHPUZ7"
+              value={phrase}
+              disabled={unlocking}
+              onChange={(e) => setPhrase(e.target.value)}
+            />
+            {unlockError ? <p className="unlock-error">{unlockError}</p> : null}
+            <div className="sync-actions">
+              <button className="solid" type="submit" disabled={unlocking}>
+                {unlocking ? '正在开通…' : '开通并同步'}
+              </button>
+              <button
+                className="ghost"
+                type="button"
+                disabled={unlocking}
+                onClick={() => setAskPhrase(false)}
+              >
+                先留在本机
+              </button>
+            </div>
+          </form>
+        </div>
       ) : null}
     </div>
   )
