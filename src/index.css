@@ -359,8 +359,26 @@ button {
 .composer {
   margin-top: 16px;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 92px 108px auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto auto;
   gap: 8px;
+  align-items: end;
+}
+
+.composer input[aria-label='事项标题'] {
+  grid-column: 1 / -1;
+}
+
+.time-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--soft);
+}
+
+.time-field input {
+  width: 100%;
 }
 
 .composer input,
@@ -594,7 +612,7 @@ button {
   }
 
   .composer {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr auto auto;
     position: sticky;
     bottom: 0;
     z-index: 2;
@@ -605,10 +623,6 @@ button {
   }
 
   .composer input[aria-label='事项标题'] {
-    grid-column: 1 / -1;
-  }
-
-  .composer .solid {
     grid-column: 1 / -1;
   }
 }

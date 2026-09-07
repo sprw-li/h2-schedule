@@ -19,8 +19,44 @@ export function startOfMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), 1)
 }
 
+export function addDays(d: Date, delta: number) {
+  const next = new Date(d.getFullYear(), d.getMonth(), d.getDate() + delta)
+  return next
+}
+
 export function addMonths(d: Date, delta: number) {
   return new Date(d.getFullYear(), d.getMonth() + delta, 1)
+}
+
+export function resolveTimes(item: {
+  start?: string
+  end?: string
+  time?: string
+  kind: string
+}) {
+  const start = (item.start || (item.kind === 'deadline' ? '' : item.time || '')).trim()
+  const end = (item.end || (item.kind === 'deadline' ? item.time || '' : '')).trim()
+  return {
+    start: start || undefined,
+    end: end || undefined,
+  }
+}
+
+export function formatWhen(start?: string, end?: string) {
+  if (start && end) return `${start}–${end}`
+  if (start) return `${start} 起`
+  if (end) return `截止 ${end}`
+  return ''
+}
+
+export function timeSortKey(item: {
+  start?: string
+  end?: string
+  time?: string
+  kind: string
+}) {
+  const { start, end } = resolveTimes(item)
+  return start ?? end ?? '99:99'
 }
 
 export function sameDay(a: Date, b: Date) {

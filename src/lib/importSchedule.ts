@@ -42,12 +42,17 @@ export function parseIcs(raw: string): ScheduleItem[] {
     if (!date) continue
     const categories = get('CATEGORIES') ?? ''
     const due = get('DUE')
+    const endRaw = get('DTEND') ?? due
+    const startAt = formatTimeFromIcs(start)
+    const endAt = endRaw ? formatTimeFromIcs(endRaw) : undefined
+    const kind = detectKind(summary, `${categories} ${due ? 'deadline' : ''}`)
     items.push(
       makeItem({
         date,
         title: summary.replace(/\\,/g, ',').replace(/\\n/g, ' '),
-        kind: detectKind(summary, `${categories} ${due ? 'deadline' : ''}`),
-        time: formatTimeFromIcs(due || start),
+        kind,
+        start: kind === 'deadline' ? undefined : startAt,
+        end: endAt || (kind === 'deadline' ? startAt : undefined),
       }),
     )
   }
@@ -78,7 +83,8 @@ export function parseCsv(raw: string): ScheduleItem[] {
       makeItem({
         date,
         title,
-        time: normalizeTime(timeRaw),
+        start: detectKind(title, kindRaw) === 'deadline' ? undefined : normalizeTime(timeRaw),
+        end: detectKind(title, kindRaw) === 'deadline' ? normalizeTime(timeRaw) : undefined,
         kind: detectKind(title, kindRaw),
       }),
     )
@@ -101,12 +107,17 @@ export function parseJson(raw: string): ScheduleItem[] {
     const date = normalizeDate(String(rec.date ?? rec.日期 ?? ''))
     const title = String(rec.title ?? rec.summary ?? rec.标题 ?? '').trim()
     if (!date || !title) continue
+    const kind = detectKind(title, String(rec.kind ?? rec.type ?? rec.类型 ?? ''))
+    const start = normalizeTime(String(rec.start ?? rec.begin ?? rec.开始 ?? ''))
+    const end = normalizeTime(String(rec.end ?? rec.due ?? rec.结束 ?? rec.截止时间 ?? ''))
+    const legacy = normalizeTime(String(rec.time ?? rec.时间 ?? ''))
     items.push(
       makeItem({
         date,
         title,
-        time: normalizeTime(String(rec.time ?? rec.due ?? rec.时间 ?? '')),
-        kind: detectKind(title, String(rec.kind ?? rec.type ?? rec.类型 ?? '')),
+        kind,
+        start: start || (kind === 'deadline' ? undefined : legacy),
+        end: end || (kind === 'deadline' ? legacy : undefined),
       }),
     )
   }

@@ -6,7 +6,10 @@ export type ScheduleItem = {
   title: string
   done: boolean
   kind: ItemKind
+  /** @deprecated use start / end */
   time?: string
+  start?: string
+  end?: string
 }
 
 export type ScheduleMap = Record<string, ScheduleItem[]>

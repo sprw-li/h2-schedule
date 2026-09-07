@@ -3,7 +3,7 @@ import { CalendarPanel } from './components/CalendarPanel'
 import { DayPanel } from './components/DayPanel'
 import { fingerprint } from './lib/backup'
 import { getWriteToken, pullCloud, pushCloud, setWriteToken } from './lib/cloud'
-import { addMonths, parseDateKey, toDateKey, todayKey } from './lib/dates'
+import { addDays, addMonths, parseDateKey, timeSortKey, toDateKey, todayKey } from './lib/dates'
 import { loadSchedule, saveSchedule, uid } from './lib/storage'
 import type { ItemKind, ScheduleMap } from './types'
 
@@ -107,8 +107,8 @@ export default function App() {
 
   const selected = parseDateKey(selectedKey)
   const items = [...(schedule[selectedKey] ?? [])].sort((a, b) => {
-    const ta = a.time ?? '99:99'
-    const tb = b.time ?? '99:99'
+    const ta = timeSortKey(a)
+    const tb = timeSortKey(b)
     if (ta !== tb) return ta.localeCompare(tb)
     if (a.kind !== b.kind) return a.kind === 'deadline' ? -1 : 1
     return a.title.localeCompare(b.title, 'zh')
@@ -172,6 +172,18 @@ export default function App() {
         <DayPanel
           date={selected}
           items={items}
+          onPrevDay={() => {
+            const d = addDays(selected, -1)
+            setSelectedKey(toDateKey(d))
+            setCursor(new Date(d.getFullYear(), d.getMonth(), 1))
+            setPane('day')
+          }}
+          onNextDay={() => {
+            const d = addDays(selected, 1)
+            setSelectedKey(toDateKey(d))
+            setCursor(new Date(d.getFullYear(), d.getMonth(), 1))
+            setPane('day')
+          }}
           onToggle={(id) => {
             const list = (schedule[selectedKey] ?? []).map((item) =>
               item.id === id ? { ...item, done: !item.done } : item,
@@ -185,14 +197,15 @@ export default function App() {
             else next[selectedKey] = list
             commit(next)
           }}
-          onAdd={(title, time, kind: ItemKind) => {
+          onAdd={(title, start, end, kind: ItemKind) => {
             const item = {
               id: uid(),
               date: selectedKey,
               title,
               done: false,
               kind,
-              time: time || undefined,
+              start: start || undefined,
+              end: end || undefined,
             }
             commit({
               ...schedule,

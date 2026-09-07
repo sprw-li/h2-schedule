@@ -37,7 +37,11 @@ export function mergeItems(map: ScheduleMap, incoming: ScheduleItem[]): Schedule
   for (const item of incoming) {
     const list = next[item.date] ? [...next[item.date]] : []
     const dup = list.some(
-      (x) => x.title === item.title && x.time === item.time && x.kind === item.kind,
+      (x) =>
+        x.title === item.title &&
+        x.kind === item.kind &&
+        (x.start ?? x.time) === (item.start ?? item.time) &&
+        (x.end ?? '') === (item.end ?? ''),
     )
     if (!dup) list.push(item)
     next[item.date] = list

@@ -1,4 +1,5 @@
 import type { ScheduleItem, ScheduleMap } from '../types'
+import { timeSortKey } from './dates'
 
 const te = new TextEncoder()
 const td = new TextDecoder()
@@ -16,8 +17,8 @@ export function flattenItems(map: ScheduleMap): ScheduleItem[] {
     .flat()
     .sort((a, b) => {
       if (a.date !== b.date) return a.date.localeCompare(b.date)
-      const ta = a.time ?? ''
-      const tb = b.time ?? ''
+      const ta = timeSortKey(a)
+      const tb = timeSortKey(b)
       if (ta !== tb) return ta.localeCompare(tb)
       return a.title.localeCompare(b.title, 'zh')
     })
@@ -45,7 +46,7 @@ export function isEncryptedBackup(raw: string): boolean {
 
 export async function fingerprint(map: ScheduleMap) {
   const canon = flattenItems(map).map((i) =>
-    [i.date, i.time ?? '', i.kind, i.done ? '1' : '0', i.title].join('\t'),
+    [i.date, timeSortKey(i), i.start ?? '', i.end ?? '', i.kind, i.done ? '1' : '0', i.title].join('\t'),
   )
   const bytes = te.encode(canon.join('\n'))
   if (globalThis.crypto?.subtle) {
