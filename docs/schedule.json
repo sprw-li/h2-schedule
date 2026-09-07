@@ -269,7 +269,7 @@
       "id": "9990a380-2dd9-4329-a3d1-575e16eb795e",
       "date": "2026-09-16",
       "title": "今日化学",
-      "done": true,
+      "done": false,
       "kind": "task",
       "start": "15:10",
       "end": "17:00"
