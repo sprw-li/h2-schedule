@@ -21,27 +21,33 @@ export function setWriteToken(token: string) {
   else localStorage.setItem(TOKEN_KEY, t)
 }
 
-const PUBLIC_JSON = `${import.meta.env.BASE_URL}schedule.json`
+const BUNDLED_JSON = `${import.meta.env.BASE_URL}schedule.json`
+
+function parseContents(body: { content?: string; sha?: string }) {
+  if (!body.content) return null
+  const parsed = JSON.parse(decodeBase64(body.content.replace(/\n/g, ''))) as { items?: unknown }
+  const items = Array.isArray(parsed.items) ? parsed.items : []
+  return {
+    map: replaceSchedule(items as Parameters<typeof replaceSchedule>[0]),
+    sha: body.sha ?? '',
+  }
+}
 
 export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | null> {
   const token = getWriteToken()
-  if (token) {
-    const res = await fetch(`${API}?ts=${Date.now()}`, {
-      headers: {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${token}`,
-      },
-    })
+  const headers: Record<string, string> = { Accept: 'application/vnd.github+json' }
+  if (token) headers.Authorization = `Bearer ${token}`
+  try {
+    const res = await fetch(`${API}?ts=${Date.now()}`, { headers })
     if (res.ok) {
       const body = (await res.json()) as { content?: string; sha?: string }
-      if (body.content && body.sha) {
-        const parsed = JSON.parse(decodeBase64(body.content.replace(/\n/g, ''))) as { items?: unknown }
-        const items = Array.isArray(parsed.items) ? parsed.items : []
-        return { map: replaceSchedule(items as Parameters<typeof replaceSchedule>[0]), sha: body.sha }
-      }
+      const parsed = parseContents(body)
+      if (parsed) return parsed
     }
+  } catch {
+    /* fall through to bundled copy */
   }
-  const res = await fetch(`${PUBLIC_JSON}?ts=${Date.now()}`)
+  const res = await fetch(`${BUNDLED_JSON}?ts=${Date.now()}`)
   if (res.status === 404) return { map: {}, sha: '' }
   if (!res.ok) throw new Error('读取公开日程失败')
   const parsed = (await res.json()) as { items?: unknown }
