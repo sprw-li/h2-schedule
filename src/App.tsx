@@ -1,10 +1,28 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { CalendarPanel } from './components/CalendarPanel'
 import { DayPanel } from './components/DayPanel'
+import {
+  decryptBackup,
+  encryptBackup,
+  fingerprint,
+  flattenItems,
+  isEncryptedBackup,
+  replaceSchedule,
+} from './lib/backup'
 import { addMonths, parseDateKey, toDateKey, todayKey } from './lib/dates'
 import { parseImportFile } from './lib/importSchedule'
 import { loadSchedule, mergeItems, saveSchedule, uid } from './lib/storage'
 import type { ItemKind, ScheduleMap } from './types'
+
+function downloadText(filename: string, text: string, type: string) {
+  const blob = new Blob([text], { type })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 export default function App() {
   const [cursor, setCursor] = useState(() => new Date())
@@ -12,8 +30,16 @@ export default function App() {
   const [schedule, setSchedule] = useState<ScheduleMap>(loadSchedule)
   const [message, setMessage] = useState('')
   const [pane, setPane] = useState<'calendar' | 'day'>('calendar')
+  const [syncOpen, setSyncOpen] = useState(false)
+  const [password, setPassword] = useState('')
+  const [fp, setFp] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+  const syncFileRef = useRef<HTMLInputElement>(null)
   const today = useMemo(() => new Date(), [])
+
+  useEffect(() => {
+    void fingerprint(schedule).then(setFp)
+  }, [schedule])
 
   function commit(next: ScheduleMap) {
     setSchedule(next)
@@ -35,6 +61,7 @@ export default function App() {
         <div className="brand">
           <span className="brand-kicker">Daily checklist</span>
           <h1>H2 Schedule</h1>
+          {fp ? <div className="fp">指纹 {fp}</div> : null}
         </div>
         <div className="top-actions">
           <button
@@ -56,20 +83,19 @@ export default function App() {
             type="button"
             className="ghost"
             onClick={() => {
-              const items = Object.values(schedule).flat()
-              const blob = new Blob([JSON.stringify({ items }, null, 2)], {
-                type: 'application/json',
-              })
-              const url = URL.createObjectURL(blob)
-              const a = document.createElement('a')
-              a.href = url
-              a.download = `h2-schedule-${todayKey()}.json`
-              a.click()
-              URL.revokeObjectURL(url)
-              setMessage(`已导出 ${items.length} 条，可拷到另一台设备再导入。`)
+              const all = flattenItems(schedule)
+              downloadText(
+                `h2-schedule-${todayKey()}.json`,
+                JSON.stringify({ items: all }, null, 2),
+                'application/json',
+              )
+              setMessage(`已导出明文 ${all.length} 条。同步请用「同步」并设密码。`)
             }}
           >
             导出
+          </button>
+          <button type="button" className="solid" onClick={() => setSyncOpen(true)}>
+            同步
           </button>
           <input
             ref={fileRef}
@@ -82,6 +108,10 @@ export default function App() {
               if (!file) return
               try {
                 const raw = await file.text()
+                if (isEncryptedBackup(raw)) {
+                  setMessage('这是加密备份。请点「同步」导入，并输入密码。')
+                  return
+                }
                 const imported = parseImportFile(file.name, raw)
                 if (imported.length === 0) {
                   setMessage('没有解析到可导入的事项。请使用 CSV / ICS / JSON。')
@@ -91,9 +121,45 @@ export default function App() {
                 setSelectedKey(imported[0].date)
                 setCursor(parseDateKey(imported[0].date))
                 setPane('day')
-                setMessage(`已导入 ${imported.length} 条。`)
+                setMessage(`已合并导入 ${imported.length} 条。`)
               } catch (err) {
                 setMessage(err instanceof Error ? err.message : '导入失败')
+              }
+            }}
+          />
+          <input
+            ref={syncFileRef}
+            className="hidden-input"
+            type="file"
+            accept=".json,.h2bak,application/json"
+            onChange={async (e) => {
+              const file = e.target.files?.[0]
+              e.target.value = ''
+              if (!file) return
+              const pwd = password.trim()
+              if (!pwd) {
+                setMessage('请先填写同步密码。')
+                return
+              }
+              try {
+                const raw = await file.text()
+                const incoming = isEncryptedBackup(raw)
+                  ? await decryptBackup(raw, pwd)
+                  : parseImportFile(file.name, raw)
+                if (incoming.length === 0) {
+                  setMessage('备份里没有事项。')
+                  return
+                }
+                const next = replaceSchedule(incoming)
+                commit(next)
+                const mark = await fingerprint(next)
+                setSelectedKey(Object.keys(next).sort()[0] ?? todayKey())
+                setPane('day')
+                setSyncOpen(false)
+                setPassword('')
+                setMessage(`已覆盖同步 ${incoming.length} 条。指纹 ${mark}，请与另一端核对。`)
+              } catch (err) {
+                setMessage(err instanceof Error ? err.message : '同步导入失败')
               }
             }}
           />
@@ -164,6 +230,67 @@ export default function App() {
         />
       </div>
       {message ? <div className="toast">{message}</div> : null}
+      {syncOpen ? (
+        <div className="sync-scrim" onClick={() => setSyncOpen(false)}>
+          <div
+            className="sync-card"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-labelledby="sync-title"
+          >
+            <h2 id="sync-title">双端同步</h2>
+            <p>
+              密码只用来加密备份文件，不会上传 Git。两端用同一密码；导入后覆盖本机清单，指纹一致即同步成功。
+            </p>
+            <label htmlFor="sync-pass">同步密码</label>
+            <input
+              id="sync-pass"
+              type="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <div className="sync-actions">
+              <button
+                type="button"
+                className="solid"
+                onClick={async () => {
+                  const pwd = password.trim()
+                  if (pwd.length < 4) {
+                    setMessage('密码至少 4 位。')
+                    return
+                  }
+                  try {
+                    const text = await encryptBackup(schedule, pwd)
+                    downloadText(`h2-schedule-${todayKey()}.h2bak.json`, text, 'application/json')
+                    setMessage(`已导出加密备份。指纹 ${fp}。把文件拷到另一端再导入。`)
+                  } catch (err) {
+                    setMessage(err instanceof Error ? err.message : '加密导出失败')
+                  }
+                }}
+              >
+                导出加密备份
+              </button>
+              <button
+                type="button"
+                className="ghost"
+                onClick={() => {
+                  if (password.trim().length < 4) {
+                    setMessage('请先填写同一同步密码。')
+                    return
+                  }
+                  syncFileRef.current?.click()
+                }}
+              >
+                导入加密备份
+              </button>
+              <button type="button" className="ghost" onClick={() => setSyncOpen(false)}>
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
