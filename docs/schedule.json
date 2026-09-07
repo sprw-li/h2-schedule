@@ -4,7 +4,7 @@
       "id": "655205dc-683c-46a7-9502-a9b1195781ac",
       "date": "2026-09-07",
       "title": "普通化学 · 理教201",
-      "done": true,
+      "done": false,
       "kind": "task",
       "start": "10:10",
       "end": "12:00"
@@ -273,13 +273,6 @@
       "kind": "task",
       "start": "15:10",
       "end": "17:00"
-    },
-    {
-      "id": "a75e2e40-6198-4eb8-b991-4d4dda5f4f3e",
-      "date": "2026-09-16",
-      "title": "论文选题与小组成员提交",
-      "done": false,
-      "kind": "deadline"
     },
     {
       "id": "2bd19427-4ee1-4d89-a695-2be72970070d",
@@ -1399,14 +1392,6 @@
       "kind": "task",
       "start": "18:40",
       "end": "20:30"
-    },
-    {
-      "id": "1f0db95d-314b-49c7-99f0-f3a337c2ada5",
-      "date": "2026-11-13",
-      "title": "论文提交",
-      "done": false,
-      "kind": "deadline",
-      "end": "23:59"
     },
     {
       "id": "d726d048-dc9f-48f0-aa83-942ef9849132",
