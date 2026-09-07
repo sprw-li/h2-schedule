@@ -60,38 +60,38 @@ function Fields({
         placeholder="事项标题"
         aria-label="事项标题"
       />
-      <label className="time-field">
-        起
-        <input
-          type="time"
-          value={draft.start}
-          disabled={draft.allDay}
-          onChange={(e) => onChange({ ...draft, start: e.target.value, allDay: false })}
-          aria-label="开始时间"
-        />
-      </label>
-      <label className="time-field">
-        止
-        <input
-          type="time"
-          value={draft.end}
-          disabled={draft.allDay}
-          onChange={(e) => {
-            const end = e.target.value
-            onChange({
-              ...draft,
-              end,
-              allDay: false,
-              kind: end && !draft.start && draft.kind === 'task' ? 'deadline' : draft.kind,
-            })
-          }}
-          aria-label="结束时间"
-        />
-      </label>
-      <div className="composer-flags">
+      <div className="composer-times">
+        <label className="time-field">
+          起
+          <input
+            type="time"
+            value={draft.start}
+            disabled={draft.allDay}
+            onChange={(e) => onChange({ ...draft, start: e.target.value, allDay: false })}
+            aria-label="开始时间"
+          />
+        </label>
+        <label className="time-field">
+          止
+          <input
+            type="time"
+            value={draft.end}
+            disabled={draft.allDay}
+            onChange={(e) => {
+              const end = e.target.value
+              onChange({
+                ...draft,
+                end,
+                allDay: false,
+                kind: end && !draft.start && draft.kind === 'task' ? 'deadline' : draft.kind,
+              })
+            }}
+            aria-label="结束时间"
+          />
+        </label>
         <button
           type="button"
-          className={draft.allDay ? 'solid' : 'ghost'}
+          className={draft.allDay ? 'solid allday-btn' : 'ghost allday-btn'}
           aria-pressed={draft.allDay}
           onClick={() =>
             onChange({
@@ -104,6 +104,8 @@ function Fields({
         >
           全天
         </button>
+      </div>
+      <div className="composer-flags">
         <div className="kind-scale" role="radiogroup" aria-label="颜色">
           {KIND_CHIPS.map(({ kind, label }) => (
             <button
