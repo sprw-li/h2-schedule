@@ -883,7 +883,8 @@
       "date": "2026-10-21",
       "title": "可能测验一",
       "done": false,
-      "kind": "holiday"
+      "kind": "deadline",
+      "allDay": true
     },
     {
       "id": "8796d6cc-becb-4b79-9f0c-96536ae04f59",
@@ -1906,7 +1907,8 @@
       "date": "2026-12-09",
       "title": "可能测验二",
       "done": false,
-      "kind": "holiday"
+      "kind": "deadline",
+      "allDay": true
     },
     {
       "id": "2121c264-60e3-4cd5-8171-15a71fd0d03e",
