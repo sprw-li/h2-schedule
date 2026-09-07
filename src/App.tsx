@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CalendarPanel } from './components/CalendarPanel'
 import { DayPanel } from './components/DayPanel'
+import { RefsPanel } from './components/RefsPanel'
+import { WeatherPanel } from './components/WeatherPanel'
 import { fingerprint } from './lib/backup'
 import { getWriteToken, pullCloud, pushCloud, setWriteToken } from './lib/cloud'
 import { addDays, addMonths, parseDateKey, timeSortKey, toDateKey, todayKey } from './lib/dates'
@@ -16,7 +18,7 @@ export default function App() {
   const [selectedKey, setSelectedKey] = useState(todayKey)
   const [schedule, setSchedule] = useState<ScheduleMap>({})
   const [message, setMessage] = useState('正在读取公开日程…')
-  const [pane, setPane] = useState<'calendar' | 'day'>('calendar')
+  const [pane, setPane] = useState<'calendar' | 'day' | 'weather' | 'refs'>('calendar')
   const [fp, setFp] = useState('')
   const [phrase, setPhrase] = useState('')
   const [askPhrase, setAskPhrase] = useState(false)
@@ -229,6 +231,33 @@ export default function App() {
         >
           当日
         </button>
+        <button
+          type="button"
+          className={pane === 'weather' ? 'on' : ''}
+          aria-pressed={pane === 'weather'}
+          onClick={() => setPane('weather')}
+        >
+          天气
+        </button>
+        <button
+          type="button"
+          className={pane === 'refs' ? 'on' : ''}
+          aria-pressed={pane === 'refs'}
+          onClick={() => setPane('refs')}
+        >
+          资料
+        </button>
+      </nav>
+      <nav className="desk-tabs" aria-label="页面">
+        <button type="button" className={pane === 'calendar' || pane === 'day' ? 'on' : ''} onClick={() => setPane('calendar')}>
+          日程
+        </button>
+        <button type="button" className={pane === 'weather' ? 'on' : ''} onClick={() => setPane('weather')}>
+          天气
+        </button>
+        <button type="button" className={pane === 'refs' ? 'on' : ''} onClick={() => setPane('refs')}>
+          资料
+        </button>
       </nav>
       <div className={`layout pane-${pane}`}>
         <CalendarPanel
@@ -306,6 +335,8 @@ export default function App() {
             commit({ ...schedule, [selectedKey]: list })
           }}
         />
+        <WeatherPanel />
+        <RefsPanel />
       </div>
       {message ? <div className="toast">{message}</div> : null}
       {askPhrase ? (
