@@ -5,7 +5,7 @@ import { fingerprint } from './lib/backup'
 import { getWriteToken, pullCloud, pushCloud, setWriteToken } from './lib/cloud'
 import { addDays, addMonths, parseDateKey, timeSortKey, toDateKey, todayKey } from './lib/dates'
 import { applyOverlay, emptyOverlay, loadOverlay, overlayBusy, saveOverlay } from './lib/overlay'
-import { uid } from './lib/storage'
+import { loadSchedule, saveSchedule, uid } from './lib/storage'
 import { unlockFromPublic } from './lib/unlock'
 import type { ScheduleMap } from './types'
 
@@ -52,8 +52,25 @@ export default function App() {
           return
         }
         const over = loadOverlay()
-        const merged = overlayBusy(over) ? applyOverlay(remote.map, over) : remote.map
+        const local = loadSchedule()
+        const localBusy = Object.values(local).flat().length > 0
+        const merged = overlayBusy(over)
+          ? applyOverlay(remote.map, over)
+          : localBusy
+            ? applyOverlay(remote.map, {
+                done: Object.fromEntries(
+                  Object.values(local)
+                    .flat()
+                    .map((i) => [i.id, i.done]),
+                ),
+                extra: Object.values(local)
+                  .flat()
+                  .filter((i) => !Object.values(remote.map).flat().some((r) => r.id === i.id)),
+                hidden: [],
+              })
+            : remote.map
         setSchedule(merged)
+        saveSchedule(merged)
         const n = Object.values(remote.map).flat().length
         setMessage(n > 0 ? '已载入公开日程' : '公开日程还是空的')
         setPhase('ok')
@@ -144,6 +161,7 @@ export default function App() {
     dirtyRef.current = true
     pendingRef.current = next
     setSchedule(next)
+    saveSchedule(next)
     window.clearTimeout(pushTimer.current)
     pushTimer.current = window.setTimeout(() => flush(next), 400)
   }
