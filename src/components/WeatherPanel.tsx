@@ -42,9 +42,10 @@ export function WeatherPanel() {
 
   return (
     <section className="panel weather-panel" aria-label="七天天气">
+      <div className="sheet-scroll">
       <div className="cal-head">
         <h2>天气</h2>
-        <div className="nav">
+        <div className="mode-toggle">
           <button type="button" className={mode === 'daily' ? 'solid' : 'ghost'} onClick={() => setMode('daily')}>
             逐日
           </button>
@@ -140,6 +141,7 @@ export function WeatherPanel() {
           )}
         </>
       ) : null}
+      </div>
     </section>
   )
 }
