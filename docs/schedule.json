@@ -22,7 +22,7 @@
       "id": "10fe75bf-ebf4-40e5-b75c-5c409dec40c2",
       "date": "2026-09-07",
       "title": "灰渐变起",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "20:00"
     },
@@ -37,7 +37,7 @@
       "id": "a7f689bc-00f8-4046-98a2-093d06ee9ff2",
       "date": "2026-09-07",
       "title": "找到小组加人",
-      "done": false,
+      "done": true,
       "kind": "task"
     },
     {
