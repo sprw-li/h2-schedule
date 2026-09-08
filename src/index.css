@@ -24,10 +24,10 @@
 html,
 body,
 #root {
-  min-height: 100%;
-  min-height: 100dvh;
+  height: 100%;
+  height: 100dvh;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 html {
@@ -53,19 +53,25 @@ button {
 }
 
 .app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
   max-width: 1180px;
   margin: 0 auto;
-  padding: 28px 24px 40px;
+  padding: 28px 24px 16px;
   padding-left: max(24px, env(safe-area-inset-left));
   padding-right: max(24px, env(safe-area-inset-right));
   position: relative;
   min-width: 0;
-  overflow-x: hidden;
+  min-height: 0;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .sync-progress {
-  position: sticky;
-  top: 0;
+  flex-shrink: 0;
   z-index: 12;
   height: 3px;
   margin: -28px -24px 18px;
@@ -128,6 +134,7 @@ button {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 22px;
+  flex-shrink: 0;
 }
 
 .brand {
@@ -179,34 +186,21 @@ button {
 }
 
 .layout {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 16px;
   align-items: stretch;
-  min-width: 0;
-  max-width: 100%;
-}
-
-.layout.pane-weather,
-.layout.pane-refs {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.layout.pane-weather .calendar-panel,
-.layout.pane-weather .day-panel,
-.layout.pane-weather .refs-panel,
-.layout.pane-refs .calendar-panel,
-.layout.pane-refs .day-panel,
-.layout.pane-refs .weather-panel,
-.layout.pane-calendar .weather-panel,
-.layout.pane-calendar .refs-panel,
-.layout.pane-day .weather-panel,
-.layout.pane-day .refs-panel {
-  display: none;
 }
 
 .desk-tabs {
   display: flex;
+  flex-shrink: 0;
   gap: 4px;
   margin-bottom: 14px;
   padding: 4px;
@@ -264,17 +258,15 @@ button {
   padding: 6px 12px;
 }
 
-.weather-panel,
-.refs-panel {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  align-self: stretch;
-}
-
 .sheet-scroll {
+  flex: 1;
+  min-height: 0;
   min-width: 0;
   max-width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   touch-action: pan-y;
 }
 
@@ -284,6 +276,7 @@ button {
   gap: 6px;
   margin-bottom: 12px;
   min-width: 0;
+  flex-shrink: 0;
 }
 
 .place-tabs button {
@@ -291,7 +284,10 @@ button {
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
+  width: auto;
   min-width: 0;
+  height: auto;
+  min-height: 0;
   padding: 8px 10px;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -475,16 +471,23 @@ button {
   margin: 0 0 16px;
   border: 1px solid var(--line);
   border-radius: 12px;
+  box-sizing: border-box;
 }
 
 .panel {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 22px;
-  min-height: 560px;
-  min-width: 0;
-  max-width: 100%;
 }
 
 .cal-head {
@@ -494,6 +497,7 @@ button {
   gap: 8px;
   margin-bottom: 18px;
   min-width: 0;
+  flex-shrink: 0;
 }
 
 .cal-head h2 {
@@ -509,7 +513,7 @@ button {
   gap: 6px;
 }
 
-.nav button {
+.nav > button {
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -641,6 +645,10 @@ button {
 
 .legend .dead {
   background: var(--deadline);
+}
+
+.day-chrome {
+  flex-shrink: 0;
 }
 
 .day-panel h2 {
@@ -936,6 +944,7 @@ button {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   gap: 8px;
   align-items: end;
+  flex-shrink: 0;
 }
 
 .composer input[aria-label='事项标题'] {
@@ -1000,6 +1009,7 @@ button {
 }
 
 .toast {
+  flex-shrink: 0;
   margin-top: 12px;
   font-size: 13px;
   color: var(--mute);
@@ -1095,30 +1105,14 @@ button {
 }
 
 @media (min-width: 861px) {
-  .app {
-    min-height: 100dvh;
+  .layout.pane-calendar,
+  .layout.pane-day {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  .layout {
-    align-items: stretch;
-  }
-
-  .panel {
-    min-height: calc(100dvh - 160px);
-  }
-
-  .weather-panel,
-  .refs-panel {
-    overflow: hidden;
-    max-height: calc(100dvh - 160px);
-    display: flex;
-    flex-direction: column;
-  }
-
-  .sheet-scroll {
-    flex: 1 1 0;
-    min-height: 0;
-    overflow-y: auto;
+  .layout.pane-weather,
+  .layout.pane-refs {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1183,15 +1177,6 @@ button {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   }
 
-  .allday-btn {
-    min-height: 44px;
-  }
-
-  .composer .solid,
-  .composer .ghost {
-    min-height: 44px;
-  }
-
   .day {
     height: 54px;
   }
@@ -1200,6 +1185,17 @@ button {
   .solid {
     min-height: 40px;
     padding: 8px 14px;
+  }
+
+  .allday-btn,
+  .composer-add {
+    min-height: 44px;
+  }
+
+  .mode-toggle button {
+    width: auto;
+    height: auto;
+    min-height: 36px;
   }
 
   .desk-tabs {
@@ -1232,45 +1228,23 @@ button {
   }
 
   .layout {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    flex: 1;
     min-height: 0;
+    min-width: 0;
     overflow: hidden;
     gap: 0;
     align-items: stretch;
   }
 
   .layout.pane-calendar .day-panel,
-  .layout.pane-day .calendar-panel,
-  .layout.pane-weather .calendar-panel,
-  .layout.pane-weather .day-panel,
-  .layout.pane-weather .refs-panel,
-  .layout.pane-refs .calendar-panel,
-  .layout.pane-refs .day-panel,
-  .layout.pane-refs .weather-panel,
-  .layout.pane-calendar .weather-panel,
-  .layout.pane-calendar .refs-panel,
-  .layout.pane-day .weather-panel,
-  .layout.pane-day .refs-panel {
+  .layout.pane-day .calendar-panel {
     display: none;
   }
 
-  .weather-panel,
-  .refs-panel {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
   .sheet-scroll {
-    flex: 1 1 0;
-    min-height: 0;
-    min-width: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
     padding-bottom: 28px;
   }
 
@@ -1278,25 +1252,26 @@ button {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .panel {
-    flex: 1 1 0;
-    min-height: 0;
+  .place-tabs button {
+    width: auto;
     height: auto;
-    padding: 14px 14px 10px;
-    overflow: hidden;
+    min-height: 0;
+    border-radius: 12px;
   }
 
-  .calendar-panel {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+  .panel {
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+    max-width: 100%;
+    padding: 14px 14px 10px;
   }
 
   .cal-head h2 {
     font-size: 22px;
   }
 
-  .nav button {
+  .nav > button {
     width: 40px;
     height: 40px;
   }
@@ -1346,15 +1321,7 @@ button {
     min-height: 48px;
   }
 
-  .day-panel {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
-  }
-
   .day-chrome {
-    flex-shrink: 0;
     background: var(--paper);
   }
 
@@ -1453,17 +1420,6 @@ button {
     opacity: 1;
   }
 
-  .list,
-  .empty {
-    flex: 1 1 0;
-    min-height: 0;
-    min-width: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
-
   .toast {
     position: absolute;
     left: 12px;
@@ -1476,17 +1432,6 @@ button {
 
   .composer input[aria-label='事项标题'] {
     grid-column: 1 / -1;
-  }
-
-  .composer button {
-    min-height: 44px;
-  }
-
-  .kind-scale .chip,
-  .kind-scale .chip.holiday.on,
-  .kind-scale .chip.task.on,
-  .kind-scale .chip.deadline.on {
-    min-height: 12px;
   }
 }
 

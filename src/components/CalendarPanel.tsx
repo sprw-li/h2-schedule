@@ -43,57 +43,59 @@ export function CalendarPanel({
           </button>
         </div>
       </div>
-      <div className="weekdays">
-        {WEEKDAYS.map((d) => (
-          <span key={d}>{d}</span>
-        ))}
-      </div>
-      <div className="grid">
-        {cells.map((d) => {
-          const key = toDateKey(d)
-          const items = schedule[key] ?? []
-          const hasHoliday = items.some((i) => i.kind === 'holiday')
-          const hasTask = items.some((i) => i.kind === 'task')
-          const hasDeadline = items.some((i) => i.kind === 'deadline')
-          const out = d.getMonth() !== view.getMonth()
-          const cls = [
-            'day',
-            out ? 'out' : '',
-            sameDay(d, selected) ? 'selected' : '',
-            sameDay(d, today) ? 'today' : '',
-          ]
-            .filter(Boolean)
-            .join(' ')
-          return (
-            <button
-              key={key}
-              type="button"
-              className={cls}
-              aria-label={key}
-              aria-pressed={sameDay(d, selected)}
-              onClick={() => onSelect(d)}
-            >
-              <span className="day-num">{d.getDate()}</span>
-              <span className="dots">
-                {hasHoliday ? <span className="dot holiday" /> : null}
-                {hasTask ? <span className="dot" /> : null}
-                {hasDeadline ? <span className="dot deadline" /> : null}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-      <div className="legend">
-        <span>
-          <i className="holi" /> 绿
-        </span>
-        <span>
-          <i /> 灰
-        </span>
-        <span>
-          <i className="dead" /> 红
-        </span>
-        <span className="legend-note">同一天可同时出现，事项里可改</span>
+      <div className="sheet-scroll">
+        <div className="weekdays">
+          {WEEKDAYS.map((d) => (
+            <span key={d}>{d}</span>
+          ))}
+        </div>
+        <div className="grid">
+          {cells.map((d) => {
+            const key = toDateKey(d)
+            const items = schedule[key] ?? []
+            const hasHoliday = items.some((i) => i.kind === 'holiday')
+            const hasTask = items.some((i) => i.kind === 'task')
+            const hasDeadline = items.some((i) => i.kind === 'deadline')
+            const out = d.getMonth() !== view.getMonth()
+            const cls = [
+              'day',
+              out ? 'out' : '',
+              sameDay(d, selected) ? 'selected' : '',
+              sameDay(d, today) ? 'today' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')
+            return (
+              <button
+                key={key}
+                type="button"
+                className={cls}
+                aria-label={key}
+                aria-pressed={sameDay(d, selected)}
+                onClick={() => onSelect(d)}
+              >
+                <span className="day-num">{d.getDate()}</span>
+                <span className="dots">
+                  {hasHoliday ? <span className="dot holiday" /> : null}
+                  {hasTask ? <span className="dot" /> : null}
+                  {hasDeadline ? <span className="dot deadline" /> : null}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+        <div className="legend">
+          <span>
+            <i className="holi" /> 绿
+          </span>
+          <span>
+            <i /> 灰
+          </span>
+          <span>
+            <i className="dead" /> 红
+          </span>
+          <span className="legend-note">同一天可同时出现，事项里可改</span>
+        </div>
       </div>
     </section>
   )
