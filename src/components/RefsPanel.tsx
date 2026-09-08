@@ -1,5 +1,6 @@
-import calendarSrc from '../assets/refs/calendar'
-import timetableSrc from '../assets/refs/timetable'
+const refsBase = `${import.meta.env.BASE_URL}refs/`
+const calendarSrc = `${refsBase}calendar.jpg`
+const timetableSrc = `${refsBase}timetable.jpg`
 
 const PERIODS: { n: string; t: string; note?: string }[] = [
   { n: '第一节', t: '8:00 – 8:50' },
