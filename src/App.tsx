@@ -260,83 +260,89 @@ export default function App() {
         </button>
       </nav>
       <div className={`layout pane-${pane}`}>
-        <CalendarPanel
-          view={cursor}
-          selected={selected}
-          today={today}
-          schedule={schedule}
-          onSelect={(d) => {
-            setSelectedKey(toDateKey(d))
-            setCursor(new Date(d.getFullYear(), d.getMonth(), 1))
-            setPane('day')
-          }}
-          onPrev={() => setCursor((d) => addMonths(d, -1))}
-          onNext={() => setCursor((d) => addMonths(d, 1))}
-        />
-        <DayPanel
-          date={selected}
-          items={items}
-          onPrevDay={() => {
-            const d = addDays(selected, -1)
-            setSelectedKey(toDateKey(d))
-            setCursor(new Date(d.getFullYear(), d.getMonth(), 1))
-            setPane('day')
-          }}
-          onNextDay={() => {
-            const d = addDays(selected, 1)
-            setSelectedKey(toDateKey(d))
-            setCursor(new Date(d.getFullYear(), d.getMonth(), 1))
-            setPane('day')
-          }}
-          onToggle={(id) => {
-            const list = (schedule[selectedKey] ?? []).map((item) =>
-              item.id === id ? { ...item, done: !item.done } : item,
-            )
-            commit({ ...schedule, [selectedKey]: list })
-          }}
-          onRemove={(id) => {
-            const list = (schedule[selectedKey] ?? []).filter((item) => item.id !== id)
-            const next = { ...schedule }
-            if (list.length === 0) delete next[selectedKey]
-            else next[selectedKey] = list
-            commit(next)
-          }}
-          onAdd={(draft) => {
-            commit({
-              ...schedule,
-              [selectedKey]: [
-                ...(schedule[selectedKey] ?? []),
-                {
-                  id: uid(),
-                  date: selectedKey,
-                  title: draft.title,
-                  done: false,
-                  kind: draft.kind,
-                  allDay: draft.allDay || undefined,
-                  start: draft.allDay ? undefined : draft.start || undefined,
-                  end: draft.allDay ? undefined : draft.end || undefined,
-                },
-              ],
-            })
-          }}
-          onUpdate={(id, draft) => {
-            const list = (schedule[selectedKey] ?? []).map((item) =>
-              item.id === id
-                ? {
-                    ...item,
-                    title: draft.title,
-                    kind: draft.kind,
-                    allDay: draft.allDay || undefined,
-                    start: draft.allDay ? undefined : draft.start || undefined,
-                    end: draft.allDay ? undefined : draft.end || undefined,
-                  }
-                : item,
-            )
-            commit({ ...schedule, [selectedKey]: list })
-          }}
-        />
-        <WeatherPanel />
-        <RefsPanel />
+        {pane === 'weather' ? (
+          <WeatherPanel />
+        ) : pane === 'refs' ? (
+          <RefsPanel />
+        ) : (
+          <>
+            <CalendarPanel
+              view={cursor}
+              selected={selected}
+              today={today}
+              schedule={schedule}
+              onSelect={(d) => {
+                setSelectedKey(toDateKey(d))
+                setCursor(new Date(d.getFullYear(), d.getMonth(), 1))
+                setPane('day')
+              }}
+              onPrev={() => setCursor((d) => addMonths(d, -1))}
+              onNext={() => setCursor((d) => addMonths(d, 1))}
+            />
+            <DayPanel
+              date={selected}
+              items={items}
+              onPrevDay={() => {
+                const d = addDays(selected, -1)
+                setSelectedKey(toDateKey(d))
+                setCursor(new Date(d.getFullYear(), d.getMonth(), 1))
+                setPane('day')
+              }}
+              onNextDay={() => {
+                const d = addDays(selected, 1)
+                setSelectedKey(toDateKey(d))
+                setCursor(new Date(d.getFullYear(), d.getMonth(), 1))
+                setPane('day')
+              }}
+              onToggle={(id) => {
+                const list = (schedule[selectedKey] ?? []).map((item) =>
+                  item.id === id ? { ...item, done: !item.done } : item,
+                )
+                commit({ ...schedule, [selectedKey]: list })
+              }}
+              onRemove={(id) => {
+                const list = (schedule[selectedKey] ?? []).filter((item) => item.id !== id)
+                const next = { ...schedule }
+                if (list.length === 0) delete next[selectedKey]
+                else next[selectedKey] = list
+                commit(next)
+              }}
+              onAdd={(draft) => {
+                commit({
+                  ...schedule,
+                  [selectedKey]: [
+                    ...(schedule[selectedKey] ?? []),
+                    {
+                      id: uid(),
+                      date: selectedKey,
+                      title: draft.title,
+                      done: false,
+                      kind: draft.kind,
+                      allDay: draft.allDay || undefined,
+                      start: draft.allDay ? undefined : draft.start || undefined,
+                      end: draft.allDay ? undefined : draft.end || undefined,
+                    },
+                  ],
+                })
+              }}
+              onUpdate={(id, draft) => {
+                const list = (schedule[selectedKey] ?? []).map((item) =>
+                  item.id === id
+                    ? {
+                        ...item,
+                        title: draft.title,
+                        kind: draft.kind,
+                        allDay: draft.allDay || undefined,
+                        start: draft.allDay ? undefined : draft.start || undefined,
+                        end: draft.allDay ? undefined : draft.end || undefined,
+                      }
+                    : item,
+                )
+                commit({ ...schedule, [selectedKey]: list })
+              }}
+            />
+          </>
+        )}
       </div>
       {message ? <div className="toast">{message}</div> : null}
       {askPhrase ? (

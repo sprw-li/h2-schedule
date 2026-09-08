@@ -43,10 +43,10 @@ const TERM_NOTES: { title: string; lines: string[] }[] = [
 export function RefsPanel() {
   return (
     <section className="panel refs-panel" aria-label="课表与校历">
-      <div className="sheet-scroll">
       <div className="cal-head">
         <h2>资料</h2>
       </div>
+      <div className="sheet-scroll">
       <h3 className="refs-h">校本部标准课时</h3>
       <table className="period-table">
         <tbody>

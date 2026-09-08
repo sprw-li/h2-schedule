@@ -351,9 +351,9 @@ export function DayPanel({
         <div className="section-label">当日清单</div>
       </div>
       {items.length === 0 ? (
-        <div className="empty">这一天还没有事项。在下方写入第一条。</div>
+        <div className="sheet-scroll empty">这一天还没有事项。在下方写入第一条。</div>
       ) : (
-        <div className="list">
+        <div className="sheet-scroll list">
           {items.map((item) => {
             const holiday = item.kind === 'holiday'
             const due = item.kind === 'deadline'
