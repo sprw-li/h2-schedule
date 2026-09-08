@@ -18,7 +18,8 @@ export type OtaBundle = {
 const OWNER = 'sprw-li'
 const REPO = 'h2-schedule'
 const MANIFEST_PATH = 'docs/ota/manifest.json'
-const STORAGE_KEY = 'h2.ota.bundle.v1'
+const STORAGE_KEY = 'h2.ota.bundle.v2'
+const LEGACY_KEYS = ['h2.ota.bundle.v1']
 const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents`
 
 declare const __H2_BUILT_AT__: string | undefined
@@ -34,10 +35,15 @@ export function bundledBuiltAt() {
 
 export function loadLocalBundle(): OtaBundle | null {
   try {
+    for (const k of LEGACY_KEYS) localStorage.removeItem(k)
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
     const pack = JSON.parse(raw) as Partial<OtaBundle>
     if (!pack?.verified || !pack.html || !pack.sha256 || !pack.builtAt) return null
+    if (pack.html.includes('update-scrim')) {
+      localStorage.removeItem(STORAGE_KEY)
+      return null
+    }
     return pack as OtaBundle
   } catch {
     return null
@@ -52,6 +58,7 @@ export function localBuiltAt() {
 export function clearLocalBundle() {
   try {
     localStorage.removeItem(STORAGE_KEY)
+    for (const k of LEGACY_KEYS) localStorage.removeItem(k)
   } catch {
     /* ignore */
   }

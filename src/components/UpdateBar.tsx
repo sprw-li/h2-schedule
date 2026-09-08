@@ -87,7 +87,7 @@ export function UpdateBar() {
         <div className="update-sheet" role="dialog" aria-label="界面更新">
           <div className="update-card-head">
             <strong>界面更新</strong>
-            <button type="button" className="ghost" disabled={busy} onClick={() => setOpen(false)}>
+            <button type="button" className="ghost" onClick={() => setOpen(false)}>
               收起
             </button>
           </div>
