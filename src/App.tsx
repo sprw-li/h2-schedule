@@ -9,6 +9,7 @@ import { addDays, addMonths, parseDateKey, timeSortKey, toDateKey, todayKey } fr
 import { applyOverlay, emptyOverlay, loadOverlay, overlayBusy, saveOverlay } from './lib/overlay'
 import { loadSchedule, saveSchedule, uid } from './lib/storage'
 import { unlockFromPublic } from './lib/unlock'
+import { UpdateBar } from './components/UpdateBar'
 import type { ScheduleMap } from './types'
 
 type SyncPhase = 'off' | 'pull' | 'push' | 'ok' | 'err'
@@ -200,6 +201,7 @@ export default function App() {
           {fp ? <div className="fp">指纹 {fp}</div> : null}
         </div>
         <div className="top-actions">
+          <UpdateBar />
           <button
             type="button"
             className="ghost"
@@ -391,12 +393,11 @@ export default function App() {
             <label htmlFor="sync-phrase">口令</label>
             <input
               id="sync-phrase"
-              type="text"
-              autoComplete="off"
-              autoCapitalize="characters"
+              type="password"
+              autoComplete="current-password"
+              autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
-              placeholder="例如 5BVHPUZ7"
               value={phrase}
               disabled={unlocking}
               onChange={(e) => setPhrase(e.target.value)}

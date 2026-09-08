@@ -6,11 +6,16 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:phone": "tsc -b && vite build --config vite.phone.config.ts",
+    "build:phone": "tsc -b && vite build --config vite.phone.config.ts && node scripts/make-ota.mjs",
+    "build:apk": "npm run build:phone && npx cap sync android && cd android && gradlew.bat assembleDebug",
+    "ota": "node scripts/make-ota.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/cli": "^8.5.1",
+    "@capacitor/core": "^8.5.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

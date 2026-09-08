@@ -163,6 +163,59 @@ button {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.update-wrap {
+  position: relative;
+}
+
+.update-chip.hot {
+  border-color: var(--deadline);
+  color: var(--deadline);
+}
+
+.update-card {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 20;
+  width: min(320px, calc(100vw - 24px));
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.update-card p {
+  margin: 0 0 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.update-card .mute {
+  color: var(--soft);
+  margin-right: 6px;
+}
+
+.update-hash {
+  word-break: break-all;
+  color: var(--mute);
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+}
+
+.update-note {
+  color: var(--ink);
+}
+
+.update-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
 }
 
 .ghost,
