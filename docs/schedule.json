@@ -908,14 +908,6 @@
       "end": "20:30"
     },
     {
-      "id": "ecf68c2a-cd48-4eaa-ac8e-fefc766b8eaf",
-      "date": "2026-10-21",
-      "title": "可能测验一",
-      "done": false,
-      "kind": "deadline",
-      "allDay": true
-    },
-    {
       "id": "8796d6cc-becb-4b79-9f0c-96536ae04f59",
       "date": "2026-10-21",
       "title": "普通化学 · 理教201",
@@ -959,6 +951,14 @@
       "kind": "task",
       "start": "18:40",
       "end": "20:30"
+    },
+    {
+      "id": "ecf68c2a-cd48-4eaa-ac8e-fefc766b8eaf",
+      "date": "2026-10-21",
+      "title": "可能测验一",
+      "done": false,
+      "kind": "deadline",
+      "allDay": true
     },
     {
       "id": "4f0773d1-464e-472a-aa03-ddb3bb1466d4",
@@ -1946,14 +1946,6 @@
       "end": "20:30"
     },
     {
-      "id": "b940002e-4e63-4e8e-ab08-20bb564d2d43",
-      "date": "2026-12-09",
-      "title": "可能测验二",
-      "done": false,
-      "kind": "deadline",
-      "allDay": true
-    },
-    {
       "id": "2121c264-60e3-4cd5-8171-15a71fd0d03e",
       "date": "2026-12-09",
       "title": "普通化学 · 理教201",
@@ -1995,6 +1987,14 @@
       "title": "合唱",
       "done": false,
       "kind": "task"
+    },
+    {
+      "id": "b940002e-4e63-4e8e-ab08-20bb564d2d43",
+      "date": "2026-12-09",
+      "title": "可能测验二",
+      "done": false,
+      "kind": "deadline",
+      "allDay": true
     },
     {
       "id": "a408b1a8-a500-48e6-af57-728e5639961e",
@@ -2287,7 +2287,7 @@
     {
       "id": "4303e741-4925-4e9f-993d-35612173a925",
       "date": "2026-12-24",
-      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "title": "计算概论(B)上机 机考 · 计算中心三层1/4/5室",
       "done": false,
       "kind": "task",
       "start": "15:10",
