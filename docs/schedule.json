@@ -2289,7 +2289,7 @@
       "date": "2026-12-24",
       "title": "计算概论(B)上机 机考 · 计算中心三层1/4/5室",
       "done": false,
-      "kind": "task",
+      "kind": "deadline",
       "start": "15:10",
       "end": "17:00"
     },
@@ -2339,13 +2339,6 @@
       "id": "a7de8e25-1491-4048-8815-839fe183e2ad",
       "date": "2026-12-28",
       "title": "化学实验室安全技术 考查",
-      "done": false,
-      "kind": "deadline"
-    },
-    {
-      "id": "6f6ee566-a82c-4994-a29c-a45d26f0cbd5",
-      "date": "2026-12-28",
-      "title": "计算概论(B)上机 考查",
       "done": false,
       "kind": "deadline"
     },
