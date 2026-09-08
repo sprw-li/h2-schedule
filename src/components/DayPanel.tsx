@@ -315,12 +315,15 @@ export function DayPanel({
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState<Draft>(emptyDraft)
+  const [composerOpen, setComposerOpen] = useState(false)
 
   useEffect(() => {
     setEditingId(null)
+    setComposerOpen(false)
   }, [date])
 
   const pending = items.filter((i) => !i.done).length
+  const editingItem = editingId ? items.find((i) => i.id === editingId) : undefined
 
   function submit(e: FormEvent) {
     e.preventDefault()
@@ -328,10 +331,11 @@ export function DayPanel({
     if (!t) return
     onAdd({ ...draft, title: t })
     setDraft(emptyDraft())
+    setComposerOpen(false)
   }
 
   return (
-    <section className="panel day-panel">
+    <section className={`panel day-panel${editingId || composerOpen ? ' day-focus' : ''}`}>
       <div className="day-chrome">
         <div className="cal-head">
           <h2>{formatDayHeading(date)}</h2>
@@ -347,11 +351,10 @@ export function DayPanel({
         <div className="day-meta">
           {weekdayLabel(date)} · 清单 {pending}/{items.length}
         </div>
-        <DayScale date={date} items={items} />
-        <div className="section-label">当日清单</div>
+        {!editingId && !composerOpen ? <DayScale date={date} items={items} /> : null}
       </div>
       {items.length === 0 ? (
-        <div className="sheet-scroll empty">这一天还没有事项。在下方写入第一条。</div>
+        <div className="sheet-scroll empty">这一天还没有事项。点下方「新事项」写入。</div>
       ) : (
         <div className="sheet-scroll list">
           {items.map((item) => {
@@ -360,87 +363,106 @@ export function DayPanel({
             const allDay = isAllDay(item)
             const { start: s, end: e } = resolveTimes(item)
             const label = allDay ? '全天' : formatWhen(s, e)
-            const editing = editingId === item.id
             return (
               <div
                 key={item.id}
-                className={`item${item.done ? ' done' : ''}${due ? ' deadline' : ''}${holiday ? ' holiday' : ''}${editing ? ' editing' : ''}`}
+                className={`item${item.done ? ' done' : ''}${due ? ' deadline' : ''}${holiday ? ' holiday' : ''}${editingId === item.id ? ' editing' : ''}`}
               >
-                {editing ? (
-                  <form
-                    className="item-edit"
-                    onSubmit={(ev) => {
-                      ev.preventDefault()
-                      const t = editDraft.title.trim()
-                      if (!t) return
-                      onUpdate(item.id, { ...editDraft, title: t })
-                      setEditingId(null)
+                <button
+                  type="button"
+                  className="item-main"
+                  aria-label={item.done ? '标为未完成' : '标为完成'}
+                  onClick={() => onToggle(item.id)}
+                >
+                  <span className="check" aria-hidden />
+                  <span className="item-text">
+                    <span className="title">{item.title}</span>
+                    <span className={`time${due ? ' deadline' : ''}${holiday ? ' holiday' : ''}`}>
+                      {label || (due ? '截止' : '')}
+                    </span>
+                  </span>
+                </button>
+                <div className="item-actions">
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label="修改"
+                    onClick={() => {
+                      setComposerOpen(false)
+                      setEditingId(item.id)
+                      setEditDraft(toDraft(item))
                     }}
                   >
-                    <Fields draft={editDraft} onChange={setEditDraft} />
-                    <div className="item-edit-actions">
-                      <button className="solid" type="submit">
-                        保存
-                      </button>
-                      <button
-                        className="ghost"
-                        type="button"
-                        onClick={() => setEditingId(null)}
-                      >
-                        取消
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      className="item-main"
-                      aria-label={item.done ? '标为未完成' : '标为完成'}
-                      onClick={() => onToggle(item.id)}
-                    >
-                      <span className="check" aria-hidden />
-                      <span className="item-text">
-                        <span className="title">{item.title}</span>
-                        <span className={`time${due ? ' deadline' : ''}${holiday ? ' holiday' : ''}`}>
-                          {label || (due ? '截止' : '')}
-                        </span>
-                      </span>
-                    </button>
-                    <div className="item-actions">
-                      <button
-                        type="button"
-                        className="icon-btn"
-                        aria-label="修改"
-                        onClick={() => {
-                          setEditingId(item.id)
-                          setEditDraft(toDraft(item))
-                        }}
-                      >
-                        改
-                      </button>
-                      <button
-                        type="button"
-                        className="icon-btn"
-                        aria-label="删除"
-                        onClick={() => onRemove(item.id)}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </>
-                )}
+                    改
+                  </button>
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label="删除"
+                    onClick={() => onRemove(item.id)}
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
             )
           })}
         </div>
       )}
-      <form className="composer" onSubmit={submit}>
-        <Fields draft={draft} onChange={setDraft} />
-        <button className="solid composer-add" type="submit">
-          加入
-        </button>
-      </form>
+
+      {!editingId && !composerOpen ? (
+        <div className="composer-bar">
+          <button type="button" className="solid composer-open" onClick={() => setComposerOpen(true)}>
+            新事项
+          </button>
+        </div>
+      ) : null}
+
+      {composerOpen && !editingId ? (
+        <div className="sheet-editor" role="dialog" aria-label="新事项">
+          <form className="composer sheet-editor-form" onSubmit={submit}>
+            <div className="sheet-editor-head">
+              <strong>新事项</strong>
+              <button type="button" className="ghost" onClick={() => setComposerOpen(false)}>
+                收起
+              </button>
+            </div>
+            <Fields draft={draft} onChange={setDraft} />
+            <button className="solid composer-add" type="submit">
+              加入
+            </button>
+          </form>
+        </div>
+      ) : null}
+
+      {editingId && editingItem ? (
+        <div className="sheet-editor" role="dialog" aria-label="修改事项">
+          <form
+            className="item-edit sheet-editor-form"
+            onSubmit={(ev) => {
+              ev.preventDefault()
+              const t = editDraft.title.trim()
+              if (!t) return
+              onUpdate(editingId, { ...editDraft, title: t })
+              setEditingId(null)
+            }}
+          >
+            <div className="sheet-editor-head">
+              <strong>修改事项</strong>
+              <button type="button" className="ghost" onClick={() => setEditingId(null)}>
+                取消
+              </button>
+            </div>
+            <Fields draft={editDraft} onChange={setEditDraft} />
+            <div className="item-edit-actions">
+              <button className="solid" type="submit">
+                保存
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
     </section>
   )
 }
+

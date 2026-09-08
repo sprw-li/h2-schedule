@@ -145,20 +145,14 @@ for (const k of ['2026-10-12', '2026-10-26', '2026-11-09', '2026-11-23']) {
   items.push(item(k, '军事理论直播课', '18:30', '20:30'))
 }
 
-addRange('2026-09-20', '2026-09-20', '公休')
 addRange('2026-09-25', '2026-09-25', '中秋放假')
 addRange('2026-09-26', '2026-09-27', '公休')
 addRange('2026-10-01', '2026-10-07', '国庆放假')
 addRange('2026-10-10', '2026-10-10', '公休')
 addRange('2027-01-11', '2027-02-21', '寒假')
 
-items.push(item('2026-12-28', '高等数学(B)(一) 考试', undefined, '21:30', 'deadline'))
-items.push(item('2026-12-28', '军事理论 考查', undefined, undefined, 'deadline'))
-items.push(item('2026-12-28', '英汉口译 考查', undefined, undefined, 'deadline'))
-items.push(item('2026-12-28', '化学实验室安全技术 考查', undefined, undefined, 'deadline'))
-items.push(item('2026-12-28', '今日化学 考查', undefined, undefined, 'deadline'))
-items.push(item('2026-12-28', '博雅理学讲堂 考查', undefined, undefined, 'deadline'))
-items.push(item('2026-12-28', '普通化学实验 考查', undefined, undefined, 'deadline'))
+// 12-28 起停课复习考试周：只留一条区间提示，具体考试按已公布时间；考查放在原课时（如第16周上机机考）
+items.push(item('2026-12-28', '停课复习考试（至 1 月 10 日）', undefined, undefined, 'deadline', true))
 items.push(item('2026-12-30', '理论与计算化学导论 考试', undefined, '18:00', 'deadline'))
 items.push(item('2026-12-31', '大学生思想文化素养 考试', undefined, '21:30', 'deadline'))
 items.push(item('2027-01-05', '计算概论(B) 考试', undefined, '18:00', 'deadline'))

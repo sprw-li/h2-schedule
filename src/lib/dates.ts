@@ -57,7 +57,7 @@ export function resolveTimes(item: {
 }
 
 export function formatWhen(start?: string, end?: string) {
-  if (start && end) return `${start}–${end}`
+  if (start && end) return `${start}-${end}`
   if (start) return `${start} 起`
   if (end) return `截止 ${end}`
   return ''
