@@ -192,7 +192,7 @@
       "id": "a9c26ad3-a258-446b-9b4d-8081da750db9",
       "date": "2026-09-11",
       "title": "医院 MRI / 开证明并申请保健课",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "13:00"
     },
