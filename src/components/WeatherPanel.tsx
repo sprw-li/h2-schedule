@@ -14,6 +14,8 @@ export function WeatherPanel() {
     setErr('')
     if (force) {
       try {
+        sessionStorage.removeItem('h2-schedule.weather.v3')
+        sessionStorage.removeItem('h2-schedule.weather.v2')
         sessionStorage.removeItem('h2-schedule.weather.v1')
       } catch {
         /* ignore */
@@ -84,9 +86,13 @@ export function WeatherPanel() {
         {place ? (
           <>
             <p className="weather-now">
-              {place.place.name}
-              {place.place.area} · 现在 {place.currentTemp != null ? `${Math.round(place.currentTemp)}℃` : '—'}{' '}
-              {place.currentLabel}
+              {place.place.address}
+              <br />
+              <span className="weather-coords">
+                {place.place.lat.toFixed(5)}°N · {place.place.lon.toFixed(5)}°E
+              </span>
+              <br />
+              现在 {place.currentTemp != null ? `${Math.round(place.currentTemp)}℃` : '—'} {place.currentLabel}
             </p>
             {mode === 'daily' ? (
               <div className="weather-days">

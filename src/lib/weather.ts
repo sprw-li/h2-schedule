@@ -2,17 +2,50 @@ export type PlaceId = 'weihai' | 'haidian' | 'yaohai' | 'shouchun'
 
 export type Place = {
   id: PlaceId
+  /** 地点标签上的短名 */
   name: string
+  /** 地点标签第二行 */
   area: string
+  /** 详情区完整地址（按你给的写法） */
+  address: string
   lat: number
   lon: number
 }
 
+/** 坐标按校园/镇公开点；天气按该点取 Open-Meteo */
 export const PLACES: Place[] = [
-  { id: 'weihai', name: '威海', area: '环翠', lat: 37.501, lon: 122.121 },
-  { id: 'haidian', name: '北京', area: '海淀', lat: 39.96, lon: 116.298 },
-  { id: 'yaohai', name: '合肥', area: '瑶海', lat: 31.858, lon: 117.31 },
-  { id: 'shouchun', name: '寿春镇', area: '淮南寿县', lat: 32.243, lon: 116.798 },
+  {
+    id: 'weihai',
+    name: '山大威海',
+    area: '环翠区',
+    address: '山东大学威海分校 · 威海市环翠区',
+    lat: 37.532396,
+    lon: 122.058879,
+  },
+  {
+    id: 'haidian',
+    name: '北京大学',
+    area: '海淀区',
+    address: '北京大学 · 北京市海淀区',
+    lat: 39.992873,
+    lon: 116.310918,
+  },
+  {
+    id: 'yaohai',
+    name: '瑶海',
+    area: '合肥',
+    address: '合肥市瑶海区',
+    lat: 31.8601612,
+    lon: 117.3037396,
+  },
+  {
+    id: 'shouchun',
+    name: '寿春镇',
+    area: '寿县',
+    address: '淮南市寿县寿春镇',
+    lat: 32.58162,
+    lon: 116.79291,
+  },
 ]
 
 export type HourPoint = {
@@ -42,7 +75,7 @@ export type PlaceForecast = {
   days: DayPoint[]
 }
 
-const CACHE_KEY = 'h2-schedule.weather.v1'
+const CACHE_KEY = 'h2-schedule.weather.v3'
 const CACHE_MS = 25 * 60 * 1000
 
 const WEEK = ['日', '一', '二', '三', '四', '五', '六']

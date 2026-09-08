@@ -388,6 +388,14 @@ button {
   margin: 0 0 12px;
   color: var(--mute);
   font-size: 14px;
+  line-height: 1.45;
+}
+
+.weather-coords {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--soft);
+  white-space: nowrap;
 }
 
 .weather-days {
