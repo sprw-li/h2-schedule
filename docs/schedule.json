@@ -351,13 +351,6 @@
       "end": "20:30"
     },
     {
-      "id": "8e176a52-c985-4d7a-83c9-cbab455358b4",
-      "date": "2026-09-20",
-      "title": "公休",
-      "done": false,
-      "kind": "holiday"
-    },
-    {
       "id": "9293918c-1844-4117-b077-d22deb127c4e",
       "date": "2026-09-21",
       "title": "普通化学 · 理教201",
@@ -2314,54 +2307,12 @@
       "end": "20:30"
     },
     {
-      "id": "1e77e4b7-8d48-42fb-a4b0-91fa98c85dfd",
+      "id": "2dddf689-c935-4d73-9466-4f85e10e8930",
       "date": "2026-12-28",
-      "title": "高等数学(B)(一) 考试",
+      "title": "停课复习考试（至 1 月 10 日）",
       "done": false,
       "kind": "deadline",
-      "end": "21:30"
-    },
-    {
-      "id": "6756f953-6123-402e-a79a-21a2a6e25b7a",
-      "date": "2026-12-28",
-      "title": "博雅理学讲堂 考查",
-      "done": false,
-      "kind": "deadline"
-    },
-    {
-      "id": "a7de8e25-1491-4048-8815-839fe183e2ad",
-      "date": "2026-12-28",
-      "title": "化学实验室安全技术 考查",
-      "done": false,
-      "kind": "deadline"
-    },
-    {
-      "id": "e44430cd-6b5d-4244-9b9d-6fc6161bb6ff",
-      "date": "2026-12-28",
-      "title": "今日化学 考查",
-      "done": false,
-      "kind": "deadline"
-    },
-    {
-      "id": "6e18db71-930a-4966-ae21-ddf92980816d",
-      "date": "2026-12-28",
-      "title": "军事理论 考查",
-      "done": false,
-      "kind": "deadline"
-    },
-    {
-      "id": "1f7a7902-af3c-4f4e-9d2c-5cb467a08779",
-      "date": "2026-12-28",
-      "title": "普通化学实验 考查",
-      "done": false,
-      "kind": "deadline"
-    },
-    {
-      "id": "0ff019a1-4578-4cc1-8061-7e0da5477776",
-      "date": "2026-12-28",
-      "title": "英汉口译 考查",
-      "done": false,
-      "kind": "deadline"
+      "allDay": true
     },
     {
       "id": "dcaa1343-5691-4aaf-99fc-01d7c13887c0",
