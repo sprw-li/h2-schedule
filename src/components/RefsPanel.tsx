@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 
-const refsBase = `${import.meta.env.BASE_URL}refs/`
-const calendarSrc = `${refsBase}calendar.jpg`
-const timetableSrc = `${refsBase}timetable.jpg`
+import calendarSrc from '../assets/refs/calendar.jpg'
+import timetableSrc from '../assets/refs/timetable.jpg'
 
 const PERIODS: { n: string; t: string; note?: string }[] = [
   { n: '第一节', t: '8:00-8:50' },
