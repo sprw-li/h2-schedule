@@ -70,47 +70,66 @@ export function UpdateBar() {
         type="button"
         className={`ghost update-chip${hasUpdate ? ' hot' : ''}`}
         onClick={() => {
-          setOpen((v) => !v)
-          if (!open) void refresh(true)
+          setOpen(true)
+          void refresh(true)
         }}
       >
         {hasUpdate ? '有更新' : '更新'}
       </button>
       {open ? (
-        <div className="update-card" role="dialog" aria-label="界面更新">
-          <p>
-            <span className="mute">本机</span> {fmt(local)}
-          </p>
-          <p>
-            <span className="mute">远端</span> {remote ? fmt(remote.builtAt) : '—'}
-          </p>
-          {remote ? (
-            <p className="update-hash">
-              <span className="mute">校验</span> sha256 {remote.sha256.slice(0, 12)}…
+        <div
+          className="update-scrim"
+          role="presentation"
+          onClick={() => {
+            if (!busy) setOpen(false)
+          }}
+        >
+          <div
+            className="update-card"
+            role="dialog"
+            aria-label="界面更新"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="update-card-head">
+              <strong>界面更新</strong>
+              <button type="button" className="ghost" disabled={busy} onClick={() => setOpen(false)}>
+                关闭
+              </button>
+            </div>
+            <p>
+              <span className="mute">本机</span> {fmt(local)}
             </p>
-          ) : null}
-          {note ? <p className="update-note">{note}</p> : null}
-          {err ? <p className="unlock-error">{err}</p> : null}
-          <div className="update-actions">
-            <button type="button" className="ghost" disabled={busy} onClick={() => void refresh(false)}>
-              {busy ? '…' : '检查'}
-            </button>
-            <button type="button" className="solid" disabled={busy || !hasUpdate} onClick={() => void onApply()}>
-              下载装配
-            </button>
-            <button
-              type="button"
-              className="ghost"
-              disabled={busy}
-              onClick={() => {
-                clearLocalBundle()
-                setLocal(localBuiltAt())
-                setHasUpdate(!!remote && remote.builtAt !== localBuiltAt())
-                setNote('已清掉本地装配包，下次将用安装包内界面')
-              }}
-            >
-              还原安装包
-            </button>
+            <p>
+              <span className="mute">远端</span> {remote ? fmt(remote.builtAt) : '—'}
+            </p>
+            {remote ? (
+              <p className="update-hash">
+                <span className="mute">校验</span> sha256 {remote.sha256.slice(0, 12)}…
+              </p>
+            ) : null}
+            {note ? <p className="update-note">{note}</p> : null}
+            {err ? <p className="unlock-error">{err}</p> : null}
+            <div className="update-actions">
+              <button type="button" className="ghost" disabled={busy} onClick={() => void refresh(false)}>
+                {busy ? '…' : '检查'}
+              </button>
+              <button type="button" className="solid" disabled={busy || !hasUpdate} onClick={() => void onApply()}>
+                下载装配
+              </button>
+              <button
+                type="button"
+                className="ghost"
+                disabled={busy}
+                onClick={() => {
+                  clearLocalBundle()
+                  setLocal(localBuiltAt())
+                  setHasUpdate(!!remote && remote.builtAt !== localBuiltAt())
+                  setNote('已清掉本地装配包，下次将用安装包内界面')
+                }}
+              >
+                还原安装包
+              </button>
+            </div>
           </div>
         </div>
       ) : null}
