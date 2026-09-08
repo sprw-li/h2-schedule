@@ -194,7 +194,8 @@
       "title": "医院 MRI / 开证明并申请保健课",
       "done": false,
       "kind": "task",
-      "start": "13:00"
+      "start": "15:30",
+      "end": "17:30"
     },
     {
       "id": "03c17be2-74bb-42d6-ba15-a2e06440268c",
