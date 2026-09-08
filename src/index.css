@@ -441,9 +441,16 @@ button {
   color: var(--mute);
 }
 
+.period-table .period-time {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
 .period-table td:last-child {
   color: var(--soft);
   font-size: 13px;
+  overflow-wrap: anywhere;
 }
 
 .term-notes ul {
@@ -468,10 +475,55 @@ button {
   width: 100%;
   max-width: 100%;
   height: auto;
-  margin: 0 0 16px;
+  margin: 0;
   border: 1px solid var(--line);
   border-radius: 12px;
   box-sizing: border-box;
+}
+
+.refs-shot-btn {
+  display: block;
+  width: 100%;
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  background: rgba(10, 10, 10, 0.92);
+}
+
+.lightbox-close {
+  align-self: flex-end;
+  border: 1px solid #555;
+  background: #222;
+  color: #fff;
+  border-radius: 999px;
+  min-height: 40px;
+  padding: 0 16px;
+}
+
+.lightbox-img {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100dvh - 96px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  touch-action: pinch-zoom;
 }
 
 .panel {
@@ -913,6 +965,7 @@ button {
   font-variant-numeric: tabular-nums;
   font-size: 13px;
   color: var(--mute);
+  white-space: nowrap;
 }
 
 .time.deadline {
@@ -944,6 +997,44 @@ button {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   gap: 8px;
   align-items: end;
+  flex-shrink: 0;
+}
+
+.composer-bar {
+  flex-shrink: 0;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.composer-open {
+  width: 100%;
+  min-height: 44px;
+}
+
+.sheet-editor {
+  flex-shrink: 0;
+  margin-top: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  background: var(--paper);
+}
+
+.sheet-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  grid-column: 1 / -1;
+}
+
+.sheet-editor-form.composer,
+.sheet-editor-form.item-edit {
+  margin-top: 0;
+}
+
+.day-panel.day-focus .day-chrome {
   flex-shrink: 0;
 }
 
@@ -1165,12 +1256,32 @@ button {
     grid-template-columns: minmax(0, 1fr);
     position: static;
     z-index: 2;
-    margin-top: 8px;
+    margin-top: 0;
     flex-shrink: 0;
-    padding-top: 10px;
+    padding-top: 0;
     padding-bottom: 0;
     background: var(--paper);
-    border-top: 1px solid var(--line);
+    border-top: 0;
+  }
+
+  .sheet-editor {
+    max-height: min(58dvh, 480px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-bottom: 4px;
+  }
+
+  .day-panel .day-meta {
+    margin: 2px 0 6px;
+  }
+
+  .day-scale {
+    margin: 2px 0 8px;
+  }
+
+  .section-label {
+    display: none;
   }
 
   .composer-times {
@@ -1188,7 +1299,8 @@ button {
   }
 
   .allday-btn,
-  .composer-add {
+  .composer-add,
+  .composer-open {
     min-height: 44px;
   }
 
