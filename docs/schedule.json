@@ -36,7 +36,7 @@
       "id": "b09d1903-3030-4cd0-abc0-2ea7716e2b86",
       "date": "2026-09-08",
       "title": "高等数学(B)(一) · 理教202",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "08:00",
       "end": "09:50"
@@ -109,13 +109,6 @@
       "end": "14:50"
     },
     {
-      "id": "6ca9478e-a3b5-4a85-9c5d-da4c4546de7b",
-      "date": "2026-09-09",
-      "title": "洗衣服",
-      "done": false,
-      "kind": "task"
-    },
-    {
       "id": "ce0c0a78-49c5-42e0-bffa-404397c88e38",
       "date": "2026-09-09",
       "title": "今日化学导论 · 化学学院小伦报告厅101",
@@ -136,6 +129,13 @@
       "id": "61a9d900-4cd5-456f-ac81-2cf3c2691d59",
       "date": "2026-09-09",
       "title": "内务检查",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "6ca9478e-a3b5-4a85-9c5d-da4c4546de7b",
+      "date": "2026-09-09",
+      "title": "洗衣服",
       "done": false,
       "kind": "task"
     },
@@ -173,6 +173,13 @@
       "end": "21:30"
     },
     {
+      "id": "d84a869f-6c4d-48a2-a78a-53c33b3edcfb",
+      "date": "2026-09-10",
+      "title": "洗被子",
+      "done": false,
+      "kind": "task"
+    },
+    {
       "id": "794b8f78-f9c1-43b8-926e-1310a6c78731",
       "date": "2026-09-11",
       "title": "高等数学(B)(一) · 理教202",
@@ -197,13 +204,6 @@
       "kind": "task",
       "start": "18:40",
       "end": "20:30"
-    },
-    {
-      "id": "d84a869f-6c4d-48a2-a78a-53c33b3edcfb",
-      "date": "2026-09-10",
-      "title": "洗被子",
-      "done": false,
-      "kind": "task"
     },
     {
       "id": "df0c4b5d-83f3-4594-b97b-d82f4eae9b67",
