@@ -78,7 +78,7 @@
       "id": "720336b3-d4be-4340-9d59-8531e999196e",
       "date": "2026-09-08",
       "title": "外卖",
-      "done": false,
+      "done": true,
       "kind": "task"
     },
     {
