@@ -64,7 +64,7 @@
       "id": "43f74ed9-276c-462c-a026-218c9705a68d",
       "date": "2026-09-08",
       "title": "数学习题课 · 二教315/311/302",
-      "done": true,
+      "done": false,
       "kind": "task",
       "start": "18:40",
       "end": "20:30"
@@ -73,14 +73,14 @@
       "id": "6ae9f0cb-cacf-4d95-b0fd-14c9a81a2409",
       "date": "2026-09-08",
       "title": "内务检查",
-      "done": true,
+      "done": false,
       "kind": "task"
     },
     {
       "id": "a37311a6-d5c4-41b9-b680-6b888f7d6507",
       "date": "2026-09-09",
       "title": "普通化学 · 理教201",
-      "done": true,
+      "done": false,
       "kind": "task",
       "start": "08:00",
       "end": "09:50"
@@ -89,7 +89,7 @@
       "id": "6e908c09-57d1-4df5-b0a6-a3719624ff8a",
       "date": "2026-09-09",
       "title": "理论与计算化学导论 · 理教410",
-      "done": true,
+      "done": false,
       "kind": "task",
       "start": "13:00",
       "end": "14:50"
@@ -254,7 +254,7 @@
     {
       "id": "ab685e52-8249-4c72-a01b-3f618dd16942",
       "date": "2026-09-16",
-      "title": "今日化学 · B400高分子",
+      "title": "今日化学 · 化学院",
       "done": false,
       "kind": "task",
       "start": "15:10",
@@ -264,7 +264,7 @@
       "id": "88ff1aed-1d5d-4d1b-9d31-96a3eb7809b0",
       "date": "2026-09-16",
       "title": "论文选题与小组成员提交",
-      "done": true,
+      "done": false,
       "kind": "deadline"
     },
     {
@@ -396,7 +396,7 @@
     {
       "id": "293a7448-b87c-46a1-a81a-d2fb29308f81",
       "date": "2026-09-23",
-      "title": "今日化学 · CB106化生",
+      "title": "今日化学 · 化学院",
       "done": false,
       "kind": "task",
       "start": "15:10",
@@ -534,7 +534,7 @@
     {
       "id": "60e183bb-96e6-4a53-b249-fbbb3f5c394b",
       "date": "2026-09-30",
-      "title": "今日化学 · CB121理计",
+      "title": "今日化学 · 化学院",
       "done": false,
       "kind": "task",
       "start": "15:10",
@@ -735,7 +735,7 @@
       "id": "1e5b7574-d7af-458f-a0d5-5cbac4855386",
       "date": "2026-10-14",
       "title": "今日化学 · 化学院",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "15:10",
       "end": "17:00"
