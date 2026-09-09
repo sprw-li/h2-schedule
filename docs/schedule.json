@@ -2366,7 +2366,8 @@
       "title": "普通化学 考试",
       "done": false,
       "kind": "deadline",
-      "end": "12:00"
+      "end": "10:30",
+      "start": "08:30"
     },
     {
       "id": "75f075df-5a2d-48cf-97c6-344a5abd242b",
