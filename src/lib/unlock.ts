@@ -35,7 +35,7 @@ export async function encryptWriteSecret(token: string, phrase: string) {
 }
 
 export async function decryptWriteSecret(raw: string, phrase: string) {
-  if (!isUnlockPack(raw)) throw new Error('口令文件无效')
+  if (!isUnlockPack(raw)) throw new Error('口令无效')
   const pack = JSON.parse(raw) as UnlockPack
   const key = await deriveKey(phrase, fromB64(pack.salt))
   try {
@@ -53,10 +53,39 @@ export function normalizePhrase(phrase: string) {
   return phrase.trim().toUpperCase().replace(/\s+/g, '')
 }
 
-export async function unlockFromPublic(phrase: string) {
+const UNLOCK_API =
+  'https://api.github.com/repos/sprw-li/h2-schedule/contents/docs/unlock.json'
+
+async function loadUnlockRaw() {
+  try {
+    const res = await fetch(`${UNLOCK_API}?ts=${Date.now()}`, {
+      headers: { Accept: 'application/vnd.github+json' },
+    })
+    if (res.ok) {
+      const body = (await res.json()) as { content?: string; download_url?: string }
+      if (body.download_url) {
+        const raw = await fetch(
+          `${body.download_url}${body.download_url.includes('?') ? '&' : '?'}ts=${Date.now()}`,
+        )
+        if (raw.ok) return await raw.text()
+      }
+      if (body.content) {
+        const bin = atob(body.content.replace(/\n/g, ''))
+        const bytes = new Uint8Array(bin.length)
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+        return td.decode(bytes)
+      }
+    }
+  } catch {
+    /* fall through */
+  }
   const res = await fetch(`${import.meta.env.BASE_URL}unlock.json?ts=${Date.now()}`)
-  if (!res.ok) throw new Error('找不到同步口令文件')
-  return decryptWriteSecret(await res.text(), normalizePhrase(phrase))
+  if (!res.ok) throw new Error('暂时无法验证口令')
+  return res.text()
+}
+
+export async function unlockFromPublic(phrase: string) {
+  return decryptWriteSecret(await loadUnlockRaw(), normalizePhrase(phrase))
 }
 
 async function deriveKey(password: string, salt?: Uint8Array<ArrayBuffer>) {
