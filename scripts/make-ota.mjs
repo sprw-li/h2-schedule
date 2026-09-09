@@ -7,9 +7,10 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const phoneDir = join(root, 'phone')
 const otaDir = join(root, 'docs', 'ota')
 const indexPath = join(phoneDir, 'index.html')
+const PLACEHOLDER = '__H2_BUILT_AT_PLACEHOLDER__'
 
-// SHELL_AT 在 inject 时替换。过期/旧 key 的 OTA 一律丢掉，避免重装 APK 仍被旧包罩死。
-const BOOT_TEMPLATE = `<script data-h2-ota-boot="1">(function(){try{var k="h2.ota.bundle.v2";var shell="__SHELL_AT__";try{localStorage.removeItem("h2.ota.bundle.v1")}catch(e){}var raw=localStorage.getItem(k);if(!raw)return;var p=JSON.parse(raw);if(!p||p.verified!==true||!p.html||!p.sha256||!p.builtAt){localStorage.removeItem(k);return}if(p.html.indexOf("update-scrim")>=0){localStorage.removeItem(k);return}var pb=Date.parse(p.builtAt),sb=Date.parse(shell);if(sb&&pb&&pb<sb){localStorage.removeItem(k);return}if(window.__H2_OTA_APPLIED__)return;window.__H2_OTA_APPLIED__=true;document.open();document.write(p.html);document.close()}catch(e){try{localStorage.removeItem("h2.ota.bundle.v2")}catch(x){}}})();</script>`
+// 勿在 document.write 失败时删包；只丢掉校验失败的旧包。
+const BOOT_TEMPLATE = `<script data-h2-ota-boot="1">(function(){try{var k="h2.ota.bundle.v2";var shell="__SHELL_AT__";try{localStorage.removeItem("h2.ota.bundle.v1")}catch(e){}var raw=localStorage.getItem(k);if(!raw)return;var p=JSON.parse(raw);if(!p||p.verified!==true||!p.html||!p.sha256||!p.builtAt){localStorage.removeItem(k);return}if(p.html.indexOf("update-scrim")>=0){localStorage.removeItem(k);return}var pb=Date.parse(p.builtAt),sb=Date.parse(shell);if(sb&&pb&&pb<sb){localStorage.removeItem(k);return}if(window.__H2_OTA_APPLIED__)return;window.__H2_OTA_APPLIED__=true;document.open();document.write(p.html);document.close()}catch(e){console.warn("h2-ota-boot",e)}})();</script>`
 
 function inlineRefs(html) {
   let out = html
@@ -41,6 +42,19 @@ function injectBoot(html, shellAt) {
   return boot + cleaned
 }
 
+function stampBuiltAt(html, builtAt) {
+  let out = html.split(PLACEHOLDER).join(builtAt)
+  if (/<meta\s+name="h2-ota-built-at"/i.test(out)) {
+    out = out.replace(
+      /<meta\s+name="h2-ota-built-at"\s+content="[^"]*"\s*\/?>/i,
+      `<meta name="h2-ota-built-at" content="${builtAt}" />`,
+    )
+  } else {
+    out = out.replace(/<\/head>/i, `<meta name="h2-ota-built-at" content="${builtAt}" /></head>`)
+  }
+  return out
+}
+
 if (!existsSync(indexPath)) {
   console.error('missing phone/index.html — run build:phone first')
   process.exit(1)
@@ -48,15 +62,13 @@ if (!existsSync(indexPath)) {
 
 const builtAt = new Date().toISOString()
 let raw = readFileSync(indexPath, 'utf8')
+raw = stampBuiltAt(raw, builtAt)
 raw = injectBoot(raw, builtAt)
 writeFileSync(indexPath, raw)
 
 let payload = stripBoot(raw)
 payload = inlineRefs(payload)
-payload = payload.replace(
-  '</head>',
-  `<meta name="h2-ota-built-at" content="${builtAt}" /></head>`,
-)
+payload = stampBuiltAt(payload, builtAt)
 
 const sha256 = createHash('sha256').update(payload, 'utf8').digest('hex')
 mkdirSync(otaDir, { recursive: true })
