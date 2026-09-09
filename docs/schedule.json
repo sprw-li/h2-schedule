@@ -80,7 +80,7 @@
       "id": "a37311a6-d5c4-41b9-b680-6b888f7d6507",
       "date": "2026-09-09",
       "title": "普通化学 · 理教201",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "08:00",
       "end": "09:50"
@@ -89,7 +89,7 @@
       "id": "6e908c09-57d1-4df5-b0a6-a3719624ff8a",
       "date": "2026-09-09",
       "title": "理论与计算化学导论 · 理教410",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "13:00",
       "end": "14:50"
@@ -98,7 +98,7 @@
       "id": "39f638b3-0cab-4e29-925d-94384a2d1140",
       "date": "2026-09-09",
       "title": "今日化学 绪论 · 化学院肖伦报告厅101",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "15:10",
       "end": "17:00"
@@ -116,7 +116,7 @@
       "id": "d38db359-2320-4cff-92e6-05be4fdef5d8",
       "date": "2026-09-09",
       "title": "新太阳 105–106 室图像采集",
-      "done": false,
+      "done": true,
       "kind": "task"
     },
     {
