@@ -635,6 +635,13 @@
       "kind": "holiday"
     },
     {
+      "id": "c8d89ccc-6535-49fd-be47-3b6b7e04860a",
+      "date": "2026-10-11",
+      "title": "续借《货币金融学》截止",
+      "done": false,
+      "kind": "deadline"
+    },
+    {
       "id": "c3aee27c-0b74-4d63-a276-662ba446206d",
       "date": "2026-10-12",
       "title": "普通化学 · 理教201",
