@@ -9,6 +9,7 @@
     "build:phone": "tsc -b && vite build --config vite.phone.config.ts && node scripts/make-ota.mjs",
     "build:apk": "npm run build:phone && npx cap sync android && cd android && gradlew.bat assembleDebug",
     "ota": "node scripts/make-ota.mjs",
+    "check:schedule": "node scripts/check-schedule.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },
