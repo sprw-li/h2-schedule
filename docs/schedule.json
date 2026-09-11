@@ -1959,7 +1959,7 @@
       "date": "2026-12-12",
       "title": "四级考试笔试",
       "done": false,
-      "kind": "task",
+      "kind": "deadline",
       "start": "09:00",
       "end": "11:20"
     },
