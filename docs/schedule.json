@@ -189,6 +189,13 @@
       "end": "20:30"
     },
     {
+      "id": "05cf729d-c7e0-4da0-941c-d71502bc1036",
+      "date": "2026-09-11",
+      "title": "普化预习",
+      "done": false,
+      "kind": "task"
+    },
+    {
       "id": "ec3b6de3-c5ed-49e4-b816-9cedccbc4908",
       "date": "2026-09-11",
       "title": "洗衣服",
