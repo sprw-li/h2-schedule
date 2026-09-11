@@ -126,19 +126,24 @@ export default function App() {
       setPhase('pull')
       try {
         const localBoot = normalizeSchedule(loadSchedule())
-        saveSchedule(localBoot)
-        if (Object.values(localBoot).flat().length > 0) {
-          setSchedule(localBoot)
-        }
+        // 先把本机脏数据按「无远端」过一遍：清除旧血检/已完成变未完成等脏状态
+        const boot = integrateSchedules({}, localBoot, {
+          pending: true,
+          baseline: remoteRef.current,
+        }).merged
+        saveSchedule(boot)
+        setSchedule(boot)
 
         const remote = await pullCloud()
         if (stop) return
         if (!remote) {
-          setMessage(Object.values(localBoot).flat().length > 0 ? '已用本机日程' : '还没有日程')
+          setMessage(Object.values(boot).flat().length > 0 ? '已用本机日程' : '还没有日程')
           setPhase('ok')
           return
         }
 
+        // 拉下远端后，以本地 boot 为 baseline；本机完成态会被覆盖为远端/或取或
+        remoteRef.current = remote.map
         const pending = applyRemote(remote, 'hydrate')
         if (!pending) {
           setMessage(Object.values(loadSchedule()).flat().length > 0 ? '加载完毕' : '还没有日程')

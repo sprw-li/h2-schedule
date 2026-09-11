@@ -34,6 +34,15 @@ export function saveSchedule(map: ScheduleMap) {
   localStorage.setItem(KEY, JSON.stringify(normalizeSchedule(map)))
 }
 
+export function resetSchedule() {
+  try {
+    localStorage.removeItem(KEY)
+    localStorage.removeItem('h2-schedule.done-titles.v1')
+  } catch {
+    /* ignore */
+  }
+}
+
 export function mergeItems(map: ScheduleMap, incoming: ScheduleItem[]): ScheduleMap {
   const next: ScheduleMap = { ...map }
   for (const item of incoming) {
