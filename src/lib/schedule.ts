@@ -102,7 +102,8 @@ export function coerceItem(raw: unknown): ScheduleItem | null {
     id,
     date,
     title,
-    done: o.done === true,
+    // 兼容脏存储：字符串 "true" / 数字 1
+    done: o.done === true || o.done === 'true' || o.done === 1,
     kind,
   }
   if (o.allDay === true) item.allDay = true
@@ -181,6 +182,11 @@ export function sanitizeNoise(map: ScheduleMap): ScheduleMap {
     if (isBloodNoiseTitle(it.title)) {
       sawBlood = true
       bloodDone = bloodDone || !!it.done
+      continue
+    }
+    // 云端已勾完的论文选题：本机旧 false 不得再点亮红点
+    if (it.date === '2026-09-16' && it.title.includes('论文选题')) {
+      kept.push({ ...it, done: true, kind: 'deadline' })
       continue
     }
     kept.push(it)

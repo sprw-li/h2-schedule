@@ -112,6 +112,10 @@ function sanitize(map) {
       bloodDone = bloodDone || !!it.done
       continue
     }
+    if (it.date === '2026-09-16' && String(it.title).includes('论文选题')) {
+      kept.push({ ...it, done: true, kind: 'deadline' })
+      continue
+    }
     kept.push(it)
   }
   if (sawBlood) {
@@ -217,4 +221,17 @@ function assert(cond, msg) {
   assert(blood.length === 1 && blood[0].date === '2026-09-12', 'docs blood')
 }
 
-console.log('check-schedule: ok')
+// 5) paper deadline force-done
+{
+  const items = [
+    {
+      id: 'p',
+      date: '2026-09-16',
+      title: '论文选题与小组成员提交',
+      kind: 'deadline',
+      done: false,
+    },
+  ]
+  const list = flatten(normalize(items))
+  assert(list.length === 1 && list[0].done === true, '9/16 paper must be done')
+}
