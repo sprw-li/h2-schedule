@@ -207,6 +207,14 @@
       "end": "09:50"
     },
     {
+      "id": "60ead6cc-1904-4521-9999-72c05ee31e2f",
+      "date": "2026-09-15",
+      "title": "9月15日 10:00报名四级",
+      "done": false,
+      "kind": "task",
+      "start": "10:00"
+    },
+    {
       "id": "15b05645-2f49-4d71-99dd-bea96647ada9",
       "date": "2026-09-15",
       "title": "英汉口译 · 文史309",
@@ -838,6 +846,14 @@
       "end": "20:30"
     },
     {
+      "id": "d005aaf6-b291-4075-91be-80da52fe744c",
+      "date": "2026-10-21",
+      "title": "可能测验一",
+      "done": false,
+      "kind": "deadline",
+      "allDay": true
+    },
+    {
       "id": "968b6662-f2cc-43aa-82a6-6ed83fd05b6c",
       "date": "2026-10-21",
       "title": "普通化学 · 理教201",
@@ -881,14 +897,6 @@
       "kind": "task",
       "start": "18:40",
       "end": "20:30"
-    },
-    {
-      "id": "d005aaf6-b291-4075-91be-80da52fe744c",
-      "date": "2026-10-21",
-      "title": "可能测验一",
-      "done": false,
-      "kind": "deadline",
-      "allDay": true
     },
     {
       "id": "c9a084dd-44bd-4b7e-93e4-cdf8a0e4588d",
@@ -1844,6 +1852,14 @@
       "end": "20:30"
     },
     {
+      "id": "6e6f317a-114d-47da-a21c-ebca59b75e5f",
+      "date": "2026-12-09",
+      "title": "可能测验二",
+      "done": false,
+      "kind": "deadline",
+      "allDay": true
+    },
+    {
       "id": "e229ecb8-7191-4c5f-b522-5ab0fbd046af",
       "date": "2026-12-09",
       "title": "普通化学 · 理教201",
@@ -1876,14 +1892,6 @@
       "title": "合唱",
       "done": false,
       "kind": "task"
-    },
-    {
-      "id": "6e6f317a-114d-47da-a21c-ebca59b75e5f",
-      "date": "2026-12-09",
-      "title": "可能测验二",
-      "done": false,
-      "kind": "deadline",
-      "allDay": true
     },
     {
       "id": "f69e817b-64da-4615-8814-402898210a79",
@@ -2174,20 +2182,20 @@
       "end": "20:30"
     },
     {
-      "id": "7ca0432f-e103-4633-bcb3-d2c86463ca98",
-      "date": "2026-12-28",
-      "title": "高等数学(B)(一) 考试",
-      "done": false,
-      "kind": "deadline",
-      "end": "21:30"
-    },
-    {
       "id": "10f20ac5-0f0a-4977-8844-a3f6e4e86763",
       "date": "2026-12-28",
       "title": "停课复习考试（至 1 月 10 日）",
       "done": false,
       "kind": "deadline",
       "allDay": true
+    },
+    {
+      "id": "7ca0432f-e103-4633-bcb3-d2c86463ca98",
+      "date": "2026-12-28",
+      "title": "高等数学(B)(一) 考试",
+      "done": false,
+      "kind": "deadline",
+      "end": "21:30"
     },
     {
       "id": "a0decf58-6d77-4358-9077-e22cd0bd947d",
