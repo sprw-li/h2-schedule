@@ -183,7 +183,7 @@
       "id": "ec3b6de3-c5ed-49e4-b816-9cedccbc4908",
       "date": "2026-09-11",
       "title": "洗衣服",
-      "done": false,
+      "done": true,
       "kind": "task"
     },
     {
