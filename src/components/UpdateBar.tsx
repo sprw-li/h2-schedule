@@ -7,6 +7,7 @@ import {
   localBuiltAt,
   type OtaManifest,
 } from '../lib/ota'
+import { resetSchedule } from '../lib/storage'
 import { unlockFromPublic } from '../lib/unlock'
 
 function fmt(iso: string) {
@@ -189,12 +190,13 @@ export function UpdateBar() {
               disabled={busy}
               onClick={() => {
                 clearLocalBundle()
+                resetSchedule()
                 setLocal(localBuiltAt())
                 setHasUpdate(!!remote && remote.builtAt !== localBuiltAt())
-                setNote('已恢复为安装包版本')
+                setNote('已清空本机缓存，刷新后从云端重载')
               }}
             >
-              恢复安装包
+              清空本机缓存
             </button>
           </div>
         </div>
