@@ -95,17 +95,31 @@ export default function App() {
       }
     }
 
-    /** 双端并集：normalize 后再 merge；真有多出才 pending */
-    function integrate(remote: ScheduleMap) {
-      const { merged, needPush } = integrateSchedules(remote, loadSchedule(), {
+    /** 拉/轮询统一用 integrateSchedules：两端 normalize → merge → 再 normalize */
+    function applyRemote(remote: { map: ScheduleMap; sha: string }, reason: 'hydrate' | 'poll') {
+      const { merged, remoteClean, needPush } = integrateSchedules(remote.map, loadSchedule(), {
         pending: dirtyRef.current || isPendingSync(),
         baseline: remoteRef.current,
       })
-      if (needPush) {
+      adoptRemote(remoteClean, remote.sha || undefined)
+      setSchedule(merged)
+      saveSchedule(merged)
+
+      if (needPush || dirtyRef.current || isPendingSync()) {
+        pendingRef.current = merged
         dirtyRef.current = true
         setPendingSync(true)
+        if (reason === 'hydrate' && getWriteToken()) {
+          setMessage('正在对齐本机与云端…')
+          flush(merged)
+        } else if (reason === 'hydrate') {
+          setAskPhrase(true)
+          setPhase('ok')
+          setMessage('日程已加载；输入口令可把本机改动同步上去')
+        }
+        return true
       }
-      return merged
+      return false
     }
 
     async function hydrate() {
@@ -125,35 +139,11 @@ export default function App() {
           return
         }
 
-        const { merged, remoteClean, needPush } = integrateSchedules(remote.map, loadSchedule(), {
-          pending: dirtyRef.current || isPendingSync(),
-          baseline: remoteRef.current,
-        })
-        if (needPush) {
-          dirtyRef.current = true
-          setPendingSync(true)
+        const pending = applyRemote(remote, 'hydrate')
+        if (!pending) {
+          setMessage(Object.values(loadSchedule()).flat().length > 0 ? '加载完毕' : '还没有日程')
+          setPhase('ok')
         }
-        adoptRemote(remoteClean, remote.sha || undefined)
-        setSchedule(merged)
-        saveSchedule(merged)
-
-        if (needPush || dirtyRef.current || isPendingSync()) {
-          pendingRef.current = merged
-          dirtyRef.current = true
-          setPendingSync(true)
-          if (getWriteToken()) {
-            setMessage('正在对齐本机与云端…')
-            flush(merged)
-          } else {
-            setAskPhrase(true)
-            setPhase('ok')
-            setMessage('日程已加载；输入口令可把本机改动同步上去')
-          }
-          return
-        }
-
-        setMessage(Object.values(merged).flat().length > 0 ? '加载完毕' : '还没有日程')
-        setPhase('ok')
       } catch (err) {
         const local = normalizeSchedule(loadSchedule())
         if (Object.values(local).flat().length > 0) {
@@ -175,13 +165,7 @@ export default function App() {
       void pullCloud()
         .then((remote) => {
           if (!remote || dirtyRef.current || isPendingSync() || stop) return
-          const merged = integrate(remote.map)
-          adoptRemote(normalizeSchedule(remote.map), remote.sha || undefined)
-          setSchedule((cur) => {
-            if (JSON.stringify(cur) === JSON.stringify(merged)) return cur
-            saveSchedule(merged)
-            return merged
-          })
+          applyRemote(remote, 'poll')
         })
         .catch(() => {})
     }, 8000)
