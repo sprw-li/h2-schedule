@@ -960,6 +960,13 @@
       "kind": "deadline"
     },
     {
+      "id": "e41a59ac-7533-4400-8e66-e86218a119ab",
+      "date": "2026-10-12",
+      "title": "周刊提交截止",
+      "done": false,
+      "kind": "deadline"
+    },
+    {
       "id": "21fc955b-49ac-4645-8d5d-c45a1eb37432",
       "date": "2026-10-13",
       "title": "高等数学(B)(一) · 理教202",
@@ -2397,13 +2404,6 @@
       "id": "0414543f-616e-4a7b-a4d0-7eadf5f3cdd6",
       "date": "2026-12-06",
       "title": "周刊2",
-      "done": false,
-      "kind": "deadline"
-    },
-    {
-      "id": "fa49e339-f39c-4daf-8091-bd8d2c914d1e",
-      "date": "2026-12-06",
-      "title": "周刊提交截止",
       "done": false,
       "kind": "deadline"
     },
