@@ -10,6 +10,13 @@ lerna-debug.log*
 node_modules
 dist
 phone
+android/.gradle
+android/app/build
+android/build
+android/captures
+android/local.properties
+*.apk
+*.ap_
 
 
 *.local
