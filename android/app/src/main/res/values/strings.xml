@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">H2日程</string>
+    <string name="title_activity_main">H2日程</string>
+    <string name="package_name">cn.sprwli.h2schedule</string>
+    <string name="custom_url_scheme">cn.sprwli.h2schedule</string>
+</resources>
