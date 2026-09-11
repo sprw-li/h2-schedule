@@ -1,4 +1,5 @@
 import type { ScheduleItem, ScheduleMap } from '../types'
+import { normalizeSchedule } from './schedule'
 
 const KEY = 'h2-schedule.v1'
 
@@ -18,18 +19,19 @@ function uid() {
 
 export function loadSchedule(): ScheduleMap {
   try {
+    localStorage.removeItem('h2-schedule.done-titles.v1')
     const raw = localStorage.getItem(KEY)
     if (!raw) return {}
     const parsed = JSON.parse(raw) as ScheduleMap
     if (!parsed || typeof parsed !== 'object') return {}
-    return parsed
+    return normalizeSchedule(parsed)
   } catch {
     return {}
   }
 }
 
 export function saveSchedule(map: ScheduleMap) {
-  localStorage.setItem(KEY, JSON.stringify(map))
+  localStorage.setItem(KEY, JSON.stringify(normalizeSchedule(map)))
 }
 
 export function mergeItems(map: ScheduleMap, incoming: ScheduleItem[]): ScheduleMap {
@@ -46,7 +48,7 @@ export function mergeItems(map: ScheduleMap, incoming: ScheduleItem[]): Schedule
     if (!dup) list.push(item)
     next[item.date] = list
   }
-  return next
+  return normalizeSchedule(next)
 }
 
 export { uid }
