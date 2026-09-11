@@ -180,6 +180,13 @@
       "end": "20:30"
     },
     {
+      "id": "ec3b6de3-c5ed-49e4-b816-9cedccbc4908",
+      "date": "2026-09-11",
+      "title": "洗衣服",
+      "done": false,
+      "kind": "task"
+    },
+    {
       "id": "dce1d258-5dec-49dc-ac16-855615d1ad96",
       "date": "2026-09-14",
       "title": "普通化学 · 理教201",
