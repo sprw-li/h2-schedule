@@ -19,6 +19,45 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-focus-ring-color: transparent;
+  outline: none !important;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+[role='button'],
+[role='tab'],
+.day {
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+  box-shadow: none;
+}
+
+*:focus,
+*:focus-visible,
+*:active {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 1px solid var(--mute) !important;
+    outline-offset: 2px;
+  }
+}
+
+::selection {
+  background: rgba(22, 22, 22, 0.12);
+  color: inherit;
 }
 
 html,
@@ -167,6 +206,26 @@ button {
   justify-content: flex-end;
 }
 
+.csv-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 0 2px;
+}
+
+.csv-btn {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+
+.csv-hint {
+  color: var(--soft);
+  font-size: 12px;
+}
+
 .update-wrap {
   position: static;
 }
@@ -176,7 +235,7 @@ button {
   color: var(--deadline);
 }
 
-/* 贴屏幕底部，不挡全屏，左右留白保证点得到 */
+/* 贴屏幕底部，纸面浮层，不要系统蓝框感 */
 .update-sheet {
   position: fixed;
   left: max(12px, env(safe-area-inset-left));
@@ -187,11 +246,13 @@ button {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 14px;
+  padding: 16px 16px 14px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 18px;
   background: var(--paper);
+  color: var(--ink);
   box-sizing: border-box;
+  box-shadow: 0 -8px 28px rgba(22, 22, 22, 0.08);
 }
 
 .update-card-head {
@@ -199,25 +260,26 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.update-card-head strong {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .update-sheet p {
   margin: 0 0 6px;
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.45;
+  color: var(--mute);
 }
 
 .update-sheet .mute {
   color: var(--soft);
   margin-right: 6px;
-}
-
-.update-hash {
-  word-break: break-all;
-  color: var(--mute);
-  font-family: ui-monospace, Consolas, monospace;
-  font-size: 12px;
 }
 
 .update-note {
@@ -228,7 +290,27 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 10px;
+  margin-top: 12px;
+}
+
+.update-phrase {
+  margin: 10px 0 6px;
+}
+
+.update-phrase label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.update-phrase input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 16px;
 }
 
 .ghost,
@@ -565,39 +647,89 @@ button {
   cursor: zoom-in;
 }
 
+.refs-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.refs-block-head .refs-h {
+  margin: 0;
+}
+
+.refs-replace-btn {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
 .lightbox {
   position: fixed;
   inset: 0;
   z-index: 40;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
-    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right))
+    max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
   background: rgba(10, 10, 10, 0.92);
 }
 
+.lightbox-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.lightbox-tool,
 .lightbox-close {
-  align-self: flex-end;
   border: 1px solid #555;
   background: #222;
   color: #fff;
   border-radius: 999px;
-  min-height: 40px;
-  padding: 0 16px;
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.lightbox-scale {
+  color: #ddd;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  min-width: 3.2em;
+  text-align: center;
+}
+
+.lightbox-stage {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-overflow-scrolling: touch;
+  touch-action: none;
 }
 
 .lightbox-img {
   display: block;
   max-width: 100%;
-  max-height: calc(100dvh - 96px);
+  max-height: calc(100dvh - 88px);
   width: auto;
   height: auto;
   object-fit: contain;
   border-radius: 8px;
-  touch-action: pinch-zoom;
+  transform-origin: center center;
+  transition: transform 0.12s ease-out;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .panel {
@@ -722,6 +854,10 @@ button {
   background: #b7b7b1;
 }
 
+.dot.task {
+  background: #b7b7b1;
+}
+
 .dot.holiday {
   background: var(--holiday);
 }
@@ -730,7 +866,7 @@ button {
   background: var(--deadline);
 }
 
-.day.selected .dot {
+.day.selected .dot.task {
   background: #d8d8d4;
 }
 
@@ -762,6 +898,10 @@ button {
   height: 6px;
   border-radius: 50%;
   margin-right: 6px;
+  background: #b7b7b1;
+}
+
+.legend .taski {
   background: #b7b7b1;
 }
 
