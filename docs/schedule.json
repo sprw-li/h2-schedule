@@ -1,20 +1,6 @@
 {
   "items": [
     {
-      "id": "8f017cd0-1ad8-48de-96f5-3a8ef1a29450",
-      "date": "2026-09-07",
-      "title": "内务检查",
-      "done": true,
-      "kind": "task"
-    },
-    {
-      "id": "a7f689bc-00f8-4046-98a2-093d06ee9ff2",
-      "date": "2026-09-07",
-      "title": "找到小组加人",
-      "done": false,
-      "kind": "task"
-    },
-    {
       "id": "ff698002-b6d7-468a-a715-2dc7c5a81adf",
       "date": "2026-09-07",
       "title": "普通化学 · 理教201",
@@ -33,30 +19,16 @@
       "end": "17:00"
     },
     {
-      "id": "fdda6c0f-7579-4455-b5ae-ddd1fd9f4291",
-      "date": "2026-09-08",
-      "title": "快递",
-      "done": true,
-      "kind": "task"
-    },
-    {
-      "id": "6ae9f0cb-cacf-4d95-b0fd-14c9a81a2409",
-      "date": "2026-09-08",
+      "id": "8f017cd0-1ad8-48de-96f5-3a8ef1a29450",
+      "date": "2026-09-07",
       "title": "内务检查",
-      "done": false,
-      "kind": "task"
-    },
-    {
-      "id": "720336b3-d4be-4340-9d59-8531e999196e",
-      "date": "2026-09-08",
-      "title": "外卖",
       "done": true,
       "kind": "task"
     },
     {
-      "id": "72e6bdc2-f038-4587-b37b-4e1b66914757",
-      "date": "2026-09-08",
-      "title": "following",
+      "id": "a7f689bc-00f8-4046-98a2-093d06ee9ff2",
+      "date": "2026-09-07",
+      "title": "找到小组加人",
       "done": false,
       "kind": "task"
     },
@@ -105,24 +77,31 @@
       "end": "20:30"
     },
     {
-      "id": "4ff4cbfc-a1ec-4be7-87a5-6c89557b94d8",
-      "date": "2026-09-09",
+      "id": "fdda6c0f-7579-4455-b5ae-ddd1fd9f4291",
+      "date": "2026-09-08",
+      "title": "快递",
+      "done": true,
+      "kind": "task"
+    },
+    {
+      "id": "6ae9f0cb-cacf-4d95-b0fd-14c9a81a2409",
+      "date": "2026-09-08",
       "title": "内务检查",
       "done": false,
       "kind": "task"
     },
     {
-      "id": "6ca9478e-a3b5-4a85-9c5d-da4c4546de7b",
-      "date": "2026-09-09",
-      "title": "洗衣服",
-      "done": false,
+      "id": "720336b3-d4be-4340-9d59-8531e999196e",
+      "date": "2026-09-08",
+      "title": "外卖",
+      "done": true,
       "kind": "task"
     },
     {
-      "id": "d38db359-2320-4cff-92e6-05be4fdef5d8",
-      "date": "2026-09-09",
-      "title": "新太阳 105–106 室图像采集",
-      "done": true,
+      "id": "72e6bdc2-f038-4587-b37b-4e1b66914757",
+      "date": "2026-09-08",
+      "title": "following",
+      "done": false,
       "kind": "task"
     },
     {
@@ -170,10 +149,24 @@
       "end": "20:30"
     },
     {
-      "id": "d84a869f-6c4d-48a2-a78a-53c33b3edcfb",
-      "date": "2026-09-10",
-      "title": "洗被子",
+      "id": "4ff4cbfc-a1ec-4be7-87a5-6c89557b94d8",
+      "date": "2026-09-09",
+      "title": "内务检查",
       "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "6ca9478e-a3b5-4a85-9c5d-da4c4546de7b",
+      "date": "2026-09-09",
+      "title": "洗衣服",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "d38db359-2320-4cff-92e6-05be4fdef5d8",
+      "date": "2026-09-09",
+      "title": "新太阳 105–106 室图像采集",
+      "done": true,
       "kind": "task"
     },
     {
@@ -204,37 +197,9 @@
       "end": "21:30"
     },
     {
-      "id": "05cf729d-c7e0-4da0-941c-d71502bc1036",
-      "date": "2026-09-11",
-      "title": "普化预习",
-      "done": false,
-      "kind": "task"
-    },
-    {
-      "id": "ec3b6de3-c5ed-49e4-b816-9cedccbc4908",
-      "date": "2026-09-11",
-      "title": "洗衣服",
-      "done": true,
-      "kind": "task"
-    },
-    {
-      "id": "d52934ec-575c-43ad-950b-d12c7b49291e",
-      "date": "2026-09-11",
-      "title": "约陆旭景",
-      "done": false,
-      "kind": "task"
-    },
-    {
-      "id": "5a98cd17-288e-44de-9b10-7d21e7aa1e53",
-      "date": "2026-09-11",
-      "title": "约音乐",
-      "done": false,
-      "kind": "task"
-    },
-    {
-      "id": "a91f4e83-56ec-4131-b611-df6c3dc55c03",
-      "date": "2026-09-11",
-      "title": "约朱勋帅",
+      "id": "d84a869f-6c4d-48a2-a78a-53c33b3edcfb",
+      "date": "2026-09-10",
+      "title": "洗被子",
       "done": false,
       "kind": "task"
     },
@@ -283,6 +248,41 @@
       "end": "21:00"
     },
     {
+      "id": "05cf729d-c7e0-4da0-941c-d71502bc1036",
+      "date": "2026-09-11",
+      "title": "普化预习",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "ec3b6de3-c5ed-49e4-b816-9cedccbc4908",
+      "date": "2026-09-11",
+      "title": "洗衣服",
+      "done": true,
+      "kind": "task"
+    },
+    {
+      "id": "d52934ec-575c-43ad-950b-d12c7b49291e",
+      "date": "2026-09-11",
+      "title": "约陆旭景",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "5a98cd17-288e-44de-9b10-7d21e7aa1e53",
+      "date": "2026-09-11",
+      "title": "约音乐",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "a91f4e83-56ec-4131-b611-df6c3dc55c03",
+      "date": "2026-09-11",
+      "title": "约朱勋帅",
+      "done": false,
+      "kind": "task"
+    },
+    {
       "id": "blood-2026-09-12",
       "date": "2026-09-12",
       "title": "血检+腰椎诊断（上午空腹）",
@@ -307,13 +307,6 @@
       "kind": "task",
       "start": "19:00",
       "end": "20:00"
-    },
-    {
-      "id": "98a16777-13d6-476d-af68-5cdd8557f6f5",
-      "date": "2026-09-14",
-      "title": "下午可以取报告",
-      "done": false,
-      "kind": "task"
     },
     {
       "id": "dce1d258-5dec-49dc-ac16-855615d1ad96",
@@ -350,6 +343,13 @@
       "kind": "task",
       "start": "19:00",
       "end": "21:00"
+    },
+    {
+      "id": "98a16777-13d6-476d-af68-5cdd8557f6f5",
+      "date": "2026-09-14",
+      "title": "下午可以取报告",
+      "done": false,
+      "kind": "task"
     },
     {
       "id": "32b00929-59f7-44c9-af87-cc9085d8c70c",
@@ -405,13 +405,6 @@
       "end": "20:30"
     },
     {
-      "id": "88ff1aed-1d5d-4d1b-9d31-96a3eb7809b0",
-      "date": "2026-09-16",
-      "title": "论文选题与小组成员提交",
-      "done": true,
-      "kind": "deadline"
-    },
-    {
       "id": "cf239bda-ab18-4243-a413-03b056a09c4e",
       "date": "2026-09-16",
       "title": "普通化学 · 理教201",
@@ -455,6 +448,13 @@
       "kind": "task",
       "start": "15:10",
       "end": "16:40"
+    },
+    {
+      "id": "88ff1aed-1d5d-4d1b-9d31-96a3eb7809b0",
+      "date": "2026-09-16",
+      "title": "论文选题与小组成员提交",
+      "done": true,
+      "kind": "deadline"
     },
     {
       "id": "ed3f0bae-20ef-4ef6-a8d6-7bcfb3f87efd",
@@ -917,20 +917,6 @@
       "kind": "deadline"
     },
     {
-      "id": "ab4800b7-16d7-40aa-8f66-2cf06157f2b6",
-      "date": "2026-10-12",
-      "title": "周刊1",
-      "done": false,
-      "kind": "deadline"
-    },
-    {
-      "id": "e41a59ac-7533-4400-8e66-e86218a119ab",
-      "date": "2026-10-12",
-      "title": "周刊提交截止",
-      "done": false,
-      "kind": "deadline"
-    },
-    {
       "id": "c3aee27c-0b74-4d63-a276-662ba446206d",
       "date": "2026-10-12",
       "title": "普通化学 · 理教201",
@@ -965,6 +951,20 @@
       "kind": "task",
       "start": "18:30",
       "end": "20:30"
+    },
+    {
+      "id": "ab4800b7-16d7-40aa-8f66-2cf06157f2b6",
+      "date": "2026-10-12",
+      "title": "周刊1",
+      "done": false,
+      "kind": "deadline"
+    },
+    {
+      "id": "e41a59ac-7533-4400-8e66-e86218a119ab",
+      "date": "2026-10-12",
+      "title": "周刊提交截止",
+      "done": false,
+      "kind": "deadline"
     },
     {
       "id": "21fc955b-49ac-4645-8d5d-c45a1eb37432",
@@ -1506,13 +1506,6 @@
       "end": "16:40"
     },
     {
-      "id": "ef3aaf46-b1d4-4505-a547-fcb143b92f7e",
-      "date": "2026-11-03",
-      "title": "英汉口译 期中考",
-      "done": false,
-      "kind": "deadline"
-    },
-    {
       "id": "bc5cf066-8793-4427-9a56-3b43040c669f",
       "date": "2026-11-03",
       "title": "高等数学(B)(一) · 理教202",
@@ -1556,6 +1549,13 @@
       "kind": "task",
       "start": "18:40",
       "end": "20:30"
+    },
+    {
+      "id": "ef3aaf46-b1d4-4505-a547-fcb143b92f7e",
+      "date": "2026-11-03",
+      "title": "英汉口译 期中考",
+      "done": false,
+      "kind": "deadline"
     },
     {
       "id": "1fbabd4c-2e40-4189-a265-4f84488df666",
@@ -2453,13 +2453,6 @@
       "end": "20:30"
     },
     {
-      "id": "20d4e936-9866-4058-9560-e51b008248cd",
-      "date": "2026-12-09",
-      "title": "合唱",
-      "done": false,
-      "kind": "task"
-    },
-    {
       "id": "6e6f317a-114d-47da-a21c-ebca59b75e5f",
       "date": "2026-12-09",
       "title": "可能测验二",
@@ -2502,6 +2495,13 @@
       "kind": "task",
       "start": "15:10",
       "end": "17:00"
+    },
+    {
+      "id": "20d4e936-9866-4058-9560-e51b008248cd",
+      "date": "2026-12-09",
+      "title": "合唱",
+      "done": false,
+      "kind": "task"
     },
     {
       "id": "f69e817b-64da-4615-8814-402898210a79",
