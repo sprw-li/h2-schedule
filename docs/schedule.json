@@ -166,7 +166,7 @@
       "id": "1f50161b-d3fa-45cd-823c-2c9be3bd9507",
       "date": "2026-09-11",
       "title": "宿舍卫生检查",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "14:00",
       "end": "15:00"
