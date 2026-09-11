@@ -1821,6 +1821,13 @@
       "end": "20:30"
     },
     {
+      "id": "0414543f-616e-4a7b-a4d0-7eadf5f3cdd6",
+      "date": "2026-12-06",
+      "title": "周刊2",
+      "done": false,
+      "kind": "deadline"
+    },
+    {
       "id": "643e64aa-bed2-4165-a93e-b4d766e9dcc5",
       "date": "2026-12-07",
       "title": "普通化学 · 理教201",
