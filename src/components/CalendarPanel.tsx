@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { ScheduleMap } from '../types'
+import type { ItemKind, ScheduleItem, ScheduleMap } from '../types'
 import {
   formatMonthTitle,
   monthGrid,
@@ -17,6 +17,21 @@ type Props = {
   onSelect: (d: Date) => void
   onPrev: () => void
   onNext: () => void
+}
+
+/**
+ * 月历色点：该 kind 只要存在一条 done≠true 就亮；
+ * 全部 done=true（或没有该 kind）才不亮。
+ * 灰=事项、红=截止、绿=假日。
+ */
+function dayDotFlags(items: ScheduleItem[]) {
+  const of = (kind: ItemKind) => items.filter((i) => i.kind === kind)
+  const anyOpen = (list: ScheduleItem[]) => list.some((i) => i.done !== true)
+  return {
+    task: anyOpen(of('task')),
+    holiday: anyOpen(of('holiday')),
+    deadline: anyOpen(of('deadline')),
+  }
 }
 
 export function CalendarPanel({
@@ -52,10 +67,7 @@ export function CalendarPanel({
         <div className="grid">
           {cells.map((d) => {
             const key = toDateKey(d)
-            const items = schedule[key] ?? []
-            const hasHoliday = items.some((i) => i.kind === 'holiday')
-            const hasTask = items.some((i) => i.kind === 'task')
-            const hasDeadline = items.some((i) => i.kind === 'deadline')
+            const { task, holiday, deadline } = dayDotFlags(schedule[key] ?? [])
             const out = d.getMonth() !== view.getMonth()
             const cls = [
               'day',
@@ -76,9 +88,9 @@ export function CalendarPanel({
               >
                 <span className="day-num">{d.getDate()}</span>
                 <span className="dots">
-                  {hasHoliday ? <span className="dot holiday" /> : null}
-                  {hasTask ? <span className="dot" /> : null}
-                  {hasDeadline ? <span className="dot deadline" /> : null}
+                  {task ? <span className="dot task" /> : null}
+                  {holiday ? <span className="dot holiday" /> : null}
+                  {deadline ? <span className="dot deadline" /> : null}
                 </span>
               </button>
             )
@@ -86,15 +98,15 @@ export function CalendarPanel({
         </div>
         <div className="legend">
           <span>
-            <i className="holi" /> 绿
+            <i className="taski" /> 事项
           </span>
           <span>
-            <i /> 灰
+            <i className="holi" /> 假日
           </span>
           <span>
-            <i className="dead" /> 红
+            <i className="dead" /> 截止
           </span>
-          <span className="legend-note">同一天可同时出现，事项里可改</span>
+          <span className="legend-note">有未完成才亮</span>
         </div>
       </div>
     </section>
