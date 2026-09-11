@@ -226,9 +226,11 @@
     {
       "id": "ac2e5f7c-cd46-44e5-8349-f88062f916ad",
       "date": "2026-09-12",
-      "title": "血脂",
+      "title": "抽血，不要吃早饭！",
       "done": false,
-      "kind": "task"
+      "kind": "task",
+      "start": "08:00",
+      "end": "11:00"
     },
     {
       "id": "dce1d258-5dec-49dc-ac16-855615d1ad96",
