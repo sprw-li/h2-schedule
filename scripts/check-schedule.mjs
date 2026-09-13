@@ -235,3 +235,5 @@ function assert(cond, msg) {
   const list = flatten(normalize(items))
   assert(list.length === 1 && list[0].done === true, '9/16 paper must be done')
 }
+
+console.log('check-schedule: ok')

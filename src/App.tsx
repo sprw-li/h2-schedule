@@ -6,6 +6,7 @@ import { WeatherPanel } from './components/WeatherPanel'
 import { getWriteToken, pullCloud, pushCloud, setWriteToken } from './lib/cloud'
 import { downloadCsv, mergeCsvIntoSchedule, scheduleToCsv } from './lib/csv'
 import { addDays, addMonths, parseDateKey, timeSortKey, toDateKey, todayKey } from './lib/dates'
+import { flattenItems } from './lib/backup'
 import { loadSchedule, saveSchedule, uid } from './lib/storage'
 import {
   clearLegacyOverlay,
@@ -95,17 +96,45 @@ export default function App() {
       }
     }
 
-    /** 拉/轮询统一用 integrateSchedules：两端 normalize → merge → 再 normalize */
+    /**
+     * 拉/轮询统一入口。
+     * 致命坑：绝不能先把 remoteRef 设成「本次新远端」再当 baseline——
+     * pending 时会把远端条目全当成「本机已删」丢掉，再 flush 冲垮云端。
+     */
     function applyRemote(remote: { map: ScheduleMap; sha: string }, reason: 'hydrate' | 'poll') {
-      const { merged, remoteClean, needPush } = integrateSchedules(remote.map, loadSchedule(), {
-        pending: dirtyRef.current || isPendingSync(),
-        baseline: remoteRef.current,
+      const prevBaseline = remoteRef.current
+      const local = normalizeSchedule(loadSchedule())
+      const localN = flattenItems(local).length
+      const remoteN = flattenItems(normalizeSchedule(remote.map)).length
+
+      // 本机空/极少时绝不能 preferLocal，否则会用空表覆盖云端
+      const wantPending = (dirtyRef.current || isPendingSync()) && localN > 0
+      const { merged, remoteClean, needPush } = integrateSchedules(remote.map, local, {
+        pending: wantPending,
+        baseline: wantPending ? prevBaseline : null,
       })
+      const mergedN = flattenItems(merged).length
+
+      // 护栏：合并结果比云端少一半以上 → 信任云端，拒绝写回稀薄本机
+      if (remoteN >= 80 && mergedN < remoteN * 0.5) {
+        adoptRemote(remoteClean, remote.sha || undefined)
+        setSchedule(remoteClean)
+        saveSchedule(remoteClean)
+        dirtyRef.current = false
+        pendingRef.current = null
+        setPendingSync(false)
+        if (reason === 'hydrate') {
+          setPhase('ok')
+          setMessage(`本机日程异常偏少（${mergedN}/${remoteN}），已改用云端`)
+        }
+        return false
+      }
+
       adoptRemote(remoteClean, remote.sha || undefined)
       setSchedule(merged)
       saveSchedule(merged)
 
-      if (needPush || dirtyRef.current || isPendingSync()) {
+      if (needPush && localN > 0) {
         pendingRef.current = merged
         dirtyRef.current = true
         setPendingSync(true)
@@ -119,39 +148,41 @@ export default function App() {
         }
         return true
       }
+
+      // 本机空导致的假 pending 清掉，避免下次再 preferLocal 误删
+      if (localN === 0) {
+        dirtyRef.current = false
+        pendingRef.current = null
+        setPendingSync(false)
+      }
       return false
     }
 
     async function hydrate() {
       setPhase('pull')
       try {
-        const localBoot = normalizeSchedule(loadSchedule())
-        // 先把本机脏数据按「无远端」过一遍：清除旧血检/已完成变未完成等脏状态
-        const boot = integrateSchedules({}, localBoot, {
-          pending: true,
-          baseline: remoteRef.current,
-        }).merged
+        // 只 normalize，不要对空远端做 integrate（会把全部本机标成 pending）
+        const boot = normalizeSchedule(loadSchedule())
         saveSchedule(boot)
-        setSchedule(boot)
+        if (flattenItems(boot).length > 0) setSchedule(boot)
 
         const remote = await pullCloud()
         if (stop) return
         if (!remote) {
-          setMessage(Object.values(boot).flat().length > 0 ? '已用本机日程' : '还没有日程')
+          setMessage(flattenItems(boot).length > 0 ? '已用本机日程' : '还没有日程')
           setPhase('ok')
           return
         }
 
-        // 拉下远端后，以本地 boot 为 baseline；本机完成态会被覆盖为远端/或取或
-        remoteRef.current = remote.map
         const pending = applyRemote(remote, 'hydrate')
         if (!pending) {
-          setMessage(Object.values(loadSchedule()).flat().length > 0 ? '加载完毕' : '还没有日程')
+          const n = flattenItems(normalizeSchedule(loadSchedule())).length
+          setMessage(n > 0 ? '加载完毕' : '还没有日程')
           setPhase('ok')
         }
       } catch (err) {
         const local = normalizeSchedule(loadSchedule())
-        if (Object.values(local).flat().length > 0) {
+        if (flattenItems(local).length > 0) {
           setSchedule(local)
           saveSchedule(local)
           setPhase('ok')
