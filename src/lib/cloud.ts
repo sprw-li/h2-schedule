@@ -92,7 +92,9 @@ export async function pushCloud(map: ScheduleMap, sha: string) {
   if (!token) throw new Error('需要口令才能同步')
   let useSha = sha
   try {
-    if (!useSha) {
+    // 推送前先看云端现有条数，防止空/半残本机冲掉全量
+    let remoteCount = 0
+    {
       const meta = await fetch(`${API}?ts=${Date.now()}`, {
         headers: {
           Accept: 'application/vnd.github+json',
@@ -100,11 +102,27 @@ export async function pushCloud(map: ScheduleMap, sha: string) {
         },
       })
       if (meta.ok) {
-        const body = (await meta.json()) as { sha?: string }
-        useSha = body.sha ?? ''
+        const body = (await meta.json()) as { content?: string; sha?: string }
+        if (body.sha) useSha = body.sha
+        if (body.content) {
+          try {
+            const text = decodeBase64(body.content.replace(/\n/g, ''))
+            const { items } = parseScheduleJsonText(text)
+            remoteCount = flattenItems(normalizeSchedule(items)).length
+          } catch {
+            /* ignore parse */
+          }
+        }
       }
     }
-    const payload = serializeSchedule(map)
+    const clean = normalizeSchedule(map)
+    const localCount = flattenItems(clean).length
+    if (remoteCount >= 80 && localCount < remoteCount * 0.5) {
+      throw new Error(
+        `拒绝覆盖云端：本机仅 ${localCount} 条，云端 ${remoteCount} 条（疑似本机缓存损坏）`,
+      )
+    }
+    const payload = serializeSchedule(clean)
     const res = await fetch(API, {
       method: 'PUT',
       headers: {
@@ -125,7 +143,13 @@ export async function pushCloud(map: ScheduleMap, sha: string) {
     const body = (await res.json()) as { content?: { sha?: string } }
     return body.content?.sha ?? sha
   } catch (e) {
-    if (e instanceof Error && (e.message === '冲突' || e.message.includes('口令') || e.message === '同步失败')) {
+    if (
+      e instanceof Error &&
+      (e.message === '冲突' ||
+        e.message.includes('口令') ||
+        e.message === '同步失败' ||
+        e.message.includes('拒绝覆盖云端'))
+    ) {
       throw e
     }
     throw new Error(netErr(e, '同步失败'))
