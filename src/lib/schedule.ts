@@ -122,6 +122,20 @@ export function coerceItems(raw: unknown[]): ScheduleItem[] {
   return out
 }
 
+/** 同一 id 只能对应一条；重复则给后来者新 id（防改一条串多条/串日） */
+export function ensureUniqueIds(items: ScheduleItem[]): ScheduleItem[] {
+  const seen = new Set<string>()
+  return items.map((it) => {
+    if (it.id && !seen.has(it.id)) {
+      seen.add(it.id)
+      return it
+    }
+    const id = newId()
+    seen.add(id)
+    return { ...it, id }
+  })
+}
+
 /**
  * exact key 去重；再按同日同标题压掉 deadline+task 双份。
  * 不按科目族压条——同日多场讲座会丢。
@@ -205,12 +219,13 @@ export function sanitizeNoise(map: ScheduleMap): ScheduleMap {
   return replaceSchedule(kept)
 }
 
-/** 唯一规范化入口：coerce → sanitize → dedupe → 按 date 分桶 */
+/** 唯一规范化入口：coerce → sanitize → dedupe → 唯一 id → 按 date 分桶 */
 export function normalizeSchedule(input: ScheduleMap | ScheduleItem[] | unknown[]): ScheduleMap {
   const items = Array.isArray(input)
     ? coerceItems(input)
     : coerceItems(flattenItems(input as ScheduleMap) as unknown[])
-  return dedupeByIdentity(sanitizeNoise(replaceSchedule(items)))
+  const cleaned = ensureUniqueIds(flattenItems(dedupeByIdentity(sanitizeNoise(replaceSchedule(items)))))
+  return replaceSchedule(cleaned)
 }
 
 /** 序列化为可写入 GitHub / 本地的干净 JSON（真换行结尾） */

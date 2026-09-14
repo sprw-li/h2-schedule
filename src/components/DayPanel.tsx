@@ -253,6 +253,7 @@ function DayScale({ date, items }: { date: Date; items: ScheduleItem[] }) {
   const elapsed = today ? nowDayPercent(now) : null
   const hour = String(now.getHours()).padStart(2, '0')
   const minute = String(now.getMinutes()).padStart(2, '0')
+  const dateKey = toDateKey(date)
 
   return (
     <div
@@ -268,9 +269,9 @@ function DayScale({ date, items }: { date: Date; items: ScheduleItem[] }) {
         {elapsed != null ? (
           <span className="day-scale-elapsed" style={{ width: `${elapsed}%` }} />
         ) : null}
-        {bands.map((band) => (
+        {bands.map((band, index) => (
           <span
-            key={band.id}
+            key={`${dateKey}:${band.id}:${index}`}
             className={`day-scale-band ${band.kind}${band.done ? ' done' : ''}`}
             style={bandStyle(band)}
             title={band.title}
@@ -385,8 +386,8 @@ export function DayPanel({
       {items.length === 0 ? (
         <div className="sheet-scroll empty">这一天还没有事项。点下方「新事项」写入。</div>
       ) : (
-        <div className="sheet-scroll list" key={dateKey}>
-          {items.map((item) => {
+        <div className="sheet-scroll list">
+          {items.map((item, index) => {
             const holiday = item.kind === 'holiday'
             const due = item.kind === 'deadline'
             const allDay = isAllDay(item)
@@ -394,7 +395,7 @@ export function DayPanel({
             const label = allDay ? '全天' : formatWhen(s, e)
             return (
               <div
-                key={`${dateKey}:${item.id}`}
+                key={`${dateKey}:${item.id}:${index}`}
                 className={`item${item.done ? ' done' : ''}${due ? ' deadline' : ''}${holiday ? ' holiday' : ''}${editingId === item.id ? ' editing' : ''}`}
               >
                 <button
