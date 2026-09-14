@@ -1,7 +1,7 @@
 {
-  "builtAt": "2026-09-13T08:36:19.900Z",
-  "sha256": "26992b23df85460925d1f6ef1d54db3bdc8c9aef2421d0f6599f88f815a5e3e0",
-  "bytes": 509806,
+  "builtAt": "2026-09-14T14:15:05.788Z",
+  "sha256": "8882ca2e89a7f96cf381902e96c1c30e8c7f41e2d50a4695c0e79e4d6b206654",
+  "bytes": 510521,
   "path": "docs/ota/app.html",
   "storageKey": "h2.ota.bundle.v2"
 }

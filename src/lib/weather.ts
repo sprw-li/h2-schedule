@@ -1,3 +1,5 @@
+import { netErr } from './net'
+
 export type PlaceId = 'weihai' | 'haidian' | 'yaohai' | 'shouchun'
 
 export type Place = {
@@ -199,9 +201,19 @@ export async function fetchForecasts(): Promise<PlaceForecast[]> {
   const cached = readCache()
   if (cached) return cached
   const ctrl = new AbortController()
-  const timer = window.setTimeout(() => ctrl.abort(), 16000)
+  const timer = window.setTimeout(() => ctrl.abort(), 20000)
   try {
-    const data = await Promise.all(PLACES.map((place) => fetchOne(place, ctrl.signal)))
+    // 各地独立拉：一处失败不拖垮全部，也避免误用第一城数据顶替
+    const settled = await Promise.allSettled(PLACES.map((place) => fetchOne(place, ctrl.signal)))
+    const data: PlaceForecast[] = []
+    const errs: string[] = []
+    settled.forEach((r, i) => {
+      if (r.status === 'fulfilled') data.push(r.value)
+      else errs.push(`${PLACES[i].name}: ${netErr(r.reason)}`)
+    })
+    if (data.length === 0) {
+      throw new Error(errs[0] || '天气读取失败')
+    }
     writeCache(data)
     return data
   } finally {

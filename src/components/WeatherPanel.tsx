@@ -37,10 +37,23 @@ export function WeatherPanel() {
   }, [])
 
   const place = useMemo(
-    () => data?.find((p) => p.place.id === placeId) ?? data?.[0] ?? null,
+    () => data?.find((p) => p.place.id === placeId) ?? null,
     [data, placeId],
   )
-  const day = place?.days[dayIndex] ?? place?.days[0]
+  const day = place?.days[dayIndex] ?? null
+
+  useEffect(() => {
+    if (!place) return
+    if (dayIndex >= place.days.length) setDayIndex(0)
+  }, [place, dayIndex])
+
+  useEffect(() => {
+    if (!data?.length) return
+    if (!data.some((p) => p.place.id === placeId)) {
+      setPlaceId(data[0].place.id)
+      setDayIndex(0)
+    }
+  }, [data, placeId])
 
   return (
     <section className="panel weather-panel" aria-label="七天天气">
@@ -56,22 +69,27 @@ export function WeatherPanel() {
         </div>
       </div>
       <div className="place-tabs" role="tablist" aria-label="地点">
-        {PLACES.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            role="tab"
-            className={placeId === p.id ? 'on' : ''}
-            aria-selected={placeId === p.id}
-            onClick={() => {
-              setPlaceId(p.id)
-              setDayIndex(0)
-            }}
-          >
-            <b>{p.name}</b>
-            <span>{p.area}</span>
-          </button>
-        ))}
+        {PLACES.map((p) => {
+          const ready = !!data?.some((d) => d.place.id === p.id)
+          return (
+            <button
+              key={p.id}
+              type="button"
+              role="tab"
+              className={placeId === p.id ? 'on' : ''}
+              aria-selected={placeId === p.id}
+              disabled={!!data && !ready}
+              title={!ready && data ? '该地点本次未取到' : undefined}
+              onClick={() => {
+                setPlaceId(p.id)
+                setDayIndex(0)
+              }}
+            >
+              <b>{p.name}</b>
+              <span>{p.area}</span>
+            </button>
+          )
+        })}
       </div>
       <div className="sheet-scroll">
         {busy && !place ? <p className="empty">正在取天气…</p> : null}
