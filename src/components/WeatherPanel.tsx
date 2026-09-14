@@ -114,9 +114,9 @@ export function WeatherPanel() {
             </p>
             {mode === 'daily' ? (
               <div className="weather-days">
-                {place.days.map((d, i) => (
+        {place.days.map((d, i) => (
                   <button
-                    key={d.date}
+                    key={`${place.place.id}:${d.date}`}
                     type="button"
                     className={`weather-day${i === dayIndex ? ' on' : ''}`}
                     onClick={() => {
@@ -140,7 +140,7 @@ export function WeatherPanel() {
                 <div className="weather-day-picker">
                   {place.days.map((d, i) => (
                     <button
-                      key={d.date}
+                      key={`${place.place.id}:${d.date}:h`}
                       type="button"
                       className={i === dayIndex ? 'solid' : 'ghost'}
                       onClick={() => setDayIndex(i)}

@@ -69,9 +69,8 @@ export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | n
   const api = await pullFromApi()
 
   if (pages && api) {
-    const pn = flattenItems(pages.map).length
-    const an = flattenItems(api.map).length
-    return { map: an >= pn ? api.map : pages.map, sha: api.sha }
+    // 有 API 就信 API（带 sha）。Pages 可能缓存旧包或重复条目偏多，不能按条数选。
+    return { map: api.map, sha: api.sha }
   }
   if (api) return api
   if (pages) return pages

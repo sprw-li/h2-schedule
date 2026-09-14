@@ -67,7 +67,9 @@ export function CalendarPanel({
         <div className="grid">
           {cells.map((d) => {
             const key = toDateKey(d)
-            const { task, holiday, deadline } = dayDotFlags(schedule[key] ?? [])
+            const { task, holiday, deadline } = dayDotFlags(
+              (schedule[key] ?? []).filter((item) => item.date === key),
+            )
             const out = d.getMonth() !== view.getMonth()
             const cls = [
               'day',

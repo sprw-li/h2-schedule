@@ -219,6 +219,8 @@ function assert(cond, msg) {
   assert(d28.length === 2, `docs 12-28 count ${d28.length}`)
   const blood = flatten(map).filter((i) => isBloodNoiseTitle(i.title) || i.title.includes('血检'))
   assert(blood.length === 1 && blood[0].date === '2026-09-12', 'docs blood')
+  const ids = flatten(map).map((i) => i.id)
+  assert(new Set(ids).size === ids.length, 'docs ids must be unique')
 }
 
 // 5) paper deadline force-done

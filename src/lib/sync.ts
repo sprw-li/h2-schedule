@@ -3,6 +3,7 @@ import { flattenItems, replaceSchedule } from './backup'
 import {
   itemKey,
   normalizeSchedule,
+  scheduleContentSig,
   softKey,
 } from './schedule'
 
@@ -134,6 +135,21 @@ export function mergeByIdentity(
   const usedLocal = new Set<string>()
   const out: ScheduleItem[] = []
 
+  // 0. 同日同 id：改标题后 exact/soft key 都对不上，必须先按 id 接上，否则会变成「两条」或串到别的天
+  const remoteById = new Map<string, ScheduleItem>()
+  for (const r of remoteItems) {
+    if (!remoteById.has(r.id)) remoteById.set(r.id, r)
+  }
+  for (const l of localItems) {
+    const r = remoteById.get(l.id)
+    if (!r || r.date !== l.date) continue
+    if (usedLocal.has(itemKey(l)) || usedRemote.has(itemKey(r))) continue
+    usedRemote.add(itemKey(r))
+    usedLocal.add(itemKey(l))
+    const m = pickMerged(r, l, preferLocal)
+    if (m) out.push({ ...m, id: l.id || r.id, date: l.date })
+  }
+
   for (const [ek, l] of localExact) {
     const r = remoteExact.get(ek)
     if (!r) continue
@@ -174,6 +190,11 @@ export function localHasUnsyncedExtras(remote: ScheduleMap, local: ScheduleMap) 
   return flattenItems(normalizeSchedule(local)).some((i) => !remoteSoft.has(softKey(i)))
 }
 
+/** 标题/时刻/勾选/删除都算未同步，不能只看「多出来的科目族」 */
+export function localDiffersFromRemote(remote: ScheduleMap, local: ScheduleMap) {
+  return scheduleContentSig(normalizeSchedule(local)) !== scheduleContentSig(normalizeSchedule(remote))
+}
+
 export type IntegrateOpts = {
   pending: boolean
   baseline?: ScheduleMap | null
@@ -195,6 +216,6 @@ export function integrateSchedules(
       opts.pending ? (opts.baseline ?? null) : null,
     ),
   )
-  const needPush = localHasUnsyncedExtras(remoteClean, merged)
+  const needPush = localDiffersFromRemote(remoteClean, merged)
   return { merged, remoteClean, needPush }
 }
