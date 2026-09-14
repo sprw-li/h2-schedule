@@ -5,7 +5,7 @@ import { RefsPanel } from './components/RefsPanel'
 import { WeatherPanel } from './components/WeatherPanel'
 import { getWriteToken, pullCloud, pushCloud, setWriteToken } from './lib/cloud'
 import { downloadCsv, mergeCsvIntoSchedule, scheduleToCsv } from './lib/csv'
-import { addDays, addMonths, parseDateKey, timeSortKey, toDateKey, todayKey } from './lib/dates'
+import { addDays, addMonths, isAllDay, parseDateKey, timeSortKey, toDateKey, todayKey } from './lib/dates'
 import { flattenItems } from './lib/backup'
 import { loadSchedule, saveSchedule, uid } from './lib/storage'
 import {
@@ -43,6 +43,7 @@ export default function App() {
   const pendingRef = useRef<ScheduleMap | null>(null)
   const remoteRef = useRef<ScheduleMap>(loadRemoteSnap() ?? {})
   const syncingRef = useRef(false)
+  const editingRef = useRef(false)
   const csvInputRef = useRef<HTMLInputElement>(null)
   const today = useMemo(() => new Date(), [])
 
@@ -197,10 +198,12 @@ export default function App() {
     void hydrate()
 
     const tick = window.setInterval(() => {
-      if (dirtyRef.current || isPendingSync() || syncingRef.current) return
+      // 编辑中/待推送/正在同步：不拉，避免重渲染冲掉编辑框或抢写
+      if (dirtyRef.current || isPendingSync() || syncingRef.current || editingRef.current) return
       void pullCloud()
         .then((remote) => {
-          if (!remote || dirtyRef.current || isPendingSync() || stop) return
+          if (!remote || dirtyRef.current || isPendingSync() || editingRef.current || stop) return
+          if (remote.sha && remote.sha === shaRef.current) return
           applyRemote(remote, 'poll')
         })
         .catch(() => {})
@@ -302,14 +305,14 @@ export default function App() {
   }
 
   const selected = parseDateKey(selectedKey)
+  // 有时刻的排前面，全天/假日垫底——避免寒假/假日天天占「首条」看起来像串日
   const items = [...(schedule[selectedKey] ?? [])].sort((a, b) => {
+    const ad = isAllDay(a)
+    const bd = isAllDay(b)
+    if (ad !== bd) return ad ? 1 : -1
     const ta = timeSortKey(a)
     const tb = timeSortKey(b)
     if (ta !== tb) return ta.localeCompare(tb)
-    const ad = a.allDay || a.kind === 'holiday'
-    const bd = b.allDay || b.kind === 'holiday'
-    if (ad && !bd) return -1
-    if (!ad && bd) return 1
     if (a.kind !== b.kind) return a.kind === 'deadline' ? -1 : 1
     return a.title.localeCompare(b.title, 'zh')
   })
@@ -435,6 +438,9 @@ export default function App() {
             <DayPanel
               date={selected}
               items={items}
+              onEditorOpenChange={(open) => {
+                editingRef.current = open
+              }}
               onPrevDay={() => {
                 const d = addDays(selected, -1)
                 setSelectedKey(toDateKey(d))

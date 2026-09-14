@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties, FormEvent } from 'react'
 import type { ItemKind, ScheduleItem } from '../types'
 import {
@@ -9,6 +9,7 @@ import {
   nowDayPercent,
   resolveTimes,
   sameDay,
+  toDateKey,
   weekdayLabel,
 } from '../lib/dates'
 
@@ -43,6 +44,8 @@ type Props = {
   onUpdate: (id: string, draft: Draft) => void
   onPrevDay: () => void
   onNextDay: () => void
+  /** 编辑/新事项打开时通知父级，暂停轮询以免冲掉编辑框 */
+  onEditorOpenChange?: (open: boolean) => void
 }
 
 function Fields({
@@ -311,19 +314,43 @@ export function DayPanel({
   onUpdate,
   onPrevDay,
   onNextDay,
+  onEditorOpenChange,
 }: Props) {
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState<Draft>(emptyDraft)
   const [composerOpen, setComposerOpen] = useState(false)
+  const dateKey = toDateKey(date)
+  const onEditorOpenChangeRef = useRef(onEditorOpenChange)
+  onEditorOpenChangeRef.current = onEditorOpenChange
 
+  // 只能依赖日期字符串：父组件每次渲染都会 new Date()，用 Date 对象当 deps 会误关编辑框
   useEffect(() => {
     setEditingId(null)
+    setEditDraft(emptyDraft())
     setComposerOpen(false)
-  }, [date])
+    setDraft(emptyDraft())
+  }, [dateKey])
+
+  useEffect(() => {
+    onEditorOpenChangeRef.current?.(!!(editingId || composerOpen))
+  }, [editingId, composerOpen])
+
+  // 同步合并可能换 id：按标题把编辑态接回去，避免框突然消失
+  useEffect(() => {
+    if (!editingId) return
+    if (items.some((i) => i.id === editingId)) return
+    const title = editDraft.title.trim()
+    const hit = title ? items.find((i) => i.title.trim() === title) : undefined
+    if (hit) setEditingId(hit.id)
+  }, [items, editingId, editDraft.title])
 
   const pending = items.filter((i) => !i.done).length
-  const editingItem = editingId ? items.find((i) => i.id === editingId) : undefined
+
+  function closeEditor() {
+    setEditingId(null)
+    setComposerOpen(false)
+  }
 
   function submit(e: FormEvent) {
     e.preventDefault()
@@ -351,12 +378,14 @@ export function DayPanel({
         <div className="day-meta">
           {weekdayLabel(date)} · 清单 {pending}/{items.length}
         </div>
-        {!editingId && !composerOpen ? <DayScale date={date} items={items} /> : null}
+        {!editingId && !composerOpen ? (
+          <DayScale key={dateKey} date={date} items={items} />
+        ) : null}
       </div>
       {items.length === 0 ? (
         <div className="sheet-scroll empty">这一天还没有事项。点下方「新事项」写入。</div>
       ) : (
-        <div className="sheet-scroll list">
+        <div className="sheet-scroll list" key={dateKey}>
           {items.map((item) => {
             const holiday = item.kind === 'holiday'
             const due = item.kind === 'deadline'
@@ -365,7 +394,7 @@ export function DayPanel({
             const label = allDay ? '全天' : formatWhen(s, e)
             return (
               <div
-                key={item.id}
+                key={`${dateKey}:${item.id}`}
                 className={`item${item.done ? ' done' : ''}${due ? ' deadline' : ''}${holiday ? ' holiday' : ''}${editingId === item.id ? ' editing' : ''}`}
               >
                 <button
@@ -423,7 +452,7 @@ export function DayPanel({
           <form className="composer sheet-editor-form" onSubmit={submit}>
             <div className="sheet-editor-head">
               <strong>新事项</strong>
-              <button type="button" className="ghost" onClick={() => setComposerOpen(false)}>
+              <button type="button" className="ghost" onClick={closeEditor}>
                 收起
               </button>
             </div>
@@ -435,7 +464,7 @@ export function DayPanel({
         </div>
       ) : null}
 
-      {editingId && editingItem ? (
+      {editingId ? (
         <div className="sheet-editor" role="dialog" aria-label="修改事项">
           <form
             className="item-edit sheet-editor-form"
@@ -449,7 +478,7 @@ export function DayPanel({
           >
             <div className="sheet-editor-head">
               <strong>修改事项</strong>
-              <button type="button" className="ghost" onClick={() => setEditingId(null)}>
+              <button type="button" className="ghost" onClick={closeEditor}>
                 取消
               </button>
             </div>
