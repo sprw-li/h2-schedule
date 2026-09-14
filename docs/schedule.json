@@ -354,6 +354,15 @@
     {
       "id": "ba3b4cd0-6fab-4943-b3f4-c98284a76db9",
       "date": "2026-09-14",
+      "title": "文章审稿讲解（张瑞杰、张顾严学长）· 周一晚待确认",
+      "done": false,
+      "kind": "task",
+      "start": "19:00",
+      "end": "21:00"
+    },
+    {
+      "id": "ba3b4cd0-6fab-4943-b3f4-c98284a76db9",
+      "date": "2026-09-14",
       "title": "文章审稿讲解（张瑞杰、张顾严学长）· 周一晚b400",
       "done": false,
       "kind": "task",
@@ -1895,6 +1904,13 @@
       "kind": "task",
       "start": "15:10",
       "end": "16:40"
+    },
+    {
+      "id": "5d69fcb7-f4ab-407a-86b4-1d4cc96eec58",
+      "date": "2026-11-16",
+      "title": "小作文",
+      "done": false,
+      "kind": "deadline"
     },
     {
       "id": "535e7f81-0c0b-499d-bf77-830e4addda7a",
