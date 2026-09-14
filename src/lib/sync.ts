@@ -90,7 +90,8 @@ function pickMerged(
   preferLocal: boolean,
 ): ScheduleItem | null {
   if (local && remote) {
-    const base = preferLocal ? { ...local, id: remote.id } : { ...remote }
+    // 不再把 remote.id 强行写到 local 上——多条本机项对上同一远端时会撞 id，改一天串多天
+    const base = preferLocal ? local : remote
     return { ...base, done: !!(local.done || remote.done) }
   }
   if (local) return { ...local }

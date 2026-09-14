@@ -436,6 +436,7 @@ export default function App() {
               onNext={() => setCursor((d) => addMonths(d, 1))}
             />
             <DayPanel
+              key={selectedKey}
               date={selected}
               items={items}
               onEditorOpenChange={(open) => {
@@ -455,12 +456,16 @@ export default function App() {
               }}
               onToggle={(id) => {
                 const list = (schedule[selectedKey] ?? []).map((item) =>
-                  item.id === id ? { ...item, done: !item.done } : item,
+                  item.id === id && item.date === selectedKey
+                    ? { ...item, done: !item.done }
+                    : item,
                 )
                 commit({ ...schedule, [selectedKey]: list })
               }}
               onRemove={(id) => {
-                const list = (schedule[selectedKey] ?? []).filter((item) => item.id !== id)
+                const list = (schedule[selectedKey] ?? []).filter(
+                  (item) => !(item.id === id && item.date === selectedKey),
+                )
                 const next = { ...schedule }
                 if (list.length === 0) delete next[selectedKey]
                 else next[selectedKey] = list
@@ -485,18 +490,20 @@ export default function App() {
                 })
               }}
               onUpdate={(id, draft) => {
-                const list = (schedule[selectedKey] ?? []).map((item) =>
-                  item.id === id
-                    ? {
-                        ...item,
-                        title: draft.title,
-                        kind: draft.kind,
-                        allDay: draft.allDay || undefined,
-                        start: draft.allDay ? undefined : draft.start || undefined,
-                        end: draft.allDay ? undefined : draft.end || undefined,
-                      }
-                    : item,
-                )
+                let replaced = false
+                const list = (schedule[selectedKey] ?? []).map((item) => {
+                  if (replaced || item.id !== id || item.date !== selectedKey) return item
+                  replaced = true
+                  return {
+                    ...item,
+                    date: selectedKey,
+                    title: draft.title,
+                    kind: draft.kind,
+                    allDay: draft.allDay || undefined,
+                    start: draft.allDay ? undefined : draft.start || undefined,
+                    end: draft.allDay ? undefined : draft.end || undefined,
+                  }
+                })
                 commit({ ...schedule, [selectedKey]: list })
               }}
             />

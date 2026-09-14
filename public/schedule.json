@@ -277,7 +277,7 @@
       "id": "19091861-708c-4d40-b76a-f99df67389c7",
       "date": "2026-09-11",
       "title": "科协全体大会 · CB101",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "20:00",
       "end": "21:00"
@@ -286,10 +286,18 @@
       "id": "blood-2026-09-12",
       "date": "2026-09-12",
       "title": "血检+腰椎诊断（上午空腹）",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "08:00",
       "end": "11:00"
+    },
+    {
+      "id": "8c43ca90-3bb2-4cd9-bcc2-e9059466d992",
+      "date": "2026-09-12",
+      "title": "董瀚林-曼昆",
+      "done": true,
+      "kind": "task",
+      "start": "11:00"
     },
     {
       "id": "572134b7-43f0-481f-927a-8dd53d42fd0e",
@@ -298,6 +306,14 @@
       "done": false,
       "kind": "task",
       "start": "12:00"
+    },
+    {
+      "id": "baa623fd-6012-48a7-8af1-7080dfb1e366",
+      "date": "2026-09-13",
+      "title": "陆旭景 泊星地咖啡厅",
+      "done": false,
+      "kind": "task",
+      "start": "12:30"
     },
     {
       "id": "fa488487-3d68-48e7-8102-152a0de73238",
@@ -345,8 +361,8 @@
     {
       "id": "ba3b4cd0-6fab-4943-b3f4-c98284a76db9",
       "date": "2026-09-14",
-      "title": "文章审稿讲解（张瑞杰、张顾严学长）· 周一晚待确认",
-      "done": false,
+      "title": "文章审稿讲解（张瑞杰、张顾严学长）· 周一晚b400",
+      "done": true,
       "kind": "task",
       "start": "19:00",
       "end": "21:00"
@@ -367,6 +383,15 @@
       "done": false,
       "kind": "task",
       "start": "10:00"
+    },
+    {
+      "id": "6f212650-3238-4d3f-a2d8-485d04cffe31",
+      "date": "2026-09-15",
+      "title": "二教412拿书",
+      "done": false,
+      "kind": "task",
+      "start": "10:00",
+      "end": "12:00"
     },
     {
       "id": "15b05645-2f49-4d71-99dd-bea96647ada9",
@@ -428,6 +453,14 @@
       "kind": "task",
       "start": "10:10",
       "end": "12:00"
+    },
+    {
+      "id": "b853cf28-e48b-4b1e-85d5-f2302749a0fc",
+      "date": "2026-09-16",
+      "title": "票",
+      "done": false,
+      "kind": "deadline",
+      "start": "12:45"
     },
     {
       "id": "bba14492-51ab-4968-9519-015538539a69",
@@ -1828,6 +1861,14 @@
       "end": "21:30"
     },
     {
+      "id": "82471ae9-30c5-4ea0-bd5f-2e2581a87ec8",
+      "date": "2026-11-13",
+      "title": "论文提交",
+      "done": false,
+      "kind": "deadline",
+      "end": "23:59"
+    },
+    {
       "id": "019c7f7b-ddb4-4b62-9bce-4b6c524ec73c",
       "date": "2026-11-13",
       "title": "高等数学(B)(一) · 理教202",
@@ -1846,12 +1887,11 @@
       "end": "20:30"
     },
     {
-      "id": "82471ae9-30c5-4ea0-bd5f-2e2581a87ec8",
-      "date": "2026-11-13",
-      "title": "论文提交",
+      "id": "5d69fcb7-f4ab-407a-86b4-1d4cc96eec58",
+      "date": "2026-11-16",
+      "title": "小论文报告",
       "done": false,
-      "kind": "deadline",
-      "end": "23:59"
+      "kind": "deadline"
     },
     {
       "id": "488b80d5-edf5-4c21-acee-23c3cb7957ea",
@@ -2837,20 +2877,20 @@
       "end": "20:30"
     },
     {
-      "id": "10f20ac5-0f0a-4977-8844-a3f6e4e86763",
-      "date": "2026-12-28",
-      "title": "停课复习考试（至 1 月 10 日）",
-      "done": false,
-      "kind": "deadline",
-      "allDay": true
-    },
-    {
       "id": "7ca0432f-e103-4633-bcb3-d2c86463ca98",
       "date": "2026-12-28",
       "title": "高等数学(B)(一) 考试",
       "done": false,
       "kind": "deadline",
       "end": "21:30"
+    },
+    {
+      "id": "10f20ac5-0f0a-4977-8844-a3f6e4e86763",
+      "date": "2026-12-28",
+      "title": "停课复习考试（至 1 月 10 日）",
+      "done": false,
+      "kind": "deadline",
+      "allDay": true
     },
     {
       "id": "a0decf58-6d77-4358-9077-e22cd0bd947d",
