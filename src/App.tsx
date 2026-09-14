@@ -203,6 +203,8 @@ export default function App() {
       void pullCloud()
         .then((remote) => {
           if (!remote || dirtyRef.current || isPendingSync() || editingRef.current || stop) return
+          // 无 sha = 多半是 Pages 缓存；已有 API sha 时不要用旧 Pages 盖掉刚改的标题
+          if (!remote.sha && shaRef.current) return
           if (remote.sha && remote.sha === shaRef.current) return
           applyRemote(remote, 'poll')
         })
@@ -305,8 +307,10 @@ export default function App() {
   }
 
   const selected = parseDateKey(selectedKey)
-  // 有时刻的排前面，全天/假日垫底——避免寒假/假日天天占「首条」看起来像串日
-  const items = [...(schedule[selectedKey] ?? [])].sort((a, b) => {
+  // 只显示 date 字段确实是当天的——桶串了也不让「改过的第一条」挂到别的天
+  const items = [...(schedule[selectedKey] ?? [])]
+    .filter((item) => item.date === selectedKey)
+    .sort((a, b) => {
     const ad = isAllDay(a)
     const bd = isAllDay(b)
     if (ad !== bd) return ad ? 1 : -1

@@ -55,6 +55,20 @@ function newId() {
   return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
+function fnv1a(s: string) {
+  let h = 2166136261
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return (h >>> 0).toString(16).padStart(8, '0')
+}
+
+/** 撞 id 时用内容生成稳定后缀，避免每次 normalize 都换新 UUID、触发无意义推送 */
+function stableDupId(item: ScheduleItem, nth: number) {
+  return `dup-${fnv1a(`${item.date}|${item.kind}|${item.title}|${item.start ?? ''}|${item.end ?? ''}|${nth}`)}`
+}
+
 /** 容忍误写入的字面量 \\n / BOM / 尾部垃圾 */
 export function parseScheduleJsonText(raw: string): { items: unknown[] } {
   let t = String(raw || '').replace(/^\uFEFF/, '').trim()
@@ -122,18 +136,44 @@ export function coerceItems(raw: unknown[]): ScheduleItem[] {
   return out
 }
 
-/** 同一 id 只能对应一条；重复则给后来者新 id（防改一条串多条/串日） */
+/** 同一 id 只能对应一条；重复则给后来者稳定新 id（防改一条串多条/串日） */
 export function ensureUniqueIds(items: ScheduleItem[]): ScheduleItem[] {
   const seen = new Set<string>()
+  let nth = 0
   return items.map((it) => {
     if (it.id && !seen.has(it.id)) {
       seen.add(it.id)
       return it
     }
-    const id = newId()
+    nth += 1
+    let id = stableDupId(it, nth)
+    while (seen.has(id)) {
+      nth += 1
+      id = stableDupId(it, nth)
+    }
     seen.add(id)
     return { ...it, id }
   })
+}
+
+/** 不含 id：用来判断本机相对云端是否真有改动（改标题/时刻/勾选也要推） */
+export function itemContentSig(item: ScheduleItem) {
+  return [
+    item.date,
+    item.kind,
+    item.title.trim(),
+    item.start ?? '',
+    item.end ?? '',
+    item.allDay ? '1' : '0',
+    item.done ? '1' : '0',
+  ].join('\0')
+}
+
+export function scheduleContentSig(map: ScheduleMap) {
+  return flattenItems(map)
+    .map(itemContentSig)
+    .sort()
+    .join('\n')
 }
 
 /**
