@@ -484,6 +484,13 @@
       "end": "16:40"
     },
     {
+      "id": "99800bce-0a62-42ea-9dbb-dc4e7c8b3c95",
+      "date": "2026-09-16",
+      "title": "快递",
+      "done": false,
+      "kind": "task"
+    },
+    {
       "id": "88ff1aed-1d5d-4d1b-9d31-96a3eb7809b0",
       "date": "2026-09-16",
       "title": "论文选题与小组成员提交",
@@ -510,7 +517,7 @@
     {
       "id": "e9ffb424-6da7-461e-bd25-815d852bac7e",
       "date": "2026-09-17",
-      "title": "计算概论(B)上机 · 计算中心三层1号机房（1339W）",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
       "done": false,
       "kind": "task",
       "start": "15:10",
@@ -531,7 +538,7 @@
       "title": "组会",
       "done": false,
       "kind": "task",
-      "start": "18:00",
+      "start": "18:30",
       "end": "21:30"
     },
     {
@@ -590,6 +597,15 @@
       "id": "6e80ba79-fdae-4a93-8afa-946747de9c3d",
       "date": "2026-09-21",
       "title": "计概上机理科一号楼1220E",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "6e80ba79-fdae-4a93-8afa-946747de9c3d",
+      "date": "2026-09-21",
+      "title": "普通化学习题课 · 理教201",
       "done": false,
       "kind": "task",
       "start": "15:10",
