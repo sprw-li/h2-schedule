@@ -302,7 +302,7 @@
       "id": "baa623fd-6012-48a7-8af1-7080dfb1e366",
       "date": "2026-09-13",
       "title": "陆旭景 泊星地咖啡厅",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "12:30"
     },
@@ -310,7 +310,7 @@
       "id": "fa488487-3d68-48e7-8102-152a0de73238",
       "date": "2026-09-13",
       "title": "化学你我公众号排版培训 · CB203（2026级务必参加）",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "19:00",
       "end": "20:00"
@@ -371,14 +371,14 @@
       "id": "3272cf06-ac47-4296-b214-08e03f81ca9c",
       "date": "2026-09-15",
       "title": "快递",
-      "done": false,
+      "done": true,
       "kind": "task"
     },
     {
       "id": "32b00929-59f7-44c9-af87-cc9085d8c70c",
       "date": "2026-09-15",
       "title": "高等数学(B)(一) · 理教202",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "08:00",
       "end": "09:50"
@@ -387,7 +387,7 @@
       "id": "60ead6cc-1904-4521-9999-72c05ee31e2f",
       "date": "2026-09-15",
       "title": "9月15日 10:00报名四级",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "10:00"
     },
@@ -395,7 +395,7 @@
       "id": "6f212650-3238-4d3f-a2d8-485d04cffe31",
       "date": "2026-09-15",
       "title": "二教412拿书",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "10:00",
       "end": "12:00"
@@ -404,7 +404,7 @@
       "id": "15b05645-2f49-4d71-99dd-bea96647ada9",
       "date": "2026-09-15",
       "title": "英汉口译 · 文史309",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "13:00",
       "end": "14:50"
@@ -413,7 +413,7 @@
       "id": "59d78548-871e-4a29-8f00-ef0c2f16e4cb",
       "date": "2026-09-15",
       "title": "计算概论(B) · 理教207",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "15:10",
       "end": "18:00"
@@ -431,7 +431,7 @@
       "id": "1e4153b4-c050-41ad-94e9-e762991eac7d",
       "date": "2026-09-15",
       "title": "数学习题课 · 二教315/311/302",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "18:40",
       "end": "20:30"
@@ -451,6 +451,15 @@
       "kind": "task",
       "start": "08:00",
       "end": "09:50"
+    },
+    {
+      "id": "e40a7cfc-e620-42c9-b36f-297cbad9c494",
+      "date": "2026-09-16",
+      "title": "1220理论与计算化学上机",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
     },
     {
       "id": "bba14492-51ab-4968-9519-015538539a69",
@@ -585,7 +594,7 @@
       "end": "17:00"
     },
     {
-      "id": "f2e0bb23-eccb-4ce4-88ab-e30b8178eb16",
+      "id": "12bf02f8-dc3c-43fa-a626-b303e67fa4af",
       "date": "2026-09-21",
       "title": "普通化学习题课 · 理教201",
       "done": false,

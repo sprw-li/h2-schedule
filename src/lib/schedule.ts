@@ -87,7 +87,7 @@ export function isBloodNoiseTitle(title: string) {
 }
 
 /** 化安只要第 6–14 周（学期从 2026-09-07 起算） */
-function isHuaAnOutOfRange(item: Pick<ScheduleItem, 'date' | 'title'>) {
+export function isHuaAnOutOfRange(item: Pick<ScheduleItem, 'date' | 'title'>) {
   if (!item.title.includes('化学实验室安全技术')) return false
   const start = Date.parse('2026-09-07T00:00:00')
   const t = Date.parse(`${item.date}T00:00:00`)

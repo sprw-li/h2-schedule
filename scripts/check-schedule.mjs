@@ -227,6 +227,15 @@ function assert(cond, msg) {
     hua.every((i) => i.date >= '2026-10-14' && i.date <= '2026-12-09'),
     '化安 date range',
   )
+  const d16 = flatten(map).filter((i) => i.date === '2026-09-16')
+  assert(
+    d16.every((i) => !String(i.title).includes('化学实验室安全技术')),
+    '9/16 must not be 化安',
+  )
+  assert(
+    d16.some((i) => String(i.title).includes('1220理论与计算化学上机') && i.start === '10:10'),
+    '9/16 must keep 1220 上机 10:10',
+  )
 }
 
 // 5) paper deadline force-done
