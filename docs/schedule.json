@@ -433,7 +433,7 @@
       "id": "3272cf06-ac47-4296-b214-08e03f81ca9c",
       "date": "2026-09-15",
       "title": "快递",
-      "done": false,
+      "done": true,
       "kind": "task"
     },
     {
