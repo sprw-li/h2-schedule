@@ -322,7 +322,7 @@ export function DayPanel({
   const [editDraft, setEditDraft] = useState<Draft>(emptyDraft)
   const [composerOpen, setComposerOpen] = useState(false)
   const dateKey = toDateKey(date)
-  const listKey = `${dateKey}:${items[0]?.id ?? 'none'}:${items[0]?.title ?? ''}:${items.length}`
+  const listKey = `${dateKey}:${items[0]?.id ?? 'none'}:${items.length}`
   const onEditorOpenChangeRef = useRef(onEditorOpenChange)
   onEditorOpenChangeRef.current = onEditorOpenChange
   const listRef = useRef<HTMLDivElement>(null)
@@ -429,6 +429,7 @@ export function DayPanel({
                     className="icon-btn"
                     aria-label="修改"
                     onClick={() => {
+                      onEditorOpenChange?.(true)
                       setComposerOpen(false)
                       setEditingId(item.id)
                       setEditDraft(toDraft(item))
@@ -453,7 +454,14 @@ export function DayPanel({
 
       {!editingId && !composerOpen ? (
         <div className="composer-bar">
-          <button type="button" className="solid composer-open" onClick={() => setComposerOpen(true)}>
+          <button
+            type="button"
+            className="solid composer-open"
+            onClick={() => {
+              onEditorOpenChange?.(true)
+              setComposerOpen(true)
+            }}
+          >
             新事项
           </button>
         </div>

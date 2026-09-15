@@ -35,6 +35,7 @@ const FAMILIES = [
   '论文选题',
   '论文提交',
   '图书馆讲座',
+  '血检',
 ].sort((a, b) => b.length - a.length)
 
 export function familyOf(title: string) {
@@ -82,8 +83,21 @@ export function parseScheduleJsonText(raw: string): { items: unknown[] } {
   return { items: Array.isArray(parsed.items) ? parsed.items : [] }
 }
 
+export const BLOOD_CANON_TITLE = '血检——康复'
+
+/** 抽血堆/空腹旧条。用户手写的「血检——康复」绝不能进这里，否则一保存就被改回去。 */
+export function isBloodSpamTitle(title: string) {
+  const t = title.trim()
+  if (t.includes('康复')) return false
+  return /抽血|不要吃早饭|勿进食|血脂|腰椎诊断|腰椎（|上午空腹/.test(t)
+}
+
 export function isBloodNoiseTitle(title: string) {
-  return /抽血|不要吃早饭|勿进食|血脂|血检|腰椎诊断|腰椎（|上午空腹/.test(title.trim())
+  return isBloodSpamTitle(title) || /血检/.test(title.trim())
+}
+
+export function isStaleBloodTitle(title: string) {
+  return isBloodSpamTitle(title)
 }
 
 /** 化安只要第 6–14 周（学期从 2026-09-07 起算） */
@@ -239,13 +253,13 @@ export function dedupeByIdentity(map: ScheduleMap): ScheduleMap {
 export function sanitizeNoise(map: ScheduleMap): ScheduleMap {
   const all = flattenItems(map)
   let bloodDone = false
-  let sawBlood = false
+  let sawSpam = false
   const kept: ScheduleItem[] = []
   for (const it of all) {
     if (isExamPileJunk(it)) continue
     if (isHuaAnOutOfRange(it)) continue
-    if (isBloodNoiseTitle(it.title)) {
-      sawBlood = true
+    if (isBloodSpamTitle(it.title)) {
+      sawSpam = true
       bloodDone = bloodDone || !!it.done
       continue
     }
@@ -256,11 +270,14 @@ export function sanitizeNoise(map: ScheduleMap): ScheduleMap {
     }
     kept.push(it)
   }
-  if (sawBlood) {
+  const bloodKept = kept.find((i) => i.date === '2026-09-12' && /血检/.test(i.title))
+  if (bloodKept) {
+    if (bloodDone) bloodKept.done = true
+  } else if (sawSpam) {
     kept.push({
       id: 'blood-2026-09-12',
       date: '2026-09-12',
-      title: '血检+腰椎诊断（上午空腹）',
+      title: BLOOD_CANON_TITLE,
       done: bloodDone,
       kind: 'task',
       start: '08:00',
