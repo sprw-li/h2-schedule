@@ -1,3 +1,3202 @@
 {
-  "items": []
+  "items": [
+    {
+      "id": "ff698002-b6d7-468a-a715-2dc7c5a81adf",
+      "date": "2026-09-07",
+      "title": "普通化学 · 理教201",
+      "done": true,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "18deca7a-7030-47fb-9eee-34759808cc48",
+      "date": "2026-09-07",
+      "title": "普通化学习题课 · 理教201",
+      "done": true,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "8f017cd0-1ad8-48de-96f5-3a8ef1a29450",
+      "date": "2026-09-07",
+      "title": "内务检查",
+      "done": true,
+      "kind": "task"
+    },
+    {
+      "id": "a7f689bc-00f8-4046-98a2-093d06ee9ff2",
+      "date": "2026-09-07",
+      "title": "找到小组加人",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "5bcbdac1-4195-41ba-b77e-2ea03021dcd6",
+      "date": "2026-09-08",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": true,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "3a907017-1b3c-405c-97da-359728f8ca34",
+      "date": "2026-09-08",
+      "title": "C317 签字；A203 盖章交表",
+      "done": true,
+      "kind": "task",
+      "start": "10:00"
+    },
+    {
+      "id": "ceb9678f-976a-48bf-9846-bca40960ae92",
+      "date": "2026-09-08",
+      "title": "英汉口译 · 文史309",
+      "done": true,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "574cf993-0e71-4d76-a433-3a4a2eeeb53e",
+      "date": "2026-09-08",
+      "title": "计算概论(B) · 理教207",
+      "done": true,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "43f74ed9-276c-462c-a026-218c9705a68d",
+      "date": "2026-09-08",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "fdda6c0f-7579-4455-b5ae-ddd1fd9f4291",
+      "date": "2026-09-08",
+      "title": "快递",
+      "done": true,
+      "kind": "task"
+    },
+    {
+      "id": "6ae9f0cb-cacf-4d95-b0fd-14c9a81a2409",
+      "date": "2026-09-08",
+      "title": "内务检查",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "720336b3-d4be-4340-9d59-8531e999196e",
+      "date": "2026-09-08",
+      "title": "外卖",
+      "done": true,
+      "kind": "task"
+    },
+    {
+      "id": "72e6bdc2-f038-4587-b37b-4e1b66914757",
+      "date": "2026-09-08",
+      "title": "following",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "a37311a6-d5c4-41b9-b680-6b888f7d6507",
+      "date": "2026-09-09",
+      "title": "普通化学 · 理教201",
+      "done": true,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "6e908c09-57d1-4df5-b0a6-a3719624ff8a",
+      "date": "2026-09-09",
+      "title": "理论与计算化学导论（杨立江） · 理教410 · 肖云龙做20分钟总体介绍",
+      "done": true,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "39f638b3-0cab-4e29-925d-94384a2d1140",
+      "date": "2026-09-09",
+      "title": "今日化学导论 · 化学学院小伦报告厅101",
+      "done": true,
+      "kind": "task",
+      "start": "15:10"
+    },
+    {
+      "id": "85770c50-0a45-4b85-b750-f9712f13083f",
+      "date": "2026-09-09",
+      "title": "博雅理学讲堂 · 哲学201",
+      "done": true,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "4ff4cbfc-a1ec-4be7-87a5-6c89557b94d8",
+      "date": "2026-09-09",
+      "title": "内务检查",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "6ca9478e-a3b5-4a85-9c5d-da4c4546de7b",
+      "date": "2026-09-09",
+      "title": "洗衣服",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "d38db359-2320-4cff-92e6-05be4fdef5d8",
+      "date": "2026-09-09",
+      "title": "新太阳 105–106 室图像采集",
+      "done": true,
+      "kind": "task"
+    },
+    {
+      "id": "66b87172-2a1e-49ab-bf73-c910f95d06f2",
+      "date": "2026-09-10",
+      "title": "普通化学实验 · 绪论课、清点和认识仪器 · 化学院肖伦报告厅101",
+      "done": true,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "bf279f23-2a53-44b0-8504-2acca703f677",
+      "date": "2026-09-10",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": true,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "2a7615ee-6866-4cdc-894e-5b354e6ed4cd",
+      "date": "2026-09-10",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "d84a869f-6c4d-48a2-a78a-53c33b3edcfb",
+      "date": "2026-09-10",
+      "title": "洗被子",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "c318393e-01d9-4fa3-8d38-8b4e0229ecf3",
+      "date": "2026-09-11",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": true,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "3513d33a-d9e5-41d4-b710-80065b1c9a4e",
+      "date": "2026-09-11",
+      "title": "医院 MRI / 开证明并申请保健课",
+      "done": true,
+      "kind": "task",
+      "start": "13:00"
+    },
+    {
+      "id": "1f50161b-d3fa-45cd-823c-2c9be3bd9507",
+      "date": "2026-09-11",
+      "title": "宿舍卫生检查",
+      "done": true,
+      "kind": "task",
+      "start": "14:00",
+      "end": "15:00"
+    },
+    {
+      "id": "6d3a08f3-f747-411e-81fe-4de801e43e51",
+      "date": "2026-09-11",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": true,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "19091861-708c-4d40-b76a-f99df67389c7",
+      "date": "2026-09-11",
+      "title": "科协全体大会 · CB101",
+      "done": true,
+      "kind": "task",
+      "start": "20:00",
+      "end": "21:00"
+    },
+    {
+      "id": "05cf729d-c7e0-4da0-941c-d71502bc1036",
+      "date": "2026-09-11",
+      "title": "普化预习",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "ec3b6de3-c5ed-49e4-b816-9cedccbc4908",
+      "date": "2026-09-11",
+      "title": "洗衣服",
+      "done": true,
+      "kind": "task"
+    },
+    {
+      "id": "d52934ec-575c-43ad-950b-d12c7b49291e",
+      "date": "2026-09-11",
+      "title": "约陆旭景",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "5a98cd17-288e-44de-9b10-7d21e7aa1e53",
+      "date": "2026-09-11",
+      "title": "约音乐",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "a91f4e83-56ec-4131-b611-df6c3dc55c03",
+      "date": "2026-09-11",
+      "title": "约朱勋帅",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "blood-2026-09-12",
+      "date": "2026-09-12",
+      "title": "血检+腰椎诊断（上午空腹）",
+      "done": true,
+      "kind": "task",
+      "start": "08:00",
+      "end": "11:00"
+    },
+    {
+      "id": "8c43ca90-3bb2-4cd9-bcc2-e9059466d992",
+      "date": "2026-09-12",
+      "title": "董瀚林-曼昆",
+      "done": true,
+      "kind": "task",
+      "start": "11:00"
+    },
+    {
+      "id": "572134b7-43f0-481f-927a-8dd53d42fd0e",
+      "date": "2026-09-12",
+      "title": "被子拿",
+      "done": false,
+      "kind": "task",
+      "start": "12:00"
+    },
+    {
+      "id": "baa623fd-6012-48a7-8af1-7080dfb1e366",
+      "date": "2026-09-13",
+      "title": "陆旭景 泊星地咖啡厅",
+      "done": true,
+      "kind": "task",
+      "start": "12:30"
+    },
+    {
+      "id": "fa488487-3d68-48e7-8102-152a0de73238",
+      "date": "2026-09-13",
+      "title": "化学你我公众号排版培训 · CB203（2026级务必参加）",
+      "done": false,
+      "kind": "task",
+      "start": "19:00",
+      "end": "20:00"
+    },
+    {
+      "id": "dce1d258-5dec-49dc-ac16-855615d1ad96",
+      "date": "2026-09-14",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "28e153d6-719f-453d-b062-83e3121b37e0",
+      "date": "2026-09-14",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "c4afc5a9-9962-4c83-b1f7-a1671aa574ae",
+      "date": "2026-09-14",
+      "title": "图书馆讲座 · 图书馆资源与服务全景扫描（刘姝）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "ba3b4cd0-6fab-4943-b3f4-c98284a76db9",
+      "date": "2026-09-14",
+      "title": "文章审稿讲解（张瑞杰、张顾严学长）· 周一晚待确认",
+      "done": true,
+      "kind": "task",
+      "start": "19:00",
+      "end": "21:00"
+    },
+    {
+      "id": "acfe1334-f493-4c3a-8129-30cd6969d5ce",
+      "date": "2026-09-14",
+      "title": "文章审稿讲解（张瑞杰、张顾严学长）· 周一晚b400",
+      "done": true,
+      "kind": "task",
+      "start": "19:00",
+      "end": "21:00"
+    },
+    {
+      "id": "98a16777-13d6-476d-af68-5cdd8557f6f5",
+      "date": "2026-09-14",
+      "title": "下午可以取报告",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "32b00929-59f7-44c9-af87-cc9085d8c70c",
+      "date": "2026-09-15",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": true,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "60ead6cc-1904-4521-9999-72c05ee31e2f",
+      "date": "2026-09-15",
+      "title": "9月15日 10:00报名四级",
+      "done": true,
+      "kind": "task",
+      "start": "10:00"
+    },
+    {
+      "id": "6f212650-3238-4d3f-a2d8-485d04cffe31",
+      "date": "2026-09-15",
+      "title": "二教412拿书",
+      "done": false,
+      "kind": "task",
+      "start": "10:00",
+      "end": "12:00"
+    },
+    {
+      "id": "15b05645-2f49-4d71-99dd-bea96647ada9",
+      "date": "2026-09-15",
+      "title": "英汉口译 · 文史309",
+      "done": true,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "59d78548-871e-4a29-8f00-ef0c2f16e4cb",
+      "date": "2026-09-15",
+      "title": "计算概论(B) · 理教207",
+      "done": true,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "ebb4ee55-c325-4db1-914c-ac05bfa2ea88",
+      "date": "2026-09-15",
+      "title": "图书馆讲座 · 图书馆藏书检索与高效利用攻略（张晓琳）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "1e4153b4-c050-41ad-94e9-e762991eac7d",
+      "date": "2026-09-15",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "3272cf06-ac47-4296-b214-08e03f81ca9c",
+      "date": "2026-09-15",
+      "title": "快递",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "cf239bda-ab18-4243-a413-03b056a09c4e",
+      "date": "2026-09-16",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "bba14492-51ab-4968-9519-015538539a69",
+      "date": "2026-09-16",
+      "title": "理论与计算化学导论（杨立江） · 理教410",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "ab685e52-8249-4c72-a01b-3f618dd16942",
+      "date": "2026-09-16",
+      "title": "今日化学 · 高分子化学（刘允） · 化学楼B400",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "a784cfa9-ea5f-44a8-b103-a0b716a64874",
+      "date": "2026-09-16",
+      "title": "图书馆讲座 · 通过馆际互借快速获取馆外文献（朱玲）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "88ff1aed-1d5d-4d1b-9d31-96a3eb7809b0",
+      "date": "2026-09-16",
+      "title": "论文选题与小组成员提交",
+      "done": true,
+      "kind": "deadline"
+    },
+    {
+      "id": "ed3f0bae-20ef-4ef6-a8d6-7bcfb3f87efd",
+      "date": "2026-09-17",
+      "title": "普通化学实验 · 仪器的洗涤和干燥；铜的反应循环 · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "5dbd4c3f-eade-4b39-997c-988c1b255e11",
+      "date": "2026-09-17",
+      "title": "票",
+      "done": false,
+      "kind": "deadline",
+      "start": "12:45"
+    },
+    {
+      "id": "e9ffb424-6da7-461e-bd25-815d852bac7e",
+      "date": "2026-09-17",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "82309ae3-60f5-4238-81ba-06ff7b4b5014",
+      "date": "2026-09-17",
+      "title": "图书馆讲座 · 三大中文期刊数据库的检索与利用（罗文馨）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "506f4c42-7701-4de5-803f-9be6347fab1b",
+      "date": "2026-09-17",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:00",
+      "end": "21:30"
+    },
+    {
+      "id": "4076057b-bceb-42a6-93f5-cdc47ad51a29",
+      "date": "2026-09-18",
+      "title": "学院科协预实验（占用上课时间）",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "11:00"
+    },
+    {
+      "id": "7cc24808-c703-4df3-b873-1891f97059ec",
+      "date": "2026-09-18",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "9b418bae-3c1d-4b90-be07-b14cb4264f07",
+      "date": "2026-09-18",
+      "title": "心理咨询-新太阳4楼",
+      "done": false,
+      "kind": "task",
+      "start": "15:30",
+      "end": "16:00"
+    },
+    {
+      "id": "5225486f-88f3-407c-953e-1cf45c1c13bf",
+      "date": "2026-09-18",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "8e176a52-c985-4d7a-83c9-cbab455358b4",
+      "date": "2026-09-20",
+      "title": "公休",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "55e183d3-3798-4e33-bdaf-1244ed245e1f",
+      "date": "2026-09-21",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "6e80ba79-fdae-4a93-8afa-946747de9c3d",
+      "date": "2026-09-21",
+      "title": "计概上机理科一号楼1220E",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "f2e0bb23-eccb-4ce4-88ab-e30b8178eb16",
+      "date": "2026-09-21",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "6b4e0c3d-e596-45ae-8c9c-2dc3c4431725",
+      "date": "2026-09-21",
+      "title": "图书馆讲座 · 中外文电子图书资源简介（唐勇）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "c03c9027-35ad-4fd9-b8e2-c7a76369de7f",
+      "date": "2026-09-22",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "fed6125e-d0d5-4179-b2fc-0b6289b4b750",
+      "date": "2026-09-22",
+      "title": "英汉口译 · 文史309",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "b10ef062-3477-43c6-837c-3c5c703750ee",
+      "date": "2026-09-22",
+      "title": "计算概论(B) · 理教207",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "813c17d7-f67c-478c-8680-6cce685bfdfa",
+      "date": "2026-09-22",
+      "title": "图书馆讲座 · 边学边用，遍历西文电子期刊库（刘姝）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "5406dcc9-8a56-41a9-9943-ed4481f76362",
+      "date": "2026-09-22",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "bad83a9b-3558-44ab-9a64-d09cccadfcc0",
+      "date": "2026-09-23",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "c119fc34-bdcd-40ae-a96d-819b7a90451f",
+      "date": "2026-09-23",
+      "title": "理论与计算化学导论（杨立江） · 计算中心二层3号机房",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "293a7448-b87c-46a1-a81a-d2fb29308f81",
+      "date": "2026-09-23",
+      "title": "今日化学 · 化学生物学（季者） · 化学楼CB106",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "6d027b2f-f85d-4aee-9378-4acb24a8f899",
+      "date": "2026-09-23",
+      "title": "图书馆讲座 · 学位论文的检索与全文获取（徐清白）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "8a51a1e7-964e-4996-8940-9ec0ce2e73b5",
+      "date": "2026-09-23",
+      "title": "博雅理学讲堂 · 哲学201",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "41c912b2-a44e-4bd3-a0bb-b9e11eb03f46",
+      "date": "2026-09-24",
+      "title": "普通化学实验 · 沉淀生成与分步沉淀；量子点制备 · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "8f78f056-6919-4dd7-af1d-f2819dd29d62",
+      "date": "2026-09-24",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "78cc9414-f0dc-4f45-99ba-112d834530e8",
+      "date": "2026-09-24",
+      "title": "图书馆讲座 · Photoshop使用技巧及应用案例（汪聪）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "f7db9d1a-3c86-44af-9dff-e89c3ca6650e",
+      "date": "2026-09-24",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "34255725-e385-4ed5-874d-c15b79d73c93",
+      "date": "2026-09-25",
+      "title": "中秋放假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "17d4e2e1-ac83-4445-a0a3-1729460b6026",
+      "date": "2026-09-26",
+      "title": "公休",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "3a4d69de-828b-4ba7-9c56-12c634c382b5",
+      "date": "2026-09-27",
+      "title": "公休",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "5257749c-6788-4b8d-8677-5ef063139308",
+      "date": "2026-09-28",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "eeb68fa4-eec2-419d-98c5-a54fb5d34c75",
+      "date": "2026-09-28",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "62b80fb8-9a24-44a9-b772-52a47c04b308",
+      "date": "2026-09-29",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "22902d05-abfc-4b3e-8390-803d67f7e045",
+      "date": "2026-09-29",
+      "title": "英汉口译 · 文史309",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "c83eaaa2-f732-4f68-baa6-dd5a339128cb",
+      "date": "2026-09-29",
+      "title": "计算概论(B) · 理教207",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "ffcb1ccc-605c-41de-a684-8a3c718c599a",
+      "date": "2026-09-29",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "2a09a6e2-31c0-449b-a0bb-75291b3aca0e",
+      "date": "2026-09-30",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "162dc54e-01e3-4fa0-aee7-d69f87449dfe",
+      "date": "2026-09-30",
+      "title": "理论与计算化学导论（李霄） · 理教410",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "60e183bb-96e6-4a53-b249-fbbb3f5c394b",
+      "date": "2026-09-30",
+      "title": "今日化学 · 理论与计算化学（刘剑） · 化学楼CB121",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "eba4d398-cd89-4c75-915e-7ba24ddfd03c",
+      "date": "2026-10-01",
+      "title": "国庆放假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "5654c33b-a8c5-41a1-a794-557fdeb35c95",
+      "date": "2026-10-02",
+      "title": "国庆放假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "a10982d9-85e5-43e4-8794-50161984b1f6",
+      "date": "2026-10-03",
+      "title": "国庆放假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "b8846fa0-7525-4635-8fb5-6c5c63088d65",
+      "date": "2026-10-04",
+      "title": "国庆放假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "6f02abc3-2358-42b0-b630-28509e9b4fb3",
+      "date": "2026-10-05",
+      "title": "国庆放假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "9f0895b2-6764-4c18-abe0-b5ba864b5394",
+      "date": "2026-10-06",
+      "title": "国庆放假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "2b31c134-f982-47ac-93a1-3bc2cea79c44",
+      "date": "2026-10-07",
+      "title": "国庆放假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "01086422-437d-4280-96df-0ecacc84a270",
+      "date": "2026-10-08",
+      "title": "普通化学实验 · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "7f27a863-6691-4593-897b-f9b92e5e34ef",
+      "date": "2026-10-08",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "e2b79e6b-251c-444d-805e-b2b9b53f96dc",
+      "date": "2026-10-08",
+      "title": "图书馆讲座 · PowerPoint使用技巧及应用案例（吴亚平）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "82d93116-c8a0-4bbf-b998-4436e9a92467",
+      "date": "2026-10-08",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "96aa1f53-73a6-4a42-a1cc-edabb9a07109",
+      "date": "2026-10-09",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "17b7a3a6-8ee1-4b31-a01c-b8640d01e04e",
+      "date": "2026-10-09",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "c406ce9a-fc4a-4ef7-94ed-3c88fbdf3140",
+      "date": "2026-10-10",
+      "title": "公休",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "c8d89ccc-6535-49fd-be47-3b6b7e04860a",
+      "date": "2026-10-11",
+      "title": "续借《货币金融学》截止",
+      "done": false,
+      "kind": "deadline"
+    },
+    {
+      "id": "c3aee27c-0b74-4d63-a276-662ba446206d",
+      "date": "2026-10-12",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "5c986f31-2cd3-482c-9c6e-a9d7b54f092a",
+      "date": "2026-10-12",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "7a42d429-4373-4370-9e2f-b72df0260433",
+      "date": "2026-10-12",
+      "title": "图书馆讲座 · 如何利用WOS洞悉学科热点（王盛）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "990fac84-0624-4c5a-b162-c1a154e916d0",
+      "date": "2026-10-12",
+      "title": "军事理论直播课",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "20:30"
+    },
+    {
+      "id": "ab4800b7-16d7-40aa-8f66-2cf06157f2b6",
+      "date": "2026-10-12",
+      "title": "周刊1",
+      "done": false,
+      "kind": "deadline"
+    },
+    {
+      "id": "e41a59ac-7533-4400-8e66-e86218a119ab",
+      "date": "2026-10-12",
+      "title": "周刊提交截止",
+      "done": false,
+      "kind": "deadline"
+    },
+    {
+      "id": "21fc955b-49ac-4645-8d5d-c45a1eb37432",
+      "date": "2026-10-13",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "caf388db-7289-4aa9-974f-e5fc8fca2e04",
+      "date": "2026-10-13",
+      "title": "英汉口译 · 文史309",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "5e5b2e83-70e0-46bd-9470-b2d859b13221",
+      "date": "2026-10-13",
+      "title": "计算概论(B) · 理教207",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "6dcc236a-e409-455b-9b7b-1bdc14d1ec0b",
+      "date": "2026-10-13",
+      "title": "图书馆讲座 · 开题与立项前的文献调研（文）（刘雅琼）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "32f96a68-c607-4e61-a7b7-088558396f98",
+      "date": "2026-10-13",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "62d1b476-90df-4a1d-9ad9-dde69bfb5883",
+      "date": "2026-10-14",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "047b4c2b-5e30-494f-8472-510eaa2418b9",
+      "date": "2026-10-14",
+      "title": "化学实验室安全技术 · 二教207",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "e2ff1ce6-b143-490e-bb1f-bb5365234cfd",
+      "date": "2026-10-14",
+      "title": "理论与计算化学导论（李霄） · 计算中心二层3号机房",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "1e5b7574-d7af-458f-a0d5-5cbac4855386",
+      "date": "2026-10-14",
+      "title": "今日化学 · 无机化学（卞祖强） · 化学楼A813",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "cb5cc47c-d174-4f0c-b572-184aeee32926",
+      "date": "2026-10-14",
+      "title": "图书馆讲座 · 利用专利资源进行创新性选题（刘秀文）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "a80869ac-be1a-4391-8d99-77068b7c0ee1",
+      "date": "2026-10-15",
+      "title": "普通化学实验 · 元素性质与化学平衡 · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "0f62d380-4c99-4b8e-bbed-3e5b80e874c7",
+      "date": "2026-10-15",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "fdec3e6b-a14c-4843-b13a-e2899f106664",
+      "date": "2026-10-15",
+      "title": "图书馆讲座 · 依托政策文件进行论文选题的方法（傅居正）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "419197ab-0869-4b2c-a285-ede86f2961dc",
+      "date": "2026-10-15",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "20de9b03-aa94-4a6c-b617-e0762c4b48ec",
+      "date": "2026-10-16",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "77c4543b-06d4-4fd9-9a0a-005523494576",
+      "date": "2026-10-16",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "d545f6c9-84ec-499b-a9a6-7757e6028642",
+      "date": "2026-10-19",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "89b2ac14-a6e7-4f37-ab24-15843f44df20",
+      "date": "2026-10-19",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "4eebdcb2-49dc-4f88-b88a-9c5f63135994",
+      "date": "2026-10-19",
+      "title": "图书馆讲座 · AIGC背景下的学术文献检索实用攻略（刘雅琼）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "cc3be275-0d66-45ff-8b3e-27eea9ab32a0",
+      "date": "2026-10-20",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "cfbcb136-199e-4fb0-bf9c-e5e917490f6f",
+      "date": "2026-10-20",
+      "title": "英汉口译 · 文史309",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "f81a8ad7-5011-4f56-9b0e-caf7e06d379a",
+      "date": "2026-10-20",
+      "title": "计算概论(B) · 理教207",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "3aca79e1-c0e1-40ff-a976-8cf4488b870c",
+      "date": "2026-10-20",
+      "title": "图书馆讲座 · 开放获取类学术论文资源的检索与利用（刘宇初）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "e58951a2-3a01-4d3c-9144-5aae5a4a4617",
+      "date": "2026-10-20",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "d005aaf6-b291-4075-91be-80da52fe744c",
+      "date": "2026-10-21",
+      "title": "可能测验一",
+      "done": false,
+      "kind": "deadline",
+      "allDay": true
+    },
+    {
+      "id": "968b6662-f2cc-43aa-82a6-6ed83fd05b6c",
+      "date": "2026-10-21",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "956b519d-eb3f-4887-bd77-eef25b6ca633",
+      "date": "2026-10-21",
+      "title": "化学实验室安全技术 · 二教207",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "16ecff81-7009-4c24-8a88-518f91bfa739",
+      "date": "2026-10-21",
+      "title": "理论与计算化学导论（李霄） · 计算中心二层3号机房",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "42574a27-cf9f-4244-a438-cf80d38ff197",
+      "date": "2026-10-21",
+      "title": "今日化学 · 物理化学（马丁） · 化学楼B300",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "baecd4ee-8bb5-48c9-95e0-ebbd269ff383",
+      "date": "2026-10-21",
+      "title": "图书馆讲座 · 老北大史料的检索和利用（栾伟平）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "8a44c37d-4881-4046-a454-cec9f7151d69",
+      "date": "2026-10-21",
+      "title": "博雅理学讲堂 · 哲学201",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "c9a084dd-44bd-4b7e-93e4-cdf8a0e4588d",
+      "date": "2026-10-22",
+      "title": "普通化学实验 · 混合阴离子溶液的分离及检出 · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "66b40906-ef13-4d8a-ba51-0398d56c8acd",
+      "date": "2026-10-22",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "1316a079-7f38-4a9e-b387-d1072a62b186",
+      "date": "2026-10-22",
+      "title": "图书馆讲座 · 开题与立项前的文献调研（理）（赵飞）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "c0e89fd7-bb18-48bb-9047-d2204e48a76b",
+      "date": "2026-10-22",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "48993916-d74f-4bb0-8e57-7ea1ba794460",
+      "date": "2026-10-23",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "4595db2c-f619-4c2c-ae87-66364baf8858",
+      "date": "2026-10-23",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "e47169b7-7ece-4fa1-a595-748baed7cf06",
+      "date": "2026-10-26",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "d8a50b9d-b0b9-4d9f-b4c5-9c34f3b81bb5",
+      "date": "2026-10-26",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "4780330e-2bda-42de-993f-4637194c7cb6",
+      "date": "2026-10-26",
+      "title": "图书馆讲座 · 数据获取与合理利用（唐勇）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "5e9384c3-b19e-4de7-be38-8495004915a0",
+      "date": "2026-10-26",
+      "title": "军事理论直播课",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "20:30"
+    },
+    {
+      "id": "ce40dfe1-f924-4e68-b331-6bf86c5f8423",
+      "date": "2026-10-27",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "021ba269-795d-4cb6-9bb6-fe3041da5298",
+      "date": "2026-10-27",
+      "title": "英汉口译 · 文史309",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "cff6dc8a-61b6-407e-8b52-79a8e773d783",
+      "date": "2026-10-27",
+      "title": "计算概论(B) · 理教207",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "ab57075b-0d92-475e-b4e2-8a78e2217bb5",
+      "date": "2026-10-27",
+      "title": "图书馆讲座 · 科研常用开放数据的查找与获取（吴爱芝）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "b63f53a1-a284-4946-bdda-10224e9b0e1d",
+      "date": "2026-10-27",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "a0178a9c-f17b-4a23-932b-f97523aeb043",
+      "date": "2026-10-28",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "213e0823-43ab-47ee-ad22-e7823d6af697",
+      "date": "2026-10-28",
+      "title": "化学实验室安全技术 · 二教207",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "fb898091-21d5-47bc-a536-5942f03155cf",
+      "date": "2026-10-28",
+      "title": "理论与计算化学导论（杨立江） · 计算中心二层3号机房",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "30d06a79-c3e4-4eeb-a418-a0be8adc568f",
+      "date": "2026-10-28",
+      "title": "今日化学 · 应用化学（刘志博） · 技物楼211",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "0d057863-6b47-431e-9751-4cd287073253",
+      "date": "2026-10-28",
+      "title": "图书馆讲座 · Python基础与网络爬虫（王昊贤）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "244b7a7c-c0ab-4fe1-9f0f-ce54fd806380",
+      "date": "2026-10-29",
+      "title": "普通化学实验 · 阴离子未知液的分析（考查实验） · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "dd80d91b-3036-4bbd-a736-26c336a12c2b",
+      "date": "2026-10-29",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "4748ad60-e811-4083-8d49-b51bc72e84c2",
+      "date": "2026-10-29",
+      "title": "图书馆讲座 · 经济类统计数据的查询与获取（吴爱芝）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "2a79250d-faf9-4fa8-a7c5-6fe634aec40b",
+      "date": "2026-10-29",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "1673be53-6996-4367-b46f-28a39c3c44cb",
+      "date": "2026-10-30",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "b4917853-37ad-497c-8441-ca8bc3ce0499",
+      "date": "2026-10-30",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "657c8363-0b05-48db-9096-48e28b72b3f5",
+      "date": "2026-11-02",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "ebff4a33-2d8a-42d7-9e3a-29c5e9aa1fc8",
+      "date": "2026-11-02",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "c2b3eaa8-aab3-41eb-a7e2-efc3a71cc966",
+      "date": "2026-11-02",
+      "title": "图书馆讲座 · Excel使用技巧之数据透视（金鑫）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "bc5cf066-8793-4427-9a56-3b43040c669f",
+      "date": "2026-11-03",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "8321d0d8-ce5d-4f8e-b06d-094e973b9ac5",
+      "date": "2026-11-03",
+      "title": "英汉口译 · 文史309",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "74ee3998-55c3-4280-9f3a-175b4d2fa0d4",
+      "date": "2026-11-03",
+      "title": "计算概论(B) · 理教207",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "30f42af9-0b2e-474f-9030-c996216cbaae",
+      "date": "2026-11-03",
+      "title": "图书馆讲座 · SPSS常用统计分析功能介绍（王盛）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "908368a2-b1e9-4858-9ea0-e653461db34f",
+      "date": "2026-11-03",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "ef3aaf46-b1d4-4505-a547-fcb143b92f7e",
+      "date": "2026-11-03",
+      "title": "英汉口译 期中考",
+      "done": false,
+      "kind": "deadline"
+    },
+    {
+      "id": "1fbabd4c-2e40-4189-a265-4f84488df666",
+      "date": "2026-11-04",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "3d10bfe0-f975-421a-83eb-3c2c30d40cc4",
+      "date": "2026-11-04",
+      "title": "化学实验室安全技术 · 二教207",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "a63af85f-09fb-4897-a6f5-8a3660683018",
+      "date": "2026-11-04",
+      "title": "理论与计算化学导论（肖云龙） · 理教410",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "2bcdff44-b5f1-4764-956c-8fc2ab811ded",
+      "date": "2026-11-04",
+      "title": "今日化学 · 有机化学（焦阳） · 化学楼CB213",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "fc14a22c-ccd3-4bde-bf97-d42f4fc88a09",
+      "date": "2026-11-04",
+      "title": "图书馆讲座 · R语言入门及其在数据分析中的应用介绍（曾睿）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "4ad6a380-3a66-42b1-b64c-d2c96bdd1812",
+      "date": "2026-11-04",
+      "title": "博雅理学讲堂 · 哲学201",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "3a5c3a97-e567-41d4-8b18-8fd04c19d142",
+      "date": "2026-11-05",
+      "title": "普通化学实验 · 提纯氯化钠 · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "453b2fb6-9390-4ac0-ba20-64a6304f337f",
+      "date": "2026-11-05",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "9a786cf5-be6f-474d-8016-db6b6a20b726",
+      "date": "2026-11-05",
+      "title": "图书馆讲座 · Python数据分析之Pandas快速入门（周建超）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "eb38165d-3f58-4cf8-afb7-2fb0c3341894",
+      "date": "2026-11-05",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "9df91f56-1e4f-49ee-a13e-19689e07ec2b",
+      "date": "2026-11-06",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "03bccc66-4e28-4e26-b955-140b7b1088d5",
+      "date": "2026-11-06",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "e3143034-b491-40a1-9b51-baa939131b8c",
+      "date": "2026-11-09",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "acfa3590-0126-4f57-8196-08257086da26",
+      "date": "2026-11-09",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "0bc83fa0-27f5-492d-8389-6291f2f812fc",
+      "date": "2026-11-09",
+      "title": "图书馆讲座 · 数据可视化快速入门（罗文馨）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "e495e06d-b523-4925-a38d-e2f22653b8fc",
+      "date": "2026-11-09",
+      "title": "军事理论直播课",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "20:30"
+    },
+    {
+      "id": "7039633a-c488-4ffe-994c-0a8bcaf68d12",
+      "date": "2026-11-10",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "5f0c8eb8-1de2-424d-95b4-3eca25902f6d",
+      "date": "2026-11-10",
+      "title": "英汉口译 · 文史309",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "06b93042-1f94-49dd-9921-8965de8ea64d",
+      "date": "2026-11-10",
+      "title": "计算概论(B) · 理教207",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "ba750b49-c2c4-4d5b-b2ec-2e523f6515e9",
+      "date": "2026-11-10",
+      "title": "图书馆讲座 · Excel使用技巧之图表设计（王怡玫）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "9420845a-779b-4d93-965d-d85dce829b59",
+      "date": "2026-11-10",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "98a5ec1d-eed3-4553-9496-de1fe416b1b0",
+      "date": "2026-11-11",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "16b081c3-4a8c-4133-9573-4e7981fc21b7",
+      "date": "2026-11-11",
+      "title": "化学实验室安全技术 · 二教207",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "ff392fd8-8697-4da0-8528-b6ebfeb9bc6e",
+      "date": "2026-11-11",
+      "title": "理论与计算化学导论（肖云龙） · 理教410",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "45546834-b797-45dc-a1af-61ff9a58249a",
+      "date": "2026-11-11",
+      "title": "今日化学 · 分析化学（夏斌） · 核磁中心106",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "de35ce28-882c-4495-8897-71ae869bf2d5",
+      "date": "2026-11-11",
+      "title": "图书馆讲座 · AI赋能下的R语言科研绘图攻略（张亦驰）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "d8416d5a-ddea-4106-8a85-49c98dba8947",
+      "date": "2026-11-12",
+      "title": "普通化学实验 · 未知弱酸/碱电离常数的测定 · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "50e5ac42-0fda-41e6-a060-b8c85dcc92d0",
+      "date": "2026-11-12",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "408b4c17-754b-474f-ba04-9a69ae441b9e",
+      "date": "2026-11-12",
+      "title": "图书馆讲座 · VOSviewer文献可视化分析入门（刘宇初）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "4e645c1e-f623-468e-adfe-d81c5bfd61fd",
+      "date": "2026-11-12",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "019c7f7b-ddb4-4b62-9bce-4b6c524ec73c",
+      "date": "2026-11-13",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "80797f0a-420d-40f1-b22d-afc480679eef",
+      "date": "2026-11-13",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "82471ae9-30c5-4ea0-bd5f-2e2581a87ec8",
+      "date": "2026-11-13",
+      "title": "论文提交",
+      "done": false,
+      "kind": "deadline",
+      "end": "23:59"
+    },
+    {
+      "id": "488b80d5-edf5-4c21-acee-23c3cb7957ea",
+      "date": "2026-11-16",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "c9ce7980-58a9-4924-839e-8dc1ee6dd584",
+      "date": "2026-11-16",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "8f0ef9a6-aabc-481b-9ba2-082b5bf4a926",
+      "date": "2026-11-16",
+      "title": "图书馆讲座 · LaTeX论文排版实用攻略（周建超）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "5d69fcb7-f4ab-407a-86b4-1d4cc96eec58",
+      "date": "2026-11-16",
+      "title": "小论文报告",
+      "done": false,
+      "kind": "deadline"
+    },
+    {
+      "id": "535e7f81-0c0b-499d-bf77-830e4addda7a",
+      "date": "2026-11-17",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "b339a796-53ed-4a7f-8352-935f3e5a4c9e",
+      "date": "2026-11-17",
+      "title": "英汉口译 · 文史309",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "6467dafa-3993-4e89-975e-4b704637b49e",
+      "date": "2026-11-17",
+      "title": "计算概论(B) · 理教207",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "77efe902-7cb0-418d-a03b-b0b87ea5c5d6",
+      "date": "2026-11-17",
+      "title": "图书馆讲座 · 文献管理软件的功能与使用（刘秀文）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "a1b5e617-d796-4948-9cee-9d61b4c8974c",
+      "date": "2026-11-17",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "619fec8d-27db-4bb7-9e5a-054bbf79afb7",
+      "date": "2026-11-18",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "1ca70d6f-b9a7-4721-b6cd-c33e289439e5",
+      "date": "2026-11-18",
+      "title": "化学实验室安全技术 · 二教207",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "1299727c-3640-4265-a6af-a98107d02459",
+      "date": "2026-11-18",
+      "title": "理论与计算化学导论（肖云龙） · 理教410",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "af9b04ba-fba9-45cd-bc9a-45d40d11aa2a",
+      "date": "2026-11-18",
+      "title": "今日化学 happyhour（无需全程参加） · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "14:00",
+      "end": "18:00"
+    },
+    {
+      "id": "98aea02e-b001-4b2f-952f-7e0e127b9687",
+      "date": "2026-11-18",
+      "title": "图书馆讲座 · 应用于科研场景的Excel数据统计分析（金鑫）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "9348d88d-89f8-46e7-a427-e1f8dc7b2365",
+      "date": "2026-11-18",
+      "title": "博雅理学讲堂 · 哲学201",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "cd972f48-05bc-4b64-95e0-12b2f8d64e1d",
+      "date": "2026-11-19",
+      "title": "普通化学实验 · 解法测定阿伏加德罗常数及气体常数 · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "f0a7913b-de5d-4016-ab86-87a45c7d8b8c",
+      "date": "2026-11-19",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "3634dde9-2e9e-480e-a509-7544f626a165",
+      "date": "2026-11-19",
+      "title": "图书馆讲座 · AI赋能下的科研信息洞察攻略（张亦驰）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "eb7101b3-0abc-46cf-8be1-f8e7aa37ff3f",
+      "date": "2026-11-19",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "895a421f-552a-4d38-ab6d-f02fc9086fbb",
+      "date": "2026-11-20",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "a2ac1061-c35a-4ae9-914a-5b702bdbbc57",
+      "date": "2026-11-20",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "d12c712a-4b95-44c9-844a-3da9f92cc80f",
+      "date": "2026-11-21",
+      "title": "英语四级口试",
+      "done": false,
+      "kind": "deadline"
+    },
+    {
+      "id": "08920624-b066-4b21-a1c9-23174b5920e2",
+      "date": "2026-11-23",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "d72d69dd-96fb-4106-8a22-1df88467329f",
+      "date": "2026-11-23",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "84ced5ec-c519-4461-9091-f5fdc7345a8d",
+      "date": "2026-11-23",
+      "title": "图书馆讲座 · 学术规范与论文写作（张慧丽）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "eb570da7-8e18-446d-a6cf-da5941fd3650",
+      "date": "2026-11-23",
+      "title": "军事理论直播课",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "20:30"
+    },
+    {
+      "id": "178af573-514f-4b5e-bd4f-303f876acbdd",
+      "date": "2026-11-24",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "1640f2e5-d1a9-4e0d-84eb-482ca7a5345f",
+      "date": "2026-11-24",
+      "title": "英汉口译 · 文史309",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "c4a82360-4ca0-4e1a-ad56-07d1cbef2120",
+      "date": "2026-11-24",
+      "title": "计算概论(B) · 理教207",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "5f83ca8d-9667-4738-8de5-ba1c2159a84c",
+      "date": "2026-11-24",
+      "title": "图书馆讲座 · 自然科学类英文论文的撰写与修改（入门）（王怡玫）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "5af25a51-a628-4697-8d4c-e0cca5af77f6",
+      "date": "2026-11-24",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "46b50c5f-33b3-485f-a019-c8a769553129",
+      "date": "2026-11-25",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "e1c2be14-a855-4193-b658-3fbb5d0335e7",
+      "date": "2026-11-25",
+      "title": "化学实验室安全技术 · 二教207",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "2473332d-addb-4652-bc8c-dd57e9c7bb29",
+      "date": "2026-11-25",
+      "title": "理论与计算化学导论（肖云龙） · 计算中心二层3号机房",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "1061d530-973e-4201-807c-210df78599a2",
+      "date": "2026-11-25",
+      "title": "今日化学",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "c86e4baf-49d1-41c5-be03-12e63d7ffeaf",
+      "date": "2026-11-25",
+      "title": "图书馆讲座 · AI辅助下的文献综述写作秘籍（傅居正）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "e6de2332-af8c-48e6-bf05-9bc154ab35d5",
+      "date": "2026-11-26",
+      "title": "普通化学实验 · 化学反应速率与活化能的测定 · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "26d1f844-562f-49d2-aa66-e8a30c23d0b9",
+      "date": "2026-11-26",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "1e9644af-ef36-4ca9-a1cd-5b2194968708",
+      "date": "2026-11-26",
+      "title": "图书馆讲座 · 学术论文投稿指南（张春红）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "2cde761f-7528-4013-a3ea-231383672bf7",
+      "date": "2026-11-26",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "ca1f23e9-81df-4175-8283-7446a3180fe1",
+      "date": "2026-11-27",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "c4c7ffd7-7d46-4b33-8f80-604dcbe4ac60",
+      "date": "2026-11-27",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "74f92d8c-c06b-4106-af85-a7b54229c185",
+      "date": "2026-11-30",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "80dea88c-ee17-47d1-95d6-9d20c7d2a671",
+      "date": "2026-11-30",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "46757252-0c35-4630-9988-0e4ad0233e01",
+      "date": "2026-11-30",
+      "title": "图书馆讲座 · 古籍资源的检索与利用（刘贝嘉）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "21d49a4c-da50-4d48-8339-711551b933c4",
+      "date": "2026-12-01",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "c9e0f270-ec04-4bcd-9336-ba9c23f00296",
+      "date": "2026-12-01",
+      "title": "英汉口译 · 文史309",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "e5ef8077-3d41-4eda-abf8-9d63ead439da",
+      "date": "2026-12-01",
+      "title": "计算概论(B) · 理教207",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "084f8ade-e288-4580-901c-08f9dad35ec0",
+      "date": "2026-12-01",
+      "title": "图书馆讲座 · Adobe Illustrator使用技巧及应用案例（安东）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "fae738ea-7b5c-4390-bf17-3ff7572bb3e6",
+      "date": "2026-12-01",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "a8534654-d1c9-437d-90d9-9b333def87a1",
+      "date": "2026-12-02",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "eaa8348a-da86-41fc-a151-270dd5c24add",
+      "date": "2026-12-02",
+      "title": "化学实验室安全技术 · 二教207",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "43eed4df-922a-47f4-8842-4e8043d8a449",
+      "date": "2026-12-02",
+      "title": "理论与计算化学导论（李晨） · 理教410",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "01748407-ab83-48df-a8e1-8e774343fc96",
+      "date": "2026-12-02",
+      "title": "今日化学",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "ad28dc07-539b-443e-b902-18a70ccd6ca4",
+      "date": "2026-12-02",
+      "title": "图书馆讲座 · 照片处理软件Lightroom使用技巧（宋庆生）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "b3266862-f153-4e20-b42a-ac61dd8059f7",
+      "date": "2026-12-02",
+      "title": "博雅理学讲堂 · 哲学201",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "dfe8980b-0aeb-47fd-bffe-830e5c88fecc",
+      "date": "2026-12-03",
+      "title": "普通化学实验 · 溶剂变色Ni(II)配合物的固相合成；硫酸亚铁铵的制备 · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "444c6ba4-18fc-4405-ae77-2bc9ec3239d3",
+      "date": "2026-12-03",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "4282504c-0620-4e0d-89ed-4ac3ea061673",
+      "date": "2026-12-03",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "22b927d9-43c7-4d09-9d5b-ee0dc5758a72",
+      "date": "2026-12-04",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "f28b754a-d4dd-4b38-8783-3eedc566e3f8",
+      "date": "2026-12-04",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "0414543f-616e-4a7b-a4d0-7eadf5f3cdd6",
+      "date": "2026-12-06",
+      "title": "周刊2",
+      "done": false,
+      "kind": "deadline"
+    },
+    {
+      "id": "643e64aa-bed2-4165-a93e-b4d766e9dcc5",
+      "date": "2026-12-07",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "3a081436-df58-4a80-806a-7a7dab5952f6",
+      "date": "2026-12-07",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "542b1b4c-b778-48a3-9d9a-6cba2e3f95a6",
+      "date": "2026-12-08",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "7a760202-697a-40db-b95d-fd99c1b5ce6a",
+      "date": "2026-12-08",
+      "title": "英汉口译 · 文史309",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "79729a60-1022-4bd7-878e-754ff7374abc",
+      "date": "2026-12-08",
+      "title": "计算概论(B) · 理教207",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "e7f77d86-fed8-4bfa-855c-c019aed7c498",
+      "date": "2026-12-08",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "6e6f317a-114d-47da-a21c-ebca59b75e5f",
+      "date": "2026-12-09",
+      "title": "可能测验二",
+      "done": false,
+      "kind": "deadline",
+      "allDay": true
+    },
+    {
+      "id": "e229ecb8-7191-4c5f-b522-5ab0fbd046af",
+      "date": "2026-12-09",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "035f5d6c-1782-4abc-9e6f-f42d3ca62648",
+      "date": "2026-12-09",
+      "title": "化学实验室安全技术 · 二教207",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "23a79b18-576e-4ea1-97fa-7617b072216b",
+      "date": "2026-12-09",
+      "title": "理论与计算化学导论（李晨） · 理教410",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "be378473-b5fe-4103-acf6-b4756643a27e",
+      "date": "2026-12-09",
+      "title": "今日化学",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "20d4e936-9866-4058-9560-e51b008248cd",
+      "date": "2026-12-09",
+      "title": "合唱",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "f69e817b-64da-4615-8814-402898210a79",
+      "date": "2026-12-10",
+      "title": "普通化学实验 · 简易光度计的搭建；自制硫酸亚铁铵中Fe(III)的测定 · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "0431755b-88dd-41c0-859f-0998c12a9d88",
+      "date": "2026-12-10",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "181f4ffc-bd39-4e08-b9af-3a0702edadd9",
+      "date": "2026-12-10",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "2eac29e4-4fa7-428e-a9b8-0adfb40b780b",
+      "date": "2026-12-11",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "97895110-f84c-4ce8-9bb0-3c7711c7ddb8",
+      "date": "2026-12-11",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "25358c2c-9492-4dc4-bc6a-4ed1121eeb80",
+      "date": "2026-12-12",
+      "title": "四级考试笔试",
+      "done": false,
+      "kind": "deadline",
+      "start": "09:00",
+      "end": "11:20"
+    },
+    {
+      "id": "c1b2e997-e957-45b2-9819-548f7da24cf6",
+      "date": "2026-12-14",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "89f6fd0d-7232-4fb2-9533-588729c9763b",
+      "date": "2026-12-14",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "84eb2d46-3b33-44f2-b436-bcf4dc7cf6a8",
+      "date": "2026-12-15",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "f2119613-6705-4012-968a-f6393c82316b",
+      "date": "2026-12-15",
+      "title": "英汉口译 · 文史309",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "dcc4e79d-1f68-4d57-98c3-260173f6feca",
+      "date": "2026-12-15",
+      "title": "计算概论(B) · 理教207",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "5ea5906f-93d4-4dff-9942-4286354f2621",
+      "date": "2026-12-15",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "b66e4c15-8173-4c0b-8a75-333eaac8b41a",
+      "date": "2026-12-16",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "444822f3-8dc3-4686-9e0a-b6974fec3917",
+      "date": "2026-12-16",
+      "title": "理论与计算化学导论（李晨） · 计算中心二层3号机房",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "1142d671-b77a-4432-bebc-a5d101981a98",
+      "date": "2026-12-16",
+      "title": "今日化学",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "e1c40f60-2cf6-4ed6-a1bb-3d8bcfaa191e",
+      "date": "2026-12-16",
+      "title": "博雅理学讲堂 · 哲学201",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "2c1af4db-2c92-4367-ac74-7b93ab002802",
+      "date": "2026-12-17",
+      "title": "普通化学实验 · 浊点萃取法测定啤酒中铁含量 · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "91989d58-5183-4eb6-9feb-851321672041",
+      "date": "2026-12-17",
+      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "c7fcfdad-921f-4ab6-8b28-62dc1af18e4c",
+      "date": "2026-12-17",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "97838c5c-447d-48d5-85ca-759a1725ba90",
+      "date": "2026-12-18",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "2d8b4088-f10f-486e-a3dd-efdfac9e8876",
+      "date": "2026-12-18",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "d4858c5b-3e1b-42e3-8a89-4d1ce7c39fba",
+      "date": "2026-12-21",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "d5b7c9f1-c492-49cb-a22b-2dab535b83aa",
+      "date": "2026-12-21",
+      "title": "普通化学习题课 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "e7ef4af7-eeee-45fa-b2ab-c1745f50eea9",
+      "date": "2026-12-22",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "65ddd47c-961f-4920-a48b-e5220e8b759b",
+      "date": "2026-12-22",
+      "title": "英汉口译 · 文史309",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "f8ef5fee-1a8e-4835-b90c-be75cd85587f",
+      "date": "2026-12-22",
+      "title": "计算概论(B) · 理教207",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "18:00"
+    },
+    {
+      "id": "c596c433-571d-4da7-b012-482848b747bf",
+      "date": "2026-12-22",
+      "title": "数学习题课 · 二教315/311/302",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "e119d630-1559-4b20-9e58-da75e7b5f70c",
+      "date": "2026-12-23",
+      "title": "普通化学 · 理教201",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "09:50"
+    },
+    {
+      "id": "3ffd77ca-aa15-4b7d-a823-5733e6a94d35",
+      "date": "2026-12-23",
+      "title": "理论与计算化学导论（李晨） · 计算中心二层3号机房",
+      "done": false,
+      "kind": "task",
+      "start": "13:00",
+      "end": "14:50"
+    },
+    {
+      "id": "cc97c323-9eab-4184-8fc7-9fb214cda50f",
+      "date": "2026-12-23",
+      "title": "今日化学",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "c1708bce-bdc6-47fa-b0c0-834d738597ce",
+      "date": "2026-12-24",
+      "title": "普通化学实验 · 草酸亚铁的制备及化学式的测定 · 化学院",
+      "done": false,
+      "kind": "task",
+      "start": "08:00",
+      "end": "12:00"
+    },
+    {
+      "id": "e94773d1-d177-4973-b6de-341ba6126aca",
+      "date": "2026-12-24",
+      "title": "计算概论(B)上机 机考 · 计算中心三层1/4/5室",
+      "done": false,
+      "kind": "deadline",
+      "start": "15:10",
+      "end": "17:00"
+    },
+    {
+      "id": "27fafc58-93d2-4744-bfff-1d1e4a78fdc9",
+      "date": "2026-12-24",
+      "title": "组会",
+      "done": false,
+      "kind": "task",
+      "start": "18:30",
+      "end": "21:30"
+    },
+    {
+      "id": "ad8321b5-5fbd-41e3-bb09-be23636ffed9",
+      "date": "2026-12-25",
+      "title": "高等数学(B)(一) · 理教202",
+      "done": false,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "0e614f48-507d-43c4-814f-5fc76651655f",
+      "date": "2026-12-25",
+      "title": "大学生思想文化素养 · 理教313",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
+      "id": "10f20ac5-0f0a-4977-8844-a3f6e4e86763",
+      "date": "2026-12-28",
+      "title": "停课复习考试（至 1 月 10 日）",
+      "done": false,
+      "kind": "deadline",
+      "allDay": true
+    },
+    {
+      "id": "7ca0432f-e103-4633-bcb3-d2c86463ca98",
+      "date": "2026-12-28",
+      "title": "高等数学(B)(一) 考试",
+      "done": false,
+      "kind": "deadline",
+      "end": "21:30"
+    },
+    {
+      "id": "a0decf58-6d77-4358-9077-e22cd0bd947d",
+      "date": "2026-12-30",
+      "title": "理论与计算化学导论 考试",
+      "done": false,
+      "kind": "deadline",
+      "end": "18:00"
+    },
+    {
+      "id": "0ac21d89-5bd9-417c-a9fa-0b9752cb76d7",
+      "date": "2026-12-31",
+      "title": "大学生思想文化素养 考试",
+      "done": false,
+      "kind": "deadline",
+      "end": "21:30"
+    },
+    {
+      "id": "29bb955f-54a4-48e1-acb0-4f5637361b25",
+      "date": "2027-01-05",
+      "title": "计算概论(B) 考试",
+      "done": false,
+      "kind": "deadline",
+      "end": "18:00"
+    },
+    {
+      "id": "5fd04304-093c-4012-a0c4-f38a1daf05a4",
+      "date": "2027-01-06",
+      "title": "普通化学 考试",
+      "done": false,
+      "kind": "deadline",
+      "end": "12:00"
+    },
+    {
+      "id": "072b8c0c-50e0-4362-94b8-39fba2c3bad0",
+      "date": "2027-01-11",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "85a78b09-5989-4da3-abe1-e75cca0283c3",
+      "date": "2027-01-12",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "fe22ee2a-dc4f-404b-ac9b-c93ab504d889",
+      "date": "2027-01-13",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "da82bb5f-2f7d-4122-b2ff-6e4774ed679a",
+      "date": "2027-01-14",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "2e71df5f-5b11-440a-ad0e-159d8afb2101",
+      "date": "2027-01-15",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "94e7932c-1cab-4874-a89d-661517b66a36",
+      "date": "2027-01-16",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "b8d13fe3-dd5a-41a5-978d-40643f202954",
+      "date": "2027-01-17",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "f304f950-40cf-4044-99fe-0d809afbc47e",
+      "date": "2027-01-18",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "cf5df25c-10ca-4c04-a812-6a5c856b1e6a",
+      "date": "2027-01-19",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "e45c70b6-a5bb-467b-81b7-7090c5366ea5",
+      "date": "2027-01-20",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "9ae25b27-604b-438c-81ad-7746da7237ce",
+      "date": "2027-01-21",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "5bfe5b96-3cd0-42b7-9200-9da22dbe1079",
+      "date": "2027-01-22",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "27460ea4-fd8f-473c-9920-ef271cc963be",
+      "date": "2027-01-23",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "1b5d16c0-2a68-453a-a62a-c08847a808e8",
+      "date": "2027-01-24",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "a5e42466-c3d3-4376-a12a-b9ea7da251d5",
+      "date": "2027-01-25",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "b83e96ef-ecab-462d-8565-1af72042b26a",
+      "date": "2027-01-26",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "411c1b62-1e9b-46bb-acd4-b3618ea5636b",
+      "date": "2027-01-27",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "df023699-4043-422c-b290-6d515423bbfb",
+      "date": "2027-01-28",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "bf7984c9-2235-4523-bdc6-3595a2483708",
+      "date": "2027-01-29",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "19ce5860-84b5-4cf8-972e-f5f2cc4f278d",
+      "date": "2027-01-30",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "b68eab40-adb9-4745-a282-40eb65344464",
+      "date": "2027-01-31",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "985db8c5-0c9a-4a71-8998-0c5cef6b1a23",
+      "date": "2027-02-01",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "50f97d7e-bc9a-4cbc-abf5-9b32669604f8",
+      "date": "2027-02-02",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "cb3123b7-2d5e-4a5e-8138-a8689d3ff73d",
+      "date": "2027-02-03",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "af2e47c0-ce8d-4365-9db4-bda32e227d84",
+      "date": "2027-02-04",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "448a6aa9-cb5c-4a7b-95f4-ceb6de683a0a",
+      "date": "2027-02-05",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "af970cfb-2042-483b-aa08-d871f40687cf",
+      "date": "2027-02-06",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "6665265d-c95f-4521-b2ba-46c52bd91ace",
+      "date": "2027-02-07",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "f4eba1fc-bee1-4e21-a5f6-8dbfdf7345f2",
+      "date": "2027-02-08",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "78341714-fafd-4ccd-8c9b-31650d62b57e",
+      "date": "2027-02-09",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "fef78857-34bd-41df-835c-a762ec16743a",
+      "date": "2027-02-10",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "62a8f6c9-0ed8-43b0-b3b5-cfee4ec5a188",
+      "date": "2027-02-11",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "ef9c0bf1-b17a-475c-ab5e-d690ee7cde4b",
+      "date": "2027-02-12",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "1e808e04-4172-41fc-9675-036c8adea4df",
+      "date": "2027-02-13",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "1e8cb61e-ceca-4be2-b675-9ac39c320a3f",
+      "date": "2027-02-14",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "18d1c093-01b0-4817-a03d-0c3c343c02e6",
+      "date": "2027-02-15",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "58342f1c-1fea-4f7c-86b4-ba1f83bb3b9a",
+      "date": "2027-02-16",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "c06479b2-c95e-402b-8dc9-27cddc785d72",
+      "date": "2027-02-17",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "6abde2a0-10ee-44c2-8bb5-c6197ed4c97b",
+      "date": "2027-02-18",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "4144d060-57bc-48a6-85d1-d86a3198676d",
+      "date": "2027-02-19",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "18cbfa92-9178-4743-9f24-d63e4263803e",
+      "date": "2027-02-20",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    },
+    {
+      "id": "a5403630-cbc8-487e-a4d0-18d2dcd85d69",
+      "date": "2027-02-21",
+      "title": "寒假",
+      "done": false,
+      "kind": "holiday"
+    }
+  ]
 }
