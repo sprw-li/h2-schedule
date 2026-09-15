@@ -114,9 +114,16 @@ export default function App() {
       const local = normalizeSchedule(loadSchedule())
       const localN = flattenItems(local).length
       const remoteN = flattenItems(normalizeSchedule(remote.map)).length
+      const remoteByIdDate = new Map(
+        flattenItems(normalizeSchedule(remote.map)).map((i) => [`${i.date}|${i.id}`, i]),
+      )
+      const titleEdited = flattenItems(local).some((l) => {
+        const r = remoteByIdDate.get(`${l.date}|${l.id}`)
+        return !!r && r.title.trim() !== l.title.trim()
+      })
 
-      // 本机空/极少时绝不能 preferLocal，否则会用空表覆盖云端
-      const wantPending = (dirtyRef.current || isPendingSync()) && localN > 0
+      // 本机空/极少时绝不能 preferLocal；改过标题时必须 preferLocal，否则云端化安会盖掉手写
+      const wantPending = localN > 0 && (dirtyRef.current || isPendingSync() || titleEdited)
       const { merged, remoteClean, needPush } = integrateSchedules(remote.map, local, {
         pending: wantPending,
         baseline: wantPending ? prevBaseline : null,
