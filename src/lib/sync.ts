@@ -2,6 +2,7 @@ import type { ScheduleItem, ScheduleMap } from '../types'
 import { flattenItems, replaceSchedule } from './backup'
 import {
   isHuaAnOutOfRange,
+  isStaleBloodTitle,
   itemKey,
   normalizeSchedule,
   scheduleContentSig,
@@ -100,6 +101,9 @@ function pickMerged(
     if (contentDiff) {
       // 本机已被过期化安盖住时，信云端替换项；其它手写改动一律保住本机
       if (isHuaAnOutOfRange(local) && !titleRemote.includes('化学实验室安全技术')) {
+        return { ...remote, done: !!(local.done || remote.done), date: local.date, id: local.id || remote.id }
+      }
+      if (isStaleBloodTitle(titleLocal) && titleRemote.includes('康复')) {
         return { ...remote, done: !!(local.done || remote.done), date: local.date, id: local.id || remote.id }
       }
       return { ...local, done: !!(local.done || remote.done), date: local.date, id: local.id || remote.id }

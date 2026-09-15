@@ -110,6 +110,7 @@ export default function App() {
      * pending 时会把远端条目全当成「本机已删」丢掉，再 flush 冲垮云端。
      */
     function applyRemote(remote: { map: ScheduleMap; sha: string }, reason: 'hydrate' | 'poll') {
+      if (reason === 'poll' && editingRef.current) return false
       const prevBaseline = remoteRef.current
       const local = normalizeSchedule(loadSchedule())
       const localN = flattenItems(local).length

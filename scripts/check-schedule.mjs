@@ -20,8 +20,14 @@ function itemKey(i) {
   return `${i.date}\0${i.kind}\0${i.title.trim()}`
 }
 
+function isBloodSpamTitle(title) {
+  const t = String(title).trim()
+  if (t.includes('康复')) return false
+  return /抽血|不要吃早饭|勿进食|血脂|腰椎诊断|腰椎（|上午空腹/.test(t)
+}
+
 function isBloodNoiseTitle(title) {
-  return /抽血|不要吃早饭|勿进食|血脂|血检|腰椎诊断|腰椎（|上午空腹/.test(String(title).trim())
+  return isBloodSpamTitle(title) || /血检/.test(String(title).trim())
 }
 
 function isExamPileJunk(item) {
@@ -107,7 +113,7 @@ function sanitize(map) {
   const kept = []
   for (const it of flatten(map)) {
     if (isExamPileJunk(it)) continue
-    if (isBloodNoiseTitle(it.title)) {
+    if (isBloodSpamTitle(it.title)) {
       sawBlood = true
       bloodDone = bloodDone || !!it.done
       continue
@@ -122,7 +128,7 @@ function sanitize(map) {
     kept.push({
       id: 'blood-2026-09-12',
       date: '2026-09-12',
-      title: '血检+腰椎诊断（上午空腹）',
+      title: '血检——康复',
       done: bloodDone,
       kind: 'task',
       start: '08:00',
@@ -163,7 +169,23 @@ function assert(cond, msg) {
   const list = flatten(map)
   assert(list.length === 1, 'blood should collapse to 1')
   assert(list[0].date === '2026-09-12', 'blood date')
-  assert(list[0].title === '血检+腰椎诊断（上午空腹）', 'blood title')
+  assert(list[0].title === '血检——康复', 'blood title')
+}
+
+{
+  const items = [
+    {
+      id: 'blood-2026-09-12',
+      date: '2026-09-12',
+      title: '血检——康复',
+      kind: 'task',
+      done: true,
+      start: '08:00',
+      end: '11:00',
+    },
+  ]
+  const list = flatten(normalize(items))
+  assert(list.length === 1 && list[0].title === '血检——康复', '手写血检标题不得改回')
 }
 
 // 2) 12-28 pile
@@ -219,6 +241,7 @@ function assert(cond, msg) {
   assert(d28.length === 2, `docs 12-28 count ${d28.length}`)
   const blood = flatten(map).filter((i) => isBloodNoiseTitle(i.title) || i.title.includes('血检'))
   assert(blood.length === 1 && blood[0].date === '2026-09-12', 'docs blood')
+  assert(blood[0].title === '血检——康复', 'docs blood title')
   const ids = flatten(map).map((i) => i.id)
   assert(new Set(ids).size === ids.length, 'docs ids must be unique')
   const hua = flatten(map).filter((i) => String(i.title).includes('化学实验室安全技术'))
