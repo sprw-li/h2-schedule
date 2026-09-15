@@ -21,13 +21,11 @@ function itemKey(i) {
 }
 
 function isBloodSpamTitle(title) {
-  const t = String(title).trim()
-  if (t.includes('康复')) return false
-  return /抽血|不要吃早饭|勿进食|血脂|腰椎诊断|腰椎（|上午空腹/.test(t)
+  return /抽血|不要吃早饭|勿进食/.test(String(title).trim())
 }
 
 function isBloodNoiseTitle(title) {
-  return isBloodSpamTitle(title) || /血检/.test(String(title).trim())
+  return isBloodSpamTitle(title) || String(title).includes('血检')
 }
 
 function isExamPileJunk(item) {
@@ -108,32 +106,11 @@ function dedupe(map) {
 }
 
 function sanitize(map) {
-  let bloodDone = false
-  let sawBlood = false
   const kept = []
   for (const it of flatten(map)) {
     if (isExamPileJunk(it)) continue
-    if (isBloodSpamTitle(it.title)) {
-      sawBlood = true
-      bloodDone = bloodDone || !!it.done
-      continue
-    }
-    if (it.date === '2026-09-16' && String(it.title).includes('论文选题')) {
-      kept.push({ ...it, done: true, kind: 'deadline' })
-      continue
-    }
+    if (isBloodSpamTitle(it.title)) continue
     kept.push(it)
-  }
-  if (sawBlood) {
-    kept.push({
-      id: 'blood-2026-09-12',
-      date: '2026-09-12',
-      title: '血检——康复',
-      done: bloodDone,
-      kind: 'task',
-      start: '08:00',
-      end: '11:00',
-    })
   }
   return replaceSchedule(kept)
 }
@@ -161,15 +138,13 @@ function assert(cond, msg) {
   if (!cond) throw new Error(msg)
 }
 
-// 1) dirty JSON trailer
+// 1) dirty JSON trailer：抽血垃圾丢掉，不再改写成别的标题
 {
   const dirty = '{\n  "items": [{"id":"1","date":"2026-09-12","title":"抽血，不要吃早饭！","done":false,"kind":"task"}]\n}\\n'
   const { items } = parseScheduleJsonText(dirty)
   const map = normalize(items)
   const list = flatten(map)
-  assert(list.length === 1, 'blood should collapse to 1')
-  assert(list[0].date === '2026-09-12', 'blood date')
-  assert(list[0].title === '血检——康复', 'blood title')
+  assert(list.length === 0, '抽血垃圾应丢掉')
 }
 
 {
@@ -177,7 +152,7 @@ function assert(cond, msg) {
     {
       id: 'blood-2026-09-12',
       date: '2026-09-12',
-      title: '血检——康复',
+      title: '血检—康复',
       kind: 'task',
       done: true,
       start: '08:00',
@@ -185,7 +160,7 @@ function assert(cond, msg) {
     },
   ]
   const list = flatten(normalize(items))
-  assert(list.length === 1 && list[0].title === '血检——康复', '手写血检标题不得改回')
+  assert(list.length === 1 && list[0].title === '血检—康复', '手写血检标题不得改回')
 }
 
 // 2) 12-28 pile
@@ -239,9 +214,8 @@ function assert(cond, msg) {
   const map = normalize(items)
   const d28 = flatten(map).filter((i) => i.date === '2026-12-28')
   assert(d28.length === 2, `docs 12-28 count ${d28.length}`)
-  const blood = flatten(map).filter((i) => isBloodNoiseTitle(i.title) || i.title.includes('血检'))
-  assert(blood.length === 1 && blood[0].date === '2026-09-12', 'docs blood')
-  assert(blood[0].title === '血检——康复', 'docs blood title')
+  const blood12 = flatten(map).filter((i) => i.date === '2026-09-12' && String(i.title).includes('血检'))
+  assert(blood12.length === 1 && blood12[0].title === '血检—康复', '9/12 blood')
   const ids = flatten(map).map((i) => i.id)
   assert(new Set(ids).size === ids.length, 'docs ids must be unique')
   const hua = flatten(map).filter((i) => String(i.title).includes('化学实验室安全技术'))
@@ -256,24 +230,22 @@ function assert(cond, msg) {
     '9/16 must not be 化安',
   )
   assert(
-    d16.some((i) => String(i.title).includes('1220理论与计算化学上机') && i.start === '10:10'),
-    '9/16 must keep 1220 上机 10:10',
+    !d16.some((i) => /上机|理论与计算/.test(i.title) && (i.start === '10:10' || i.start === '10:00')),
+    '9/16 10am must not keep 理论/上机',
   )
-}
-
-// 5) paper deadline force-done
-{
-  const items = [
-    {
-      id: 'p',
-      date: '2026-09-16',
-      title: '论文选题与小组成员提交',
-      kind: 'deadline',
-      done: false,
-    },
-  ]
-  const list = flatten(normalize(items))
-  assert(list.length === 1 && list[0].done === true, '9/16 paper must be done')
+  const slot = d16.filter((i) => i.start === '10:10' || i.start === '10:00')
+  assert(
+    slot.some((i) => i.title === '血检—康复'),
+    '9/16 10am 血检—康复',
+  )
+  assert(
+    slot.some((i) => i.title === '31楼拿书'),
+    '9/16 10am 31楼拿书',
+  )
+  assert(
+    d16.some((i) => i.start === '13:00' && String(i.title).includes('理论与计算化学导论')),
+    '9/16 下午导论仍在',
+  )
 }
 
 console.log('check-schedule: ok')

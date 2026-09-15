@@ -35,7 +35,6 @@ const FAMILIES = [
   '论文选题',
   '论文提交',
   '图书馆讲座',
-  '血检',
 ].sort((a, b) => b.length - a.length)
 
 export function familyOf(title: string) {
@@ -83,20 +82,13 @@ export function parseScheduleJsonText(raw: string): { items: unknown[] } {
   return { items: Array.isArray(parsed.items) ? parsed.items : [] }
 }
 
-export const BLOOD_CANON_TITLE = '血检——康复'
-
-/** 抽血堆/空腹旧条。用户手写的「血检——康复」绝不能进这里，否则一保存就被改回去。 */
+/** 只丢掉抽血垃圾条，不再改写任何手写标题、也不再凭空塞一条血检。 */
 export function isBloodSpamTitle(title: string) {
   const t = title.trim()
-  if (t.includes('康复')) return false
-  return /抽血|不要吃早饭|勿进食|血脂|腰椎诊断|腰椎（|上午空腹/.test(t)
+  return /抽血|不要吃早饭|勿进食/.test(t)
 }
 
 export function isBloodNoiseTitle(title: string) {
-  return isBloodSpamTitle(title) || /血检/.test(title.trim())
-}
-
-export function isStaleBloodTitle(title: string) {
   return isBloodSpamTitle(title)
 }
 
@@ -252,37 +244,12 @@ export function dedupeByIdentity(map: ScheduleMap): ScheduleMap {
 
 export function sanitizeNoise(map: ScheduleMap): ScheduleMap {
   const all = flattenItems(map)
-  let bloodDone = false
-  let sawSpam = false
   const kept: ScheduleItem[] = []
   for (const it of all) {
     if (isExamPileJunk(it)) continue
     if (isHuaAnOutOfRange(it)) continue
-    if (isBloodSpamTitle(it.title)) {
-      sawSpam = true
-      bloodDone = bloodDone || !!it.done
-      continue
-    }
-    // 云端已勾完的论文选题：本机旧 false 不得再点亮红点
-    if (it.date === '2026-09-16' && it.title.includes('论文选题')) {
-      kept.push({ ...it, done: true, kind: 'deadline' })
-      continue
-    }
+    if (isBloodSpamTitle(it.title)) continue
     kept.push(it)
-  }
-  const bloodKept = kept.find((i) => i.date === '2026-09-12' && /血检/.test(i.title))
-  if (bloodKept) {
-    if (bloodDone) bloodKept.done = true
-  } else if (sawSpam) {
-    kept.push({
-      id: 'blood-2026-09-12',
-      date: '2026-09-12',
-      title: BLOOD_CANON_TITLE,
-      done: bloodDone,
-      kind: 'task',
-      start: '08:00',
-      end: '11:00',
-    })
   }
   return replaceSchedule(kept)
 }

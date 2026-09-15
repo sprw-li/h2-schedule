@@ -1,8 +1,6 @@
 import type { ScheduleItem, ScheduleMap } from '../types'
 import { flattenItems, replaceSchedule } from './backup'
 import {
-  isHuaAnOutOfRange,
-  isStaleBloodTitle,
   itemKey,
   normalizeSchedule,
   scheduleContentSig,
@@ -99,13 +97,6 @@ function pickMerged(
     const contentDiff =
       titleLocal !== titleRemote || local.start !== remote.start || local.end !== remote.end
     if (contentDiff) {
-      // 本机已被过期化安盖住时，信云端替换项；其它手写改动一律保住本机
-      if (isHuaAnOutOfRange(local) && !titleRemote.includes('化学实验室安全技术')) {
-        return { ...remote, done: !!(local.done || remote.done), date: local.date, id: local.id || remote.id }
-      }
-      if (isStaleBloodTitle(titleLocal) && titleRemote.includes('康复')) {
-        return { ...remote, done: !!(local.done || remote.done), date: local.date, id: local.id || remote.id }
-      }
       return { ...local, done: !!(local.done || remote.done), date: local.date, id: local.id || remote.id }
     }
     const base = preferLocal ? local : remote
@@ -114,10 +105,6 @@ function pickMerged(
   if (local) return { ...local }
   if (remote) return { ...remote }
   return null
-}
-
-function slotKey(item: ScheduleItem) {
-  return `${item.date}\0${item.start ?? ''}\0${item.end ?? ''}\0${item.allDay ? '1' : '0'}`
 }
 
 /**
@@ -207,24 +194,9 @@ export function mergeByIdentity(
     out.push({ ...l })
   }
 
-  const localBySlot = new Map<string, ScheduleItem[]>()
-  for (const l of localItems) {
-    const k = slotKey(l)
-    const arr = localBySlot.get(k) ?? []
-    arr.push(l)
-    localBySlot.set(k, arr)
-  }
-
   for (const r of remoteItems) {
     if (usedRemote.has(itemKey(r)) || usedRemoteIds.has(r.id)) continue
     if (preferLocal && baseline && baselineSoft.has(softKey(r))) continue
-    const localsAt = localBySlot.get(slotKey(r)) ?? []
-    if (
-      r.title.includes('化学实验室安全技术') &&
-      localsAt.some((l) => !l.title.includes('化学实验室安全技术'))
-    ) {
-      continue
-    }
     usedRemote.add(itemKey(r))
     usedRemoteIds.add(r.id)
     out.push({ ...r })
