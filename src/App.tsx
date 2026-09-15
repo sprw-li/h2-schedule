@@ -18,6 +18,7 @@ import {
   normalizeSchedule,
   saveRemoteSha,
   saveRemoteSnap,
+  scheduleContentSig,
   setPendingSync,
 } from './lib/sync'
 import { unlockFromPublic } from './lib/unlock'
@@ -139,8 +140,8 @@ export default function App() {
         pendingRef.current = merged
         dirtyRef.current = true
         setPendingSync(true)
-        if (reason === 'hydrate' && getWriteToken()) {
-          setMessage('正在对齐本机与云端…')
+        if (getWriteToken()) {
+          if (reason === 'hydrate') setMessage('正在对齐本机与云端…')
           flush(merged)
         } else if (reason === 'hydrate') {
           setAskPhrase(true)
@@ -150,12 +151,10 @@ export default function App() {
         return true
       }
 
-      // 本机空导致的假 pending 清掉，避免下次再 preferLocal 误删
-      if (localN === 0) {
-        dirtyRef.current = false
-        pendingRef.current = null
-        setPendingSync(false)
-      }
+      // 已与云端内容一致：清掉假 pending，否则轮询永远停、越积越脏
+      dirtyRef.current = false
+      pendingRef.current = null
+      setPendingSync(false)
       return false
     }
 
@@ -240,12 +239,19 @@ export default function App() {
         saveRemoteSha(sha)
         remoteRef.current = clean
         saveRemoteSnap(clean)
-        dirtyRef.current = false
-        pendingRef.current = null
-        setPendingSync(false)
         setAskPhrase(false)
         setPhase('ok')
         setMessage('已同步')
+        // 推送期间又改过：不要用旧包盖掉新改动
+        const later = pendingRef.current
+        if (later && scheduleContentSig(later) !== scheduleContentSig(clean)) {
+          setSchedule(later)
+          saveSchedule(later)
+          return
+        }
+        dirtyRef.current = false
+        pendingRef.current = null
+        setPendingSync(false)
         setSchedule(clean)
         saveSchedule(clean)
       })
@@ -253,7 +259,6 @@ export default function App() {
         const text = err instanceof Error ? err.message : '同步失败'
         if (text.includes('令牌') || text.includes('口令')) {
           setAskPhrase(true)
-          // 要口令 ≠ 加载失败：别亮红条
           setPhase('ok')
           setMessage('需要口令才能同步（本机改动已保留）')
           return
@@ -262,8 +267,8 @@ export default function App() {
           try {
             const remote = await pullCloud()
             if (remote) {
-              // 冲突：同 key 以本机为准并对齐远端 id；远端独有条目保留（baseline=null 不按删除处理）
-              const aligned = normalizeSchedule(mergeByIdentity(remote.map, clean, true, null))
+              const latest = pendingRef.current ?? clean
+              const aligned = normalizeSchedule(mergeByIdentity(remote.map, latest, true, null))
               shaRef.current = remote.sha
               saveRemoteSha(remote.sha)
               remoteRef.current = aligned
@@ -273,6 +278,14 @@ export default function App() {
               saveRemoteSha(sha)
               remoteRef.current = aligned
               saveRemoteSnap(aligned)
+              const later = pendingRef.current
+              if (later && scheduleContentSig(later) !== scheduleContentSig(aligned)) {
+                setSchedule(later)
+                saveSchedule(later)
+                setPhase('ok')
+                setMessage('已同步，还有本地改动…')
+                return
+              }
               dirtyRef.current = false
               pendingRef.current = null
               setPendingSync(false)
@@ -286,12 +299,25 @@ export default function App() {
             /* fall through */
           }
         }
-        // 推送失败保留本机；顶部用提示条，不永久红死
         setPhase('ok')
         setMessage(`${text}（本机改动已保留，稍后再试）`)
       })
       .finally(() => {
         syncingRef.current = false
+        const later = pendingRef.current
+        // 仅当推送成功后仍有「更新的本机」才续推；失败立刻重试会把拒绝覆盖打成死循环
+        if (
+          dirtyRef.current &&
+          later &&
+          getWriteToken() &&
+          scheduleContentSig(later) !== scheduleContentSig(clean)
+        ) {
+          window.setTimeout(() => {
+            if (dirtyRef.current && pendingRef.current && !syncingRef.current) {
+              flush(pendingRef.current)
+            }
+          }, 50)
+        }
       })
   }
 
@@ -529,28 +555,35 @@ export default function App() {
               setUnlockError('')
               setUnlocking(true)
               window.setTimeout(() => {
+                const map = normalizeSchedule(pendingRef.current ?? schedule)
                 void unlockFromPublic(p)
                   .then((token) => {
                     setWriteToken(token)
                     setPhrase('')
                     setMessage('口令正确，正在同步…')
-                    const map = pendingRef.current ?? schedule
-                    return pushCloud(normalizeSchedule(map), shaRef.current)
+                    return pushCloud(map, shaRef.current)
                   })
                   .then((sha) => {
-                    const synced = normalizeSchedule(pendingRef.current ?? schedule)
                     shaRef.current = sha
                     saveRemoteSha(sha)
-                    remoteRef.current = synced
-                    saveRemoteSnap(synced)
+                    remoteRef.current = map
+                    saveRemoteSnap(map)
+                    setAskPhrase(false)
+                    setUnlocking(false)
+                    setPhase('ok')
+                    const later = pendingRef.current
+                    if (later && scheduleContentSig(later) !== scheduleContentSig(map)) {
+                      setSchedule(later)
+                      saveSchedule(later)
+                      setMessage('已同步，正在写入后续改动…')
+                      flush(later)
+                      return
+                    }
                     dirtyRef.current = false
                     pendingRef.current = null
                     setPendingSync(false)
-                    setAskPhrase(false)
-                    setUnlocking(false)
-                    setSchedule(synced)
-                    saveSchedule(synced)
-                    setPhase('ok')
+                    setSchedule(map)
+                    saveSchedule(map)
                     setMessage('已同步')
                   })
                   .catch((err: unknown) => {

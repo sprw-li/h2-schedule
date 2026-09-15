@@ -337,14 +337,16 @@ export function DayPanel({
     onEditorOpenChangeRef.current?.(!!(editingId || composerOpen))
   }, [editingId, composerOpen])
 
-  // 同步合并可能换 id：按标题把编辑态接回去，避免框突然消失
+  // 同步合并可能换 id：只在当天清单里按标题接回，避免改一天串到别的天
   useEffect(() => {
     if (!editingId) return
-    if (items.some((i) => i.id === editingId)) return
+    if (items.some((i) => i.id === editingId && i.date === dateKey)) return
     const title = editDraft.title.trim()
-    const hit = title ? items.find((i) => i.title.trim() === title) : undefined
+    const hit = title
+      ? items.find((i) => i.date === dateKey && i.title.trim() === title)
+      : undefined
     if (hit) setEditingId(hit.id)
-  }, [items, editingId, editDraft.title])
+  }, [items, editingId, editDraft.title, dateKey])
 
   const pending = items.filter((i) => !i.done).length
 
