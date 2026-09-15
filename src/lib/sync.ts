@@ -18,6 +18,7 @@ export {
   isExamPileJunk,
   parseScheduleJsonText,
   serializeSchedule,
+  scheduleContentSig,
 } from './schedule'
 
 const PENDING_KEY = 'h2-schedule.pending-sync'
@@ -133,6 +134,8 @@ export function mergeByIdentity(
 
   const usedRemote = new Set<string>()
   const usedLocal = new Set<string>()
+  const usedRemoteIds = new Set<string>()
+  const usedLocalIds = new Set<string>()
   const out: ScheduleItem[] = []
 
   // 0. 同日同 id：改标题后 exact/soft key 都对不上，必须先按 id 接上，否则会变成「两条」或串到别的天
@@ -144,8 +147,11 @@ export function mergeByIdentity(
     const r = remoteById.get(l.id)
     if (!r || r.date !== l.date) continue
     if (usedLocal.has(itemKey(l)) || usedRemote.has(itemKey(r))) continue
+    if (usedLocalIds.has(l.id) || usedRemoteIds.has(r.id)) continue
     usedRemote.add(itemKey(r))
     usedLocal.add(itemKey(l))
+    usedRemoteIds.add(r.id)
+    usedLocalIds.add(l.id)
     const m = pickMerged(r, l, preferLocal)
     if (m) out.push({ ...m, id: l.id || r.id, date: l.date })
   }
@@ -153,32 +159,40 @@ export function mergeByIdentity(
   for (const [ek, l] of localExact) {
     const r = remoteExact.get(ek)
     if (!r) continue
+    if (usedLocal.has(ek) || usedRemote.has(itemKey(r))) continue
+    if (usedLocalIds.has(l.id) || usedRemoteIds.has(r.id)) continue
     usedRemote.add(itemKey(r))
     usedLocal.add(ek)
+    usedRemoteIds.add(r.id)
+    usedLocalIds.add(l.id)
     const m = pickMerged(r, l, preferLocal)
     if (m) out.push(m)
   }
 
   for (const [sk, l] of localSoft) {
-    if (usedLocal.has(itemKey(l))) continue
+    if (usedLocal.has(itemKey(l)) || usedLocalIds.has(l.id)) continue
     const r = remoteSoft.get(sk)
-    if (!r || usedRemote.has(itemKey(r))) continue
+    if (!r || usedRemote.has(itemKey(r)) || usedRemoteIds.has(r.id)) continue
     usedRemote.add(itemKey(r))
     usedLocal.add(itemKey(l))
+    usedRemoteIds.add(r.id)
+    usedLocalIds.add(l.id)
     const m = pickMerged(r, l, preferLocal)
     if (m) out.push(m)
   }
 
   for (const l of localItems) {
-    if (usedLocal.has(itemKey(l))) continue
+    if (usedLocal.has(itemKey(l)) || usedLocalIds.has(l.id)) continue
     usedLocal.add(itemKey(l))
+    usedLocalIds.add(l.id)
     out.push({ ...l })
   }
 
   for (const r of remoteItems) {
-    if (usedRemote.has(itemKey(r))) continue
+    if (usedRemote.has(itemKey(r)) || usedRemoteIds.has(r.id)) continue
     if (preferLocal && baseline && baselineSoft.has(softKey(r))) continue
     usedRemote.add(itemKey(r))
+    usedRemoteIds.add(r.id)
     out.push({ ...r })
   }
 
