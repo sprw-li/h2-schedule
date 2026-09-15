@@ -86,6 +86,16 @@ export function isBloodNoiseTitle(title: string) {
   return /抽血|不要吃早饭|勿进食|血脂|血检|腰椎诊断|腰椎（|上午空腹/.test(title.trim())
 }
 
+/** 化安只要第 6–14 周（学期从 2026-09-07 起算） */
+function isHuaAnOutOfRange(item: Pick<ScheduleItem, 'date' | 'title'>) {
+  if (!item.title.includes('化学实验室安全技术')) return false
+  const start = Date.parse('2026-09-07T00:00:00')
+  const t = Date.parse(`${item.date}T00:00:00`)
+  if (!Number.isFinite(start) || !Number.isFinite(t)) return false
+  const week = Math.floor((t - start) / (7 * 86400000)) + 1
+  return week < 6 || week > 14
+}
+
 /** 12-28 无时刻考查堆等已知脏规则 */
 export function isExamPileJunk(item: Pick<ScheduleItem, 'date' | 'title' | 'start' | 'end'>) {
   const t = item.title.trim()
@@ -233,6 +243,7 @@ export function sanitizeNoise(map: ScheduleMap): ScheduleMap {
   const kept: ScheduleItem[] = []
   for (const it of all) {
     if (isExamPileJunk(it)) continue
+    if (isHuaAnOutOfRange(it)) continue
     if (isBloodNoiseTitle(it.title)) {
       sawBlood = true
       bloodDone = bloodDone || !!it.done

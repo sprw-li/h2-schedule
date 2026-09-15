@@ -51,9 +51,15 @@ export default function App() {
   function exportCsv() {
     const csv = scheduleToCsv(schedule)
     const stamp = toDateKey(new Date())
-    downloadCsv(`h2-schedule-${stamp}.csv`, csv)
-    setMessage('已导出 CSV')
-    setPhase('ok')
+    void downloadCsv(`h2-schedule-${stamp}.csv`, csv)
+      .then((how) => {
+        setPhase('ok')
+        setMessage(how === 'clipboard' ? '已复制 CSV，可粘贴到文件' : how === 'share' ? '已打开系统分享，请存成文件' : '已导出 CSV')
+      })
+      .catch((e: unknown) => {
+        setPhase('err')
+        setMessage(e instanceof Error ? e.message : '导出失败')
+      })
   }
 
   function importCsvFile(file: File) {
@@ -473,15 +479,19 @@ export default function App() {
                 editingRef.current = open
               }}
               onPrevDay={() => {
-                const d = addDays(selected, -1)
-                setSelectedKey(toDateKey(d))
-                setCursor(new Date(d.getFullYear(), d.getMonth(), 1))
+                setSelectedKey((k) => {
+                  const d = addDays(parseDateKey(k), -1)
+                  setCursor(new Date(d.getFullYear(), d.getMonth(), 1))
+                  return toDateKey(d)
+                })
                 setPane('day')
               }}
               onNextDay={() => {
-                const d = addDays(selected, 1)
-                setSelectedKey(toDateKey(d))
-                setCursor(new Date(d.getFullYear(), d.getMonth(), 1))
+                setSelectedKey((k) => {
+                  const d = addDays(parseDateKey(k), 1)
+                  setCursor(new Date(d.getFullYear(), d.getMonth(), 1))
+                  return toDateKey(d)
+                })
                 setPane('day')
               }}
               onToggle={(id) => {

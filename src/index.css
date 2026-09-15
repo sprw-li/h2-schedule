@@ -1028,6 +1028,15 @@ button {
   gap: 8px;
 }
 
+.day-panel .sheet-scroll {
+  -webkit-overflow-scrolling: auto;
+  transform: translateZ(0);
+}
+
+.day-panel .item .title {
+  display: block;
+}
+
 .item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
