@@ -322,8 +322,10 @@ export function DayPanel({
   const [editDraft, setEditDraft] = useState<Draft>(emptyDraft)
   const [composerOpen, setComposerOpen] = useState(false)
   const dateKey = toDateKey(date)
+  const listKey = `${dateKey}:${items[0]?.id ?? 'none'}:${items[0]?.title ?? ''}:${items.length}`
   const onEditorOpenChangeRef = useRef(onEditorOpenChange)
   onEditorOpenChangeRef.current = onEditorOpenChange
+  const listRef = useRef<HTMLDivElement>(null)
 
   // 只能依赖日期字符串：父组件每次渲染都会 new Date()，用 Date 对象当 deps 会误关编辑框
   useEffect(() => {
@@ -332,6 +334,11 @@ export function DayPanel({
     setComposerOpen(false)
     setDraft(emptyDraft())
   }, [dateKey])
+
+  useEffect(() => {
+    const el = listRef.current
+    if (el) el.scrollTop = 0
+  }, [listKey])
 
   useEffect(() => {
     onEditorOpenChangeRef.current?.(!!(editingId || composerOpen))
@@ -386,9 +393,11 @@ export function DayPanel({
         ) : null}
       </div>
       {items.length === 0 ? (
-        <div className="sheet-scroll empty">这一天还没有事项。点下方「新事项」写入。</div>
+        <div key={listKey} ref={listRef} className="sheet-scroll empty">
+          这一天还没有事项。点下方「新事项」写入。
+        </div>
       ) : (
-        <div className="sheet-scroll list">
+        <div key={listKey} ref={listRef} className="sheet-scroll list">
           {items.map((item, index) => {
             const holiday = item.kind === 'holiday'
             const due = item.kind === 'deadline'
@@ -397,7 +406,7 @@ export function DayPanel({
             const label = allDay ? '全天' : formatWhen(s, e)
             return (
               <div
-                key={`${dateKey}:${item.id}:${index}`}
+                key={`${dateKey}:${item.id}:${item.title}:${index}`}
                 className={`item${item.done ? ' done' : ''}${due ? ' deadline' : ''}${holiday ? ' holiday' : ''}${editingId === item.id ? ' editing' : ''}`}
               >
                 <button

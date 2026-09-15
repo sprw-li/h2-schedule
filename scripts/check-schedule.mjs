@@ -221,6 +221,12 @@ function assert(cond, msg) {
   assert(blood.length === 1 && blood[0].date === '2026-09-12', 'docs blood')
   const ids = flatten(map).map((i) => i.id)
   assert(new Set(ids).size === ids.length, 'docs ids must be unique')
+  const hua = flatten(map).filter((i) => String(i.title).includes('化学实验室安全技术'))
+  assert(hua.length === 9, `化安 should be weeks 6-14, got ${hua.length}`)
+  assert(
+    hua.every((i) => i.date >= '2026-10-14' && i.date <= '2026-12-09'),
+    '化安 date range',
+  )
 }
 
 // 5) paper deadline force-done
