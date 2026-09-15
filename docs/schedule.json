@@ -389,7 +389,7 @@
       "id": "60ead6cc-1904-4521-9999-72c05ee31e2f",
       "date": "2026-09-15",
       "title": "9月15日 10:00报名四级",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "10:00"
     },
@@ -406,7 +406,7 @@
       "id": "15b05645-2f49-4d71-99dd-bea96647ada9",
       "date": "2026-09-15",
       "title": "英汉口译 · 文史309",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "13:00",
       "end": "14:50"
