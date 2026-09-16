@@ -516,6 +516,13 @@
       "kind": "deadline"
     },
     {
+      "id": "ad3fa020-6a97-46a2-91e0-c03a93ef96d7",
+      "date": "2026-09-16",
+      "title": "晚上化学实验作业",
+      "done": false,
+      "kind": "task"
+    },
+    {
       "id": "ed3f0bae-20ef-4ef6-a8d6-7bcfb3f87efd",
       "date": "2026-09-17",
       "title": "普通化学实验 · 仪器的洗涤和干燥；铜的反应循环 · 化学院",
