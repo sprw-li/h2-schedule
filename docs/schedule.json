@@ -1966,6 +1966,13 @@
       "end": "16:40"
     },
     {
+      "id": "b649a8fa-6689-43c3-8458-95cac1eb4ee0",
+      "date": "2026-11-16",
+      "title": "墙报",
+      "done": false,
+      "kind": "deadline"
+    },
+    {
       "id": "5d69fcb7-f4ab-407a-86b4-1d4cc96eec58",
       "date": "2026-11-16",
       "title": "小论文报告",
