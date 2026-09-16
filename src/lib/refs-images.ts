@@ -1,12 +1,10 @@
 import { getWriteToken, setWriteToken } from './cloud'
+import { ghApiContents, ghPages, ghRaw } from './net'
 import { unlockFromPublic } from './unlock'
 
 export type RefKind = 'timetable' | 'calendar'
 
 const LOCAL_KEY = 'h2-schedule.refs.v1'
-const OWNER = 'sprw-li'
-const REPO = 'h2-schedule'
-const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents`
 
 type LocalPack = Partial<Record<RefKind, string>>
 
@@ -39,21 +37,49 @@ export function setLocalRef(kind: RefKind, dataUrl: string) {
 }
 
 /** 压缩成 JPEG data URL，控制体积便于本机与 GitHub 存储 */
-export async function fileToJpegDataUrl(file: File, maxEdge = 1600, quality = 0.82) {
-  const bitmap = await createImageBitmap(file)
-  const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height))
-  const w = Math.max(1, Math.round(bitmap.width * scale))
-  const h = Math.max(1, Math.round(bitmap.height * scale))
+function loadImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = () => reject(new Error('图片无法解码（请改用 JPG / PNG）'))
+    img.src = src
+  })
+}
+
+function canvasJpeg(source: CanvasImageSource, w0: number, h0: number, maxEdge: number, quality: number) {
+  const scale = Math.min(1, maxEdge / Math.max(w0, h0))
+  const w = Math.max(1, Math.round(w0 * scale))
+  const h = Math.max(1, Math.round(h0 * scale))
   const canvas = document.createElement('canvas')
   canvas.width = w
   canvas.height = h
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('无法处理图片')
-  ctx.drawImage(bitmap, 0, 0, w, h)
-  bitmap.close()
+  ctx.drawImage(source, 0, 0, w, h)
   const dataUrl = canvas.toDataURL('image/jpeg', quality)
   if (!dataUrl.startsWith('data:image/jpeg')) throw new Error('图片转换失败')
   return dataUrl
+}
+
+/** 压缩成 JPEG data URL。Android WebView 经常没有 createImageBitmap。 */
+export async function fileToJpegDataUrl(file: File, maxEdge = 1600, quality = 0.82) {
+  const type = (file.type || '').toLowerCase()
+  if (type.includes('heic') || type.includes('heif')) {
+    throw new Error('不支持 HEIC，请用系统相册「另存为 JPG」后再导入')
+  }
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const bitmap = await createImageBitmap(file)
+      const dataUrl = canvasJpeg(bitmap, bitmap.width, bitmap.height, maxEdge, quality)
+      bitmap.close()
+      return dataUrl
+    } catch {
+      /* 走 Image 回退 */
+    }
+  }
+  const src = await blobToDataUrl(file)
+  const img = await loadImage(src)
+  return canvasJpeg(img, img.naturalWidth || img.width, img.naturalHeight || img.height, maxEdge, quality)
 }
 
 function dataUrlToRawBase64(dataUrl: string) {
@@ -74,7 +100,7 @@ function blobToDataUrl(blob: Blob) {
 async function fetchGithubFile(path: string, token?: string) {
   const headers: Record<string, string> = { Accept: 'application/vnd.github+json' }
   if (token) headers.Authorization = `Bearer ${token}`
-  const res = await fetch(`${API}/${path}?ts=${Date.now()}`, { headers })
+  const res = await fetch(`${ghApiContents(path)}?ts=${Date.now()}`, { headers })
   if (res.status === 404) return null
   if (!res.ok) throw new Error('读取图片失败')
   const body = (await res.json()) as {
@@ -100,11 +126,38 @@ async function fetchGithubFile(path: string, token?: string) {
   return { dataUrl: `data:image/jpeg;base64,${b64}`, sha: body.sha ?? '' }
 }
 
-/** 优先远端 → 本机覆盖 → 内置图 */
+async function blobUrlToDataUrl(url: string) {
+  const res = await fetch(`${url}${url.includes('?') ? '&' : '?'}ts=${Date.now()}`)
+  if (!res.ok) return null
+  const blob = await res.blob()
+  if (!blob.size) return null
+  return blobToDataUrl(blob)
+}
+
+/** 优先 raw → Pages → API → 本机覆盖 → 内置图 */
 export async function resolveRefSrc(kind: RefKind, bundled: string) {
+  const path = remotePath(kind)
+  try {
+    const fromRaw = await blobUrlToDataUrl(ghRaw(path))
+    if (fromRaw) {
+      setLocalRef(kind, fromRaw)
+      return fromRaw
+    }
+  } catch {
+    /* ignore */
+  }
+  try {
+    const fromPages = await blobUrlToDataUrl(ghPages(path))
+    if (fromPages) {
+      setLocalRef(kind, fromPages)
+      return fromPages
+    }
+  } catch {
+    /* ignore */
+  }
   const token = getWriteToken()
   try {
-    const remote = await fetchGithubFile(remotePath(kind), token || undefined)
+    const remote = await fetchGithubFile(path, token || undefined)
     if (remote?.dataUrl) {
       setLocalRef(kind, remote.dataUrl)
       return remote.dataUrl
@@ -127,7 +180,7 @@ export async function uploadRefImage(kind: RefKind, dataUrl: string, phrase: str
   const path = remotePath(kind)
   let sha = ''
   try {
-    const meta = await fetch(`${API}/${path}?ts=${Date.now()}`, {
+    const meta = await fetch(`${ghApiContents(path)}?ts=${Date.now()}`, {
       headers: {
         Accept: 'application/vnd.github+json',
         Authorization: `Bearer ${writeToken}`,
@@ -141,7 +194,7 @@ export async function uploadRefImage(kind: RefKind, dataUrl: string, phrase: str
     /* create new */
   }
 
-  const res = await fetch(`${API}/${path}`, {
+  const res = await fetch(ghApiContents(path), {
     method: 'PUT',
     headers: {
       Accept: 'application/vnd.github+json',

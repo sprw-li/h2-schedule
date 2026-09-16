@@ -79,6 +79,7 @@ export function RefsPanel() {
   const [note, setNote] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
   const pendingFile = useRef<File | null>(null)
+  const pickingRef = useRef(false)
   const pinch0 = useRef(0)
 
   useEffect(() => {
@@ -245,7 +246,13 @@ export function RefsPanel() {
       ) : null}
 
       {replaceKind ? (
-        <div className="sync-scrim" onClick={() => !busy && setReplaceKind(null)}>
+        <div
+          className="sync-scrim"
+          onClick={() => {
+            if (busy || pickingRef.current) return
+            setReplaceKind(null)
+          }}
+        >
           <form
             className="sync-card"
             onClick={(e) => e.stopPropagation()}
@@ -259,7 +266,11 @@ export function RefsPanel() {
                 void doUpload(pendingFile.current)
                 return
               }
+              pickingRef.current = true
               fileRef.current?.click()
+              window.setTimeout(() => {
+                pickingRef.current = false
+              }, 1500)
             }}
           >
             <h2>更换图片</h2>
@@ -294,9 +305,10 @@ export function RefsPanel() {
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/*"
               hidden
               onChange={(e) => {
+                pickingRef.current = false
                 const file = e.target.files?.[0]
                 e.target.value = ''
                 if (!file) return

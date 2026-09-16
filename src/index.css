@@ -226,6 +226,24 @@ button {
   font-size: 12px;
 }
 
+.sync-card.csv-sheet {
+  max-width: min(720px, 100%);
+  max-height: min(86dvh, 720px);
+  overflow: auto;
+}
+
+.csv-textarea {
+  width: 100%;
+  min-height: 220px;
+  margin: 8px 0 12px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  resize: vertical;
+}
+
 .update-wrap {
   position: static;
 }
@@ -1261,6 +1279,17 @@ button {
   flex-shrink: 0;
 }
 
+.day-panel.day-focus .sheet-scroll {
+  display: none;
+}
+
+.day-panel.day-focus .sheet-editor {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .composer input[aria-label='事项标题'] {
   grid-column: 1 / -1;
 }
@@ -1488,11 +1517,11 @@ button {
   }
 
   .sheet-editor {
-    max-height: min(58dvh, 480px);
+    max-height: none;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    padding-bottom: 4px;
+    padding-bottom: calc(8px + var(--kb, 0px));
   }
 
   .day-panel .day-meta {

@@ -1,14 +1,12 @@
 import { flattenItems } from './backup'
-import { netErr } from './net'
+import { fetchTextNoThrow, ghApiContents, ghPages, ghRaw, netErr } from './net'
 import { normalizeSchedule, parseScheduleJsonText, serializeSchedule } from './schedule'
+import { loadRemoteSnap } from './sync'
 import type { ScheduleMap } from '../types'
 
-const OWNER = 'sprw-li'
-const REPO = 'h2-schedule'
 const PATH = 'docs/schedule.json'
 const TOKEN_KEY = 'h2-schedule.write-token'
-const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`
-const PAGES = 'https://sprw-li.github.io/h2-schedule/schedule.json'
+const API = ghApiContents(PATH)
 const BUNDLED_JSON = `${import.meta.env.BASE_URL}schedule.json`
 
 export function getWriteToken() {
@@ -35,11 +33,11 @@ function parseContents(body: { content?: string; sha?: string }) {
   }
 }
 
-async function pullFromPages(): Promise<{ map: ScheduleMap; sha: string } | null> {
+async function pullJsonUrl(url: string): Promise<{ map: ScheduleMap; sha: string } | null> {
+  const text = await fetchTextNoThrow(url)
+  if (!text) return null
   try {
-    const res = await fetch(`${PAGES}?ts=${Date.now()}`)
-    if (!res.ok) return null
-    const { items } = parseScheduleJsonText(await res.text())
+    const { items } = parseScheduleJsonText(text)
     return { map: normalizeSchedule(items), sha: '' }
   } catch {
     return null
@@ -61,19 +59,29 @@ async function pullFromApi(): Promise<{ map: ScheduleMap; sha: string } | null> 
 }
 
 /**
- * 手机 WebView 常打不通 api.github.com。
- * 先 Pages，再 API（带 sha），最后壳内打包；拉到即 normalize。
+ * 有口令：Contents API（带 blob sha，刚 commit 立刻可读）。失败再公开源。
+ * 无口令：raw 与 Pages 并行；raw 通常比 Pages 新。手机常打不开 api.github.com。
  */
 export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | null> {
-  const pages = await pullFromPages()
-  const api = await pullFromApi()
-
-  if (pages && api) {
-    // 有 API 就信 API（带 sha）。Pages 可能缓存旧包或重复条目偏多，不能按条数选。
-    return { map: api.map, sha: api.sha }
+  const token = getWriteToken()
+  if (token) {
+    const api = await pullFromApi()
+    if (api) return api
   }
-  if (api) return api
+
+  const [raw, pages] = await Promise.all([pullJsonUrl(ghRaw(PATH)), pullJsonUrl(ghPages(PATH))])
+  if (raw && pages) {
+    const rn = flattenItems(raw.map).length
+    const pn = flattenItems(pages.map).length
+    return rn >= pn ? raw : pages
+  }
+  if (raw) return raw
   if (pages) return pages
+
+  if (!token) {
+    const api = await pullFromApi()
+    if (api) return api
+  }
 
   try {
     const res = await fetch(`${BUNDLED_JSON}?ts=${Date.now()}`)
@@ -89,46 +97,27 @@ export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | n
 export async function pushCloud(map: ScheduleMap, sha: string) {
   const token = getWriteToken()
   if (!token) throw new Error('需要口令才能同步')
-  let useSha = sha
-  try {
-    // 推送前先看云端现有条数，防止空/半残本机冲掉全量
-    let remoteCount = 0
-    {
-      const meta = await fetch(`${API}?ts=${Date.now()}`, {
-        headers: {
-          Accept: 'application/vnd.github+json',
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      if (meta.ok) {
-        const body = (await meta.json()) as { content?: string; sha?: string }
-        if (body.sha) useSha = body.sha
-        if (body.content) {
-          try {
-            const text = decodeBase64(body.content.replace(/\n/g, ''))
-            const { items } = parseScheduleJsonText(text)
-            remoteCount = flattenItems(normalizeSchedule(items)).length
-          } catch {
-            /* ignore parse */
-          }
-        }
-      }
-    }
-    const clean = normalizeSchedule(map)
-    const localCount = flattenItems(clean).length
-    if (remoteCount >= 80 && localCount < remoteCount * 0.5) {
-      throw new Error(
-        `拒绝覆盖云端：本机仅 ${localCount} 条，云端 ${remoteCount} 条（疑似本机缓存损坏）`,
-      )
-    }
-    const payload = serializeSchedule(clean)
-    const res = await fetch(API, {
+  const clean = normalizeSchedule(map)
+  const localCount = flattenItems(clean).length
+  const snap = loadRemoteSnap()
+  const snapCount = snap ? flattenItems(snap).length : 0
+  if (snapCount >= 80 && localCount < snapCount * 0.5) {
+    throw new Error(
+      `拒绝覆盖云端：本机仅 ${localCount} 条，云端 ${snapCount} 条（疑似本机缓存损坏）`,
+    )
+  }
+
+  const headers = {
+    Accept: 'application/vnd.github+json',
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  }
+  const payload = serializeSchedule(clean)
+
+  async function put(useSha: string) {
+    return fetch(API, {
       method: 'PUT',
-      headers: {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         message: 'Update public schedule',
         content: encodeBase64(payload),
@@ -136,11 +125,36 @@ export async function pushCloud(map: ScheduleMap, sha: string) {
         ...(useSha ? { sha: useSha } : {}),
       }),
     })
-    if (res.status === 409) throw new Error('冲突')
+  }
+
+  try {
+    let useSha = sha
+    if (!useSha || useSha.startsWith('sig:')) {
+      const meta = await fetch(`${API}?ts=${Date.now()}`, {
+        headers: { Accept: headers.Accept, Authorization: headers.Authorization },
+      })
+      if (meta.ok) {
+        const body = (await meta.json()) as { sha?: string }
+        useSha = body.sha ?? ''
+      } else {
+        useSha = ''
+      }
+    }
+
+    let res = await put(useSha)
+    if (res.status === 409) {
+      const meta = await fetch(`${API}?ts=${Date.now()}`, {
+        headers: { Accept: headers.Accept, Authorization: headers.Authorization },
+      })
+      if (!meta.ok) throw new Error('冲突')
+      const body = (await meta.json()) as { sha?: string }
+      res = await put(body.sha ?? '')
+      if (res.status === 409) throw new Error('冲突')
+    }
     if (res.status === 401 || res.status === 403) throw new Error('口令无效或权限不足')
     if (!res.ok) throw new Error('同步失败')
     const body = (await res.json()) as { content?: { sha?: string } }
-    return body.content?.sha ?? sha
+    return body.content?.sha ?? useSha
   } catch (e) {
     if (
       e instanceof Error &&

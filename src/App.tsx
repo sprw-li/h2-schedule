@@ -4,7 +4,7 @@ import { DayPanel } from './components/DayPanel'
 import { RefsPanel } from './components/RefsPanel'
 import { WeatherPanel } from './components/WeatherPanel'
 import { getWriteToken, pullCloud, pushCloud, setWriteToken } from './lib/cloud'
-import { downloadCsv, mergeCsvIntoSchedule, scheduleToCsv } from './lib/csv'
+import { downloadCsv, mergeCsvIntoSchedule, readCsvText, scheduleToCsv } from './lib/csv'
 import { addDays, addMonths, isAllDay, parseDateKey, timeSortKey, toDateKey, todayKey } from './lib/dates'
 import { flattenItems } from './lib/backup'
 import { loadSchedule, saveSchedule, uid } from './lib/storage'
@@ -46,40 +46,46 @@ export default function App() {
   const syncingRef = useRef(false)
   const editingRef = useRef(false)
   const csvInputRef = useRef<HTMLInputElement>(null)
+  const csvTextRef = useRef('')
+  const [csvSheet, setCsvSheet] = useState<{ title: string; text: string; mode: 'export' | 'import' } | null>(null)
   const today = useMemo(() => new Date(), [])
 
   function exportCsv() {
     const csv = scheduleToCsv(schedule)
     const stamp = toDateKey(new Date())
-    void downloadCsv(`h2-schedule-${stamp}.csv`, csv)
+    const filename = `h2-schedule-${stamp}.csv`
+    csvTextRef.current = csv
+    void downloadCsv(filename, csv)
       .then((how) => {
         setPhase('ok')
-        setMessage(how === 'clipboard' ? '已复制 CSV，可粘贴到文件' : how === 'share' ? '已打开系统分享，请存成文件' : '已导出 CSV')
+        if (how === 'text') {
+          setCsvSheet({ title: filename, text: csv, mode: 'export' })
+          setMessage('WebView 不能直接存文件，请复制或分享下方文本')
+          return
+        }
+        setMessage(how === 'share' ? '已打开系统分享，请存成文件' : '已导出 CSV')
       })
       .catch((e: unknown) => {
         setPhase('err')
-        setMessage(e instanceof Error ? e.message : '导出失败')
+        setCsvSheet({ title: filename, text: csv, mode: 'export' })
+        setMessage(e instanceof Error ? e.message : '导出失败，可复制下方文本')
       })
   }
 
+  function applyCsvText(text: string) {
+    const merged = mergeCsvIntoSchedule(schedule, text)
+    commit(merged)
+    setCsvSheet(null)
+    setMessage('已导入 CSV，正在同步…')
+  }
+
   function importCsvFile(file: File) {
-    const reader = new FileReader()
-    reader.onload = () => {
-      try {
-        const text = String(reader.result || '')
-        const merged = mergeCsvIntoSchedule(schedule, text)
-        commit(merged)
-        setMessage('已导入 CSV，正在同步…')
-      } catch (e) {
+    void readCsvText(file)
+      .then((text) => applyCsvText(text))
+      .catch((e: unknown) => {
         setPhase('err')
         setMessage(e instanceof Error ? e.message : '导入失败')
-      }
-    }
-    reader.onerror = () => {
-      setPhase('err')
-      setMessage('读文件失败')
-    }
-    reader.readAsText(file, 'UTF-8')
+      })
   }
 
   useEffect(() => {
@@ -111,6 +117,14 @@ export default function App() {
      */
     function applyRemote(remote: { map: ScheduleMap; sha: string }, reason: 'hydrate' | 'poll') {
       if (reason === 'poll' && editingRef.current) return false
+      const incomingSig = scheduleContentSig(normalizeSchedule(remote.map))
+      if (reason === 'poll' && incomingSig === scheduleContentSig(normalizeSchedule(loadSchedule())) && !dirtyRef.current) {
+        if (remote.sha) {
+          shaRef.current = remote.sha
+          saveRemoteSha(remote.sha)
+        }
+        return false
+      }
       const prevBaseline = remoteRef.current
       const local = normalizeSchedule(loadSchedule())
       const localN = flattenItems(local).length
@@ -212,7 +226,7 @@ export default function App() {
 
     const tick = window.setInterval(() => {
       // 编辑中/待推送/正在同步：不拉，避免重渲染冲掉编辑框或抢写
-      if (dirtyRef.current || isPendingSync() || syncingRef.current || editingRef.current) return
+      if (document.hidden || dirtyRef.current || isPendingSync() || syncingRef.current || editingRef.current) return
       void pullCloud()
         .then((remote) => {
           if (!remote || dirtyRef.current || isPendingSync() || editingRef.current || stop) return
@@ -222,7 +236,7 @@ export default function App() {
           applyRemote(remote, 'poll')
         })
         .catch(() => {})
-    }, 8000)
+    }, 25000)
 
     return () => {
       stop = true
@@ -259,14 +273,14 @@ export default function App() {
         // 推送期间又改过：不要用旧包盖掉新改动
         const later = pendingRef.current
         if (later && scheduleContentSig(later) !== scheduleContentSig(clean)) {
-          setSchedule(later)
+          if (!editingRef.current) setSchedule(later)
           saveSchedule(later)
           return
         }
         dirtyRef.current = false
         pendingRef.current = null
         setPendingSync(false)
-        setSchedule(clean)
+        if (!editingRef.current) setSchedule(clean)
         saveSchedule(clean)
       })
       .catch(async (err) => {
@@ -294,7 +308,7 @@ export default function App() {
               saveRemoteSnap(aligned)
               const later = pendingRef.current
               if (later && scheduleContentSig(later) !== scheduleContentSig(aligned)) {
-                setSchedule(later)
+                if (!editingRef.current) setSchedule(later)
                 saveSchedule(later)
                 setPhase('ok')
                 setMessage('已同步，还有本地改动…')
@@ -303,7 +317,7 @@ export default function App() {
               dirtyRef.current = false
               pendingRef.current = null
               setPendingSync(false)
-              setSchedule(aligned)
+              if (!editingRef.current) setSchedule(aligned)
               saveSchedule(aligned)
               setPhase('ok')
               setMessage('已同步')
@@ -343,7 +357,13 @@ export default function App() {
     setSchedule(clean)
     saveSchedule(clean)
     window.clearTimeout(pushTimer.current)
-    pushTimer.current = window.setTimeout(() => flush(clean), 400)
+    pushTimer.current = window.setTimeout(() => {
+      if (editingRef.current) {
+        pushTimer.current = window.setTimeout(() => flush(pendingRef.current ?? clean), 800)
+        return
+      }
+      flush(clean)
+    }, 400)
   }
 
   const selected = parseDateKey(selectedKey)
@@ -399,12 +419,19 @@ export default function App() {
           导出 CSV
         </button>
         <button type="button" className="solid csv-btn" onClick={() => csvInputRef.current?.click()}>
-          导入 CSV
+          导入文件
+        </button>
+        <button
+          type="button"
+          className="ghost csv-btn"
+          onClick={() => setCsvSheet({ title: '粘贴 CSV', text: '', mode: 'import' })}
+        >
+          粘贴导入
         </button>
         <input
           ref={csvInputRef}
           type="file"
-          accept=".csv,text/csv"
+          accept=".csv,text/csv,text/plain,*/*"
           hidden
           onChange={(e) => {
             const f = e.target.files?.[0]
@@ -412,7 +439,7 @@ export default function App() {
             if (f) importCsvFile(f)
           }}
         />
-        <span className="csv-hint">手机电脑互拷日程</span>
+        <span className="csv-hint">手机建议：导出用分享/复制；导入选文件或粘贴</span>
       </div>
       <nav className="mobile-tabs" aria-label="视图切换">
         <button
@@ -639,6 +666,68 @@ export default function App() {
                 onClick={() => setAskPhrase(false)}
               >
                 先留在本机
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
+      {csvSheet ? (
+        <div className="sync-scrim" onClick={() => setCsvSheet(null)}>
+          <form
+            className="sync-card csv-sheet"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (csvSheet.mode === 'import') {
+                try {
+                  applyCsvText(csvSheet.text)
+                } catch (err) {
+                  setPhase('err')
+                  setMessage(err instanceof Error ? err.message : '导入失败')
+                }
+              } else {
+                setCsvSheet(null)
+              }
+            }}
+          >
+            <h2>{csvSheet.mode === 'import' ? '粘贴 CSV' : '导出文本'}</h2>
+            <p>
+              {csvSheet.mode === 'import'
+                ? '把电脑导出的 CSV 整段贴进来。也认 time 列或中文表头。'
+                : '选中下方全部内容，复制后发到电脑或存成 .csv 文件。'}
+            </p>
+            <textarea
+              className="csv-textarea"
+              value={csvSheet.text}
+              readOnly={csvSheet.mode === 'export'}
+              onChange={(e) => setCsvSheet({ ...csvSheet, text: e.target.value })}
+              rows={12}
+              spellCheck={false}
+            />
+            <div className="sync-actions">
+              {csvSheet.mode === 'export' ? (
+                <button
+                  className="solid"
+                  type="button"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(csvSheet.text).then(
+                      () => {
+                        setMessage('已复制')
+                        setPhase('ok')
+                      },
+                      () => setMessage('请长按文本手动复制'),
+                    )
+                  }}
+                >
+                  复制全部
+                </button>
+              ) : (
+                <button className="solid" type="submit">
+                  导入
+                </button>
+              )}
+              <button className="ghost" type="button" onClick={() => setCsvSheet(null)}>
+                关闭
               </button>
             </div>
           </form>

@@ -1,7 +1,7 @@
 /** 壳内 OTA：经 GitHub Contents API 拉整包 HTML，校验 sha256 后写入 localStorage，重启由 boot 装配 */
 
 import { getWriteToken } from './cloud'
-import { netErr } from './net'
+import { ghPages, ghRaw, netErr } from './net'
 
 export type OtaManifest = {
   builtAt: string
@@ -147,9 +147,17 @@ async function fetchText(url: string, init?: RequestInit, tries = 2): Promise<st
 }
 
 function pagesUrl(repoPath: string) {
-  // docs/ota/manifest.json → /h2-schedule/ota/manifest.json
-  const rel = repoPath.replace(/^docs\//, '')
-  return `https://sprw-li.github.io/h2-schedule/${rel}`
+  return ghPages(repoPath)
+}
+
+async function readViaRaw(path: string) {
+  const text = await fetchText(ghRaw(path), undefined, path.endsWith('.html') ? 3 : 2)
+  if (path.endsWith('.json')) {
+    JSON.parse(text)
+    return text
+  }
+  if (text.includes('id="root"') || text.length > 5000) return text
+  throw new Error('raw 内容无效')
 }
 
 async function readViaPages(path: string) {
@@ -213,14 +221,16 @@ function parseMan(text: string): OtaManifest | null {
   }
 }
 
-/** Pages 常有缓存；有口令时两边都拉，取较新的 manifest */
+/** Pages 常有缓存；raw 较新；有口令再试 API，取较新的 manifest */
 export async function fetchManifest(): Promise<OtaManifest> {
   const cands: OtaManifest[] = []
-  try {
-    const p = parseMan(await readViaPages(MANIFEST_PATH))
-    if (p) cands.push(p)
-  } catch {
-    /* ignore */
+  for (const reader of [readViaRaw, readViaPages]) {
+    try {
+      const p = parseMan(await reader(MANIFEST_PATH))
+      if (p) cands.push(p)
+    } catch {
+      /* ignore */
+    }
   }
   if (getWriteToken()) {
     try {
@@ -231,7 +241,6 @@ export async function fetchManifest(): Promise<OtaManifest> {
     }
   }
   if (cands.length === 0) {
-    // 无口令且 Pages 失败
     throw new Error('查不到更新（可开代理或输入口令后重试）')
   }
   cands.sort((a, b) => Date.parse(b.builtAt) - Date.parse(a.builtAt))
@@ -265,6 +274,13 @@ export async function downloadAndVerify(man: OtaManifest): Promise<OtaBundle> {
       html = await tryHtml(readViaApi)
     } catch (e) {
       errs.push(netErr(e, 'API 下载失败'))
+    }
+  }
+  if (!html) {
+    try {
+      html = await tryHtml(readViaRaw)
+    } catch (e) {
+      errs.push(netErr(e, 'raw 下载失败'))
     }
   }
   if (!html) {

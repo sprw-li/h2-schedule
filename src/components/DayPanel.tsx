@@ -322,10 +322,10 @@ export function DayPanel({
   const [editDraft, setEditDraft] = useState<Draft>(emptyDraft)
   const [composerOpen, setComposerOpen] = useState(false)
   const dateKey = toDateKey(date)
-  const listKey = `${dateKey}:${items[0]?.id ?? 'none'}:${items.length}`
   const onEditorOpenChangeRef = useRef(onEditorOpenChange)
   onEditorOpenChangeRef.current = onEditorOpenChange
   const listRef = useRef<HTMLDivElement>(null)
+  const editorOpen = !!(editingId || composerOpen)
 
   // 只能依赖日期字符串：父组件每次渲染都会 new Date()，用 Date 对象当 deps 会误关编辑框
   useEffect(() => {
@@ -338,11 +338,31 @@ export function DayPanel({
   useEffect(() => {
     const el = listRef.current
     if (el) el.scrollTop = 0
-  }, [listKey])
+  }, [dateKey])
 
   useEffect(() => {
-    onEditorOpenChangeRef.current?.(!!(editingId || composerOpen))
-  }, [editingId, composerOpen])
+    onEditorOpenChangeRef.current?.(editorOpen)
+  }, [editorOpen])
+
+  useEffect(() => {
+    if (!editorOpen) {
+      document.documentElement.style.setProperty('--kb', '0px')
+      return
+    }
+    const vv = window.visualViewport
+    const apply = () => {
+      const inset = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0
+      document.documentElement.style.setProperty('--kb', `${Math.round(inset)}px`)
+    }
+    apply()
+    vv?.addEventListener('resize', apply)
+    vv?.addEventListener('scroll', apply)
+    return () => {
+      vv?.removeEventListener('resize', apply)
+      vv?.removeEventListener('scroll', apply)
+      document.documentElement.style.setProperty('--kb', '0px')
+    }
+  }, [editorOpen])
 
   // 同步合并可能换 id：只在当天清单里按标题接回，避免改一天串到别的天
   useEffect(() => {
@@ -372,7 +392,7 @@ export function DayPanel({
   }
 
   return (
-    <section className={`panel day-panel${editingId || composerOpen ? ' day-focus' : ''}`}>
+    <section className={`panel day-panel${editorOpen ? ' day-focus' : ''}`}>
       <div className="day-chrome">
         <div className="cal-head">
           <h2>{formatDayHeading(date)}</h2>
@@ -388,16 +408,14 @@ export function DayPanel({
         <div className="day-meta">
           {weekdayLabel(date)} · 清单 {pending}/{items.length}
         </div>
-        {!editingId && !composerOpen ? (
-          <DayScale key={dateKey} date={date} items={items} />
-        ) : null}
+        {!editorOpen ? <DayScale key={dateKey} date={date} items={items} /> : null}
       </div>
       {items.length === 0 ? (
-        <div key={listKey} ref={listRef} className="sheet-scroll empty">
+        <div ref={listRef} className="sheet-scroll empty">
           这一天还没有事项。点下方「新事项」写入。
         </div>
       ) : (
-        <div key={listKey} ref={listRef} className="sheet-scroll list">
+        <div ref={listRef} className="sheet-scroll list">
           {items.map((item, index) => {
             const holiday = item.kind === 'holiday'
             const due = item.kind === 'deadline'
@@ -406,7 +424,7 @@ export function DayPanel({
             const label = allDay ? '全天' : formatWhen(s, e)
             return (
               <div
-                key={`${dateKey}:${item.id}:${item.title}:${index}`}
+                key={`${dateKey}:${item.id}:${index}`}
                 className={`item${item.done ? ' done' : ''}${due ? ' deadline' : ''}${holiday ? ' holiday' : ''}${editingId === item.id ? ' editing' : ''}`}
               >
                 <button

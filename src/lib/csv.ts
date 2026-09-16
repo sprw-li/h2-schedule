@@ -73,6 +73,29 @@ export function scheduleToCsv(map: ScheduleMap) {
   return `\uFEFF${[header.join(','), ...rows].join('\n')}\n`
 }
 
+function col(header: string[], ...names: string[]) {
+  for (const n of names) {
+    const i = header.indexOf(n)
+    if (i >= 0) return i
+  }
+  return -1
+}
+
+function parseHm(raw: string): string | undefined {
+  const s = raw.trim().replace(/：/g, ':')
+  const m = /^(\d{1,2}):(\d{2})/.exec(s)
+  if (!m) return undefined
+  return `${pad(Number(m[1]))}:${m[2]}`
+}
+
+function parseTimeSpan(raw: string): { start?: string; end?: string } {
+  const s = raw.trim().replace(/：/g, ':')
+  if (!s) return {}
+  const m = /^(\d{1,2}:\d{2})(?:\s*[-–~到至]\s*(\d{1,2}:\d{2}))?/.exec(s)
+  if (!m) return {}
+  return { start: parseHm(m[1]), end: m[2] ? parseHm(m[2]) : undefined }
+}
+
 export function csvToItems(text: string): ScheduleItem[] {
   const raw = text.replace(/^\uFEFF/, '').trim()
   if (!raw) return []
@@ -80,15 +103,15 @@ export function csvToItems(text: string): ScheduleItem[] {
   if (lines.length < 2) return []
   const sep = detectSep(lines[0])
   const header = parseRow(lines[0], sep).map((h) => h.trim().toLowerCase().replace(/\s+/g, ''))
-  const idx = (name: string) => header.indexOf(name)
-  const iDate = idx('date') >= 0 ? idx('date') : idx('日期')
-  const iKind = idx('kind') >= 0 ? idx('kind') : idx('类型')
-  const iTitle = idx('title') >= 0 ? idx('title') : idx('标题')
-  const iDone = idx('done')
-  const iStart = idx('start') >= 0 ? idx('start') : idx('起')
-  const iEnd = idx('end') >= 0 ? idx('end') : idx('止')
-  const iAll = idx('allday')
-  const iId = idx('id')
+  const iDate = col(header, 'date', '日期', 'day')
+  const iKind = col(header, 'kind', '类型', '颜色')
+  const iTitle = col(header, 'title', '标题', '事项', '内容')
+  const iDone = col(header, 'done', '完成')
+  const iStart = col(header, 'start', '起', '开始')
+  const iEnd = col(header, 'end', '止', '结束')
+  const iTime = col(header, 'time', '时间', '时刻')
+  const iAll = col(header, 'allday', '全天')
+  const iId = col(header, 'id')
   if (iDate < 0 || iTitle < 0) throw new Error('CSV 缺少 date/title 列（用本 App 导出的文件即可）')
 
   const items: ScheduleItem[] = []
@@ -103,9 +126,16 @@ export function csvToItems(text: string): ScheduleItem[] {
     const doneCell = (iDone >= 0 ? cols[iDone] : '0')?.trim().toLowerCase() || '0'
     const done = doneCell === '1' || doneCell === 'true' || doneCell === 'yes'
     const allDayCell = (iAll >= 0 ? cols[iAll] : '0')?.trim().toLowerCase() || '0'
-    const allDay = allDayCell === '1' || allDayCell === 'true'
-    const start = iStart >= 0 ? cols[iStart]?.trim() || undefined : undefined
-    const end = iEnd >= 0 ? cols[iEnd]?.trim() || undefined : undefined
+    let allDay = allDayCell === '1' || allDayCell === 'true'
+    let start = iStart >= 0 ? parseHm(cols[iStart] || '') : undefined
+    let end = iEnd >= 0 ? parseHm(cols[iEnd] || '') : undefined
+    if (!start && !end && iTime >= 0) {
+      const span = parseTimeSpan(cols[iTime] || '')
+      start = span.start
+      end = span.end
+    }
+    if (!start && !end) allDay = true
+    else allDay = allDayCell === '1' || allDayCell === 'true'
     let id = (iId >= 0 ? cols[iId]?.trim() : '') || cryptoRandomId()
     if (!id || seenIds.has(id)) id = cryptoRandomId()
     seenIds.add(id)
@@ -128,13 +158,14 @@ function cryptoRandomId() {
   }
 }
 
-/** 导入：按「日期+类型+标题」对齐；不按科目族乱合并，避免改一条串多条 */
+/** 导入：先按 id，再按「日期+类型+标题」；不按科目族乱合并 */
 export function mergeCsvIntoSchedule(map: ScheduleMap, csvText: string): ScheduleMap {
   const incoming = csvToItems(csvText)
   if (incoming.length === 0) {
     throw new Error('CSV 里没有有效行（日期需为 2026-09-21 或 2026/9/21）')
   }
   const local = flattenItems(map)
+  const byId = new Map(local.map((it) => [it.id, { ...it }]))
   const byExact = new Map<string, ScheduleItem>()
   const usedIds = new Set<string>()
   for (const it of local) {
@@ -142,61 +173,97 @@ export function mergeCsvIntoSchedule(map: ScheduleMap, csvText: string): Schedul
     usedIds.add(it.id)
   }
   for (const it of incoming) {
+    const prevId = it.id && byId.has(it.id) ? byId.get(it.id) : undefined
+    if (prevId) {
+      const next = { ...prevId, ...it, id: prevId.id }
+      byId.set(prevId.id, next)
+      byExact.delete(itemKey(prevId))
+      byExact.set(itemKey(next), next)
+      continue
+    }
     const k = itemKey(it)
     const prev = byExact.get(k)
     if (!prev) {
       let id = it.id
       if (!id || usedIds.has(id)) id = cryptoRandomId()
       usedIds.add(id)
-      byExact.set(k, { ...it, id })
+      const row = { ...it, id }
+      byExact.set(k, row)
+      byId.set(id, row)
       continue
     }
-    byExact.set(k, {
+    const merged = {
       ...prev,
       ...it,
       id: prev.id,
       done: !!(prev.done || it.done),
-    })
+    }
+    byExact.set(k, merged)
+    byId.set(prev.id, merged)
   }
   return normalizeSchedule(replaceSchedule([...byExact.values()]))
 }
 
-export async function downloadCsv(filename: string, csv: string) {
+export async function readCsvText(file: File): Promise<string> {
+  const buf = await file.arrayBuffer()
+  const bytes = new Uint8Array(buf)
+  if (bytes.length >= 2 && bytes[0] === 0xff && bytes[1] === 0xfe) {
+    return new TextDecoder('utf-16le').decode(bytes)
+  }
+  if (bytes.length >= 2 && bytes[0] === 0xfe && bytes[1] === 0xff) {
+    return new TextDecoder('utf-16be').decode(bytes)
+  }
+  return new TextDecoder('utf-8').decode(bytes)
+}
+
+export async function downloadCsv(filename: string, csv: string): Promise<'share' | 'file' | 'text'> {
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
   const file = new File([blob], filename, { type: 'text/csv;charset=utf-8' })
   const nav = navigator as Navigator & {
     canShare?: (data: ShareData) => boolean
     share?: (data: ShareData) => Promise<void>
   }
+  const native = !!(
+    window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }
+  ).Capacitor?.isNativePlatform?.()
+
   try {
     if (nav.share && nav.canShare?.({ files: [file] })) {
       await nav.share({ files: [file], title: filename, text: filename })
       return 'share'
     }
   } catch {
-    /* 用户取消分享时走下载/复制 */
+    /* 取消或 WebView 不支持带文件分享 */
   }
-  try {
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    a.rel = 'noopener'
-    a.style.display = 'none'
-    document.body.appendChild(a)
-    a.click()
-    window.setTimeout(() => {
-      a.remove()
-      URL.revokeObjectURL(url)
-    }, 1000)
-    return 'file'
-  } catch {
-    /* ignore */
+
+  if (native && nav.share) {
+    try {
+      await nav.share({ title: filename, text: csv })
+      return 'share'
+    } catch {
+      /* 取消则改在界面里展示文本 */
+    }
   }
-  try {
-    await navigator.clipboard.writeText(csv)
-    return 'clipboard'
-  } catch {
-    throw new Error('无法导出，请换浏览器或电脑再试')
+
+  if (!native) {
+    try {
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      a.rel = 'noopener'
+      a.style.display = 'none'
+      document.body.appendChild(a)
+      a.click()
+      window.setTimeout(() => {
+        a.remove()
+        URL.revokeObjectURL(url)
+      }, 1000)
+      return 'file'
+    } catch {
+      /* ignore */
+    }
   }
+
+  return 'text'
 }

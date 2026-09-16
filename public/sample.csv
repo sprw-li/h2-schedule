@@ -1,6 +1,6 @@
-date,title,time,kind
-2026-09-07,组会汇报,14:00,task
-2026-09-07,交实验报告,18:00,deadline
-2026-09-08,试剂订购,09:30,task
-2026-09-10,HPLC 样品送检,17:00,deadline
-2026-09-12,文献精读, ,task
+date,kind,title,done,start,end,allDay,id
+2026-09-07,task,组会汇报,0,14:00,,0,sample-1
+2026-09-07,deadline,交实验报告,0,,18:00,0,sample-2
+2026-09-08,task,试剂订购,0,09:30,,0,sample-3
+2026-09-10,deadline,HPLC 样品送检,0,,17:00,0,sample-4
+2026-09-12,task,文献精读,0,,,1,sample-5
