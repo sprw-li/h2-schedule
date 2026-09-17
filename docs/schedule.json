@@ -526,7 +526,7 @@
       "id": "ed3f0bae-20ef-4ef6-a8d6-7bcfb3f87efd",
       "date": "2026-09-17",
       "title": "普通化学实验 · 仪器的洗涤和干燥；铜的反应循环 · 化学院",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "08:00",
       "end": "12:00"
