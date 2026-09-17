@@ -624,6 +624,13 @@
       "kind": "task"
     },
     {
+      "id": "5df36d2d-7dc0-4dcb-bd39-0e3cc512c0fc",
+      "date": "2026-09-18",
+      "title": "票",
+      "done": false,
+      "kind": "task"
+    },
+    {
       "id": "f0f79415-6d19-44ac-89c2-73e0b64ad855",
       "date": "2026-09-18",
       "title": "数学作业",
