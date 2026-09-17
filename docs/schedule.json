@@ -561,7 +561,7 @@
       "id": "506f4c42-7701-4de5-803f-9be6347fab1b",
       "date": "2026-09-17",
       "title": "组会",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "18:30",
       "end": "21:30"
@@ -570,7 +570,7 @@
       "id": "cc6d95df-069d-4b57-af91-5d3a2b3aeae3",
       "date": "2026-09-17",
       "title": "拿书",
-      "done": false,
+      "done": true,
       "kind": "task"
     },
     {
