@@ -1,7 +1,7 @@
 import type { ItemKind, ScheduleItem, ScheduleMap } from '../types'
 import { flattenItems, replaceSchedule } from './backup'
 import { pad } from './dates'
-import { itemKey, normalizeSchedule } from './schedule'
+import { normalizeSchedule, rowKey, slotKey } from './schedule'
 
 const KINDS = new Set<ItemKind>(['task', 'deadline', 'holiday'])
 
@@ -115,7 +115,7 @@ export function csvToItems(text: string): ScheduleItem[] {
   if (iDate < 0 || iTitle < 0) throw new Error('CSV 缺少 date/title 列（用本 App 导出的文件即可）')
 
   const items: ScheduleItem[] = []
-  const seenIds = new Set<string>()
+  const seenSlots = new Set<string>()
   for (const line of lines.slice(1)) {
     const cols = parseRow(line, sep)
     const date = parseCsvDate(cols[iDate] || '')
@@ -137,8 +137,12 @@ export function csvToItems(text: string): ScheduleItem[] {
     if (!start && !end) allDay = true
     else allDay = allDayCell === '1' || allDayCell === 'true'
     let id = (iId >= 0 ? cols[iId]?.trim() : '') || cryptoRandomId()
-    if (!id || seenIds.has(id)) id = cryptoRandomId()
-    seenIds.add(id)
+    let slot = `${date}|${id}`
+    if (!id || seenSlots.has(slot)) {
+      id = cryptoRandomId()
+      slot = `${date}|${id}`
+    }
+    seenSlots.add(slot)
     const row: ScheduleItem = { id, date, title, done, kind }
     if (allDay) row.allDay = true
     else {
@@ -158,50 +162,52 @@ function cryptoRandomId() {
   }
 }
 
-/** 导入：先按 id，再按「日期+类型+标题」；不按科目族乱合并 */
+/** 导入：先同日同 id，再整行（含时刻）对齐；同课不同节次都保留 */
 export function mergeCsvIntoSchedule(map: ScheduleMap, csvText: string): ScheduleMap {
   const incoming = csvToItems(csvText)
   if (incoming.length === 0) {
     throw new Error('CSV 里没有有效行（日期需为 2026-09-21 或 2026/9/21）')
   }
-  const local = flattenItems(map)
-  const byId = new Map(local.map((it) => [it.id, { ...it }]))
-  const byExact = new Map<string, ScheduleItem>()
-  const usedIds = new Set<string>()
-  for (const it of local) {
-    byExact.set(itemKey(it), { ...it })
-    usedIds.add(it.id)
-  }
+  const local = flattenItems(map).map((it) => ({ ...it }))
+  const used = new Set<number>()
+  const bySlot = new Map<string, number>()
+  const byRow = new Map<string, number[]>()
+  local.forEach((it, i) => {
+    if (!bySlot.has(slotKey(it))) bySlot.set(slotKey(it), i)
+    const arr = byRow.get(rowKey(it)) ?? []
+    arr.push(i)
+    byRow.set(rowKey(it), arr)
+  })
+
+  const extra: ScheduleItem[] = []
   for (const it of incoming) {
-    const prevId = it.id && byId.has(it.id) ? byId.get(it.id) : undefined
-    if (prevId) {
-      const next = { ...prevId, ...it, id: prevId.id }
-      byId.set(prevId.id, next)
-      byExact.delete(itemKey(prevId))
-      byExact.set(itemKey(next), next)
+    let idx = bySlot.get(slotKey(it))
+    if (idx == null || used.has(idx)) {
+      const hits: number[] = []
+      local.forEach((row, i) => {
+        if (row.id === it.id && !used.has(i)) hits.push(i)
+      })
+      idx = hits.length === 1 ? hits[0] : undefined
+    }
+    if (idx == null || used.has(idx)) {
+      const arr = byRow.get(rowKey(it))
+      idx = arr?.find((i) => !used.has(i))
+    }
+    if (idx != null && !used.has(idx)) {
+      used.add(idx)
+      const prev = local[idx]
+      local[idx] = {
+        ...prev,
+        ...it,
+        id: prev.id,
+        date: it.date,
+        done: !!(prev.done || it.done),
+      }
       continue
     }
-    const k = itemKey(it)
-    const prev = byExact.get(k)
-    if (!prev) {
-      let id = it.id
-      if (!id || usedIds.has(id)) id = cryptoRandomId()
-      usedIds.add(id)
-      const row = { ...it, id }
-      byExact.set(k, row)
-      byId.set(id, row)
-      continue
-    }
-    const merged = {
-      ...prev,
-      ...it,
-      id: prev.id,
-      done: !!(prev.done || it.done),
-    }
-    byExact.set(k, merged)
-    byId.set(prev.id, merged)
+    extra.push({ ...it })
   }
-  return normalizeSchedule(replaceSchedule([...byExact.values()]))
+  return normalizeSchedule(replaceSchedule([...local, ...extra]))
 }
 
 export async function readCsvText(file: File): Promise<string> {

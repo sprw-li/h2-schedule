@@ -12,6 +12,7 @@ import {
   clearLegacyOverlay,
   integrateSchedules,
   isPendingSync,
+  slotKey,
   loadRemoteSha,
   loadRemoteSnap,
   mergeByIdentity,
@@ -48,10 +49,25 @@ export default function App() {
   const csvInputRef = useRef<HTMLInputElement>(null)
   const csvTextRef = useRef('')
   const [csvSheet, setCsvSheet] = useState<{ title: string; text: string; mode: 'export' | 'import' } | null>(null)
+  const [undo, setUndo] = useState<{ label: string; before: ScheduleMap } | null>(null)
+  const [undoArmed, setUndoArmed] = useState(false)
+  const pendingRemoteRef = useRef<{ map: ScheduleMap; sha: string } | null>(null)
+  const applyRemoteRef = useRef<
+    ((remote: { map: ScheduleMap; sha: string }, reason: 'hydrate' | 'poll') => boolean) | undefined
+  >(undefined)
   const today = useMemo(() => new Date(), [])
 
+  function clipTitle(title: string) {
+    const t = title.trim()
+    return t.length > 18 ? `${t.slice(0, 18)}…` : t
+  }
+
+  function cloneSchedule(map: ScheduleMap): ScheduleMap {
+    return JSON.parse(JSON.stringify(map)) as ScheduleMap
+  }
+
   function exportCsv() {
-    const csv = scheduleToCsv(schedule)
+    const csv = scheduleToCsv(pendingRef.current ?? schedule)
     const stamp = toDateKey(new Date())
     const filename = `h2-schedule-${stamp}.csv`
     csvTextRef.current = csv
@@ -73,8 +89,8 @@ export default function App() {
   }
 
   function applyCsvText(text: string) {
-    const merged = mergeCsvIntoSchedule(schedule, text)
-    commit(merged)
+    const merged = mergeCsvIntoSchedule(pendingRef.current ?? schedule, text)
+    commit(merged, `导入 CSV`)
     setCsvSheet(null)
     setMessage('已导入 CSV，正在同步…')
   }
@@ -116,7 +132,10 @@ export default function App() {
      * pending 时会把远端条目全当成「本机已删」丢掉，再 flush 冲垮云端。
      */
     function applyRemote(remote: { map: ScheduleMap; sha: string }, reason: 'hydrate' | 'poll') {
-      if (reason === 'poll' && editingRef.current) return false
+      if (editingRef.current) {
+        pendingRemoteRef.current = remote
+        return false
+      }
       const incomingSig = scheduleContentSig(normalizeSchedule(remote.map))
       if (reason === 'poll' && incomingSig === scheduleContentSig(normalizeSchedule(loadSchedule())) && !dirtyRef.current) {
         if (remote.sha) {
@@ -128,37 +147,11 @@ export default function App() {
       const prevBaseline = remoteRef.current
       const local = normalizeSchedule(loadSchedule())
       const localN = flattenItems(local).length
-      const remoteN = flattenItems(normalizeSchedule(remote.map)).length
-      const remoteByIdDate = new Map(
-        flattenItems(normalizeSchedule(remote.map)).map((i) => [`${i.date}|${i.id}`, i]),
-      )
-      const titleEdited = flattenItems(local).some((l) => {
-        const r = remoteByIdDate.get(`${l.date}|${l.id}`)
-        return !!r && r.title.trim() !== l.title.trim()
-      })
-
-      // 本机空/极少时绝不能 preferLocal；改过标题时必须 preferLocal，否则云端化安会盖掉手写
-      const wantPending = localN > 0 && (dirtyRef.current || isPendingSync() || titleEdited)
+      const wantPending = localN > 0 && (dirtyRef.current || isPendingSync())
       const { merged, remoteClean, needPush } = integrateSchedules(remote.map, local, {
         pending: wantPending,
         baseline: wantPending ? prevBaseline : null,
       })
-      const mergedN = flattenItems(merged).length
-
-      // 护栏：合并结果比云端少一半以上 → 信任云端，拒绝写回稀薄本机
-      if (remoteN >= 80 && mergedN < remoteN * 0.5) {
-        adoptRemote(remoteClean, remote.sha || undefined)
-        setSchedule(remoteClean)
-        saveSchedule(remoteClean)
-        dirtyRef.current = false
-        pendingRef.current = null
-        setPendingSync(false)
-        if (reason === 'hydrate') {
-          setPhase('ok')
-          setMessage(`本机日程异常偏少（${mergedN}/${remoteN}），已改用云端`)
-        }
-        return false
-      }
 
       adoptRemote(remoteClean, remote.sha || undefined)
       setSchedule(merged)
@@ -221,6 +214,8 @@ export default function App() {
         setMessage(err instanceof Error ? err.message : '加载失败')
       }
     }
+
+    applyRemoteRef.current = applyRemote
 
     void hydrate()
 
@@ -296,7 +291,9 @@ export default function App() {
             const remote = await pullCloud()
             if (remote) {
               const latest = pendingRef.current ?? clean
-              const aligned = normalizeSchedule(mergeByIdentity(remote.map, latest, true, null))
+              const aligned = normalizeSchedule(
+                mergeByIdentity(remote.map, latest, true, remoteRef.current),
+              )
               shaRef.current = remote.sha
               saveRemoteSha(remote.sha)
               remoteRef.current = aligned
@@ -349,21 +346,58 @@ export default function App() {
       })
   }
 
-  function commit(next: ScheduleMap) {
+  function commit(next: ScheduleMap, label?: string, silent = false) {
+    const prev = cloneSchedule(pendingRef.current ?? schedule)
     const clean = normalizeSchedule(next)
     dirtyRef.current = true
     setPendingSync(true)
     pendingRef.current = clean
     setSchedule(clean)
     saveSchedule(clean)
+    if (!silent && label) {
+      setUndo({ label, before: prev })
+      setUndoArmed(false)
+    }
     window.clearTimeout(pushTimer.current)
-    pushTimer.current = window.setTimeout(() => {
+    const later = () => {
       if (editingRef.current) {
-        pushTimer.current = window.setTimeout(() => flush(pendingRef.current ?? clean), 800)
+        pushTimer.current = window.setTimeout(later, 800)
         return
       }
-      flush(clean)
-    }, 400)
+      flush(pendingRef.current ?? clean)
+    }
+    pushTimer.current = window.setTimeout(later, 400)
+  }
+
+  function commitFrom(mutator: (map: ScheduleMap) => ScheduleMap, label?: string) {
+    commit(mutator(pendingRef.current ?? schedule), label)
+  }
+
+  function runUndo() {
+    if (!undo) return
+    if (!undoArmed) {
+      setUndoArmed(true)
+      return
+    }
+    const label = undo.label
+    const before = undo.before
+    setUndo(null)
+    setUndoArmed(false)
+    commit(before, undefined, true)
+    setMessage(`已撤销「${label}」`)
+  }
+
+  function patchSelectedDay(
+    updater: (list: NonNullable<ScheduleMap[string]>) => NonNullable<ScheduleMap[string]>,
+    label?: string,
+  ) {
+    commitFrom((map) => {
+      const next = { ...map }
+      const list = updater(next[selectedKey] ?? [])
+      if (list.length === 0) delete next[selectedKey]
+      else next[selectedKey] = list
+      return next
+    }, label)
   }
 
   const selected = parseDateKey(selectedKey)
@@ -371,15 +405,15 @@ export default function App() {
   const items = [...(schedule[selectedKey] ?? [])]
     .filter((item) => item.date === selectedKey)
     .sort((a, b) => {
-    const ad = isAllDay(a)
-    const bd = isAllDay(b)
-    if (ad !== bd) return ad ? 1 : -1
-    const ta = timeSortKey(a)
-    const tb = timeSortKey(b)
-    if (ta !== tb) return ta.localeCompare(tb)
-    if (a.kind !== b.kind) return a.kind === 'deadline' ? -1 : 1
-    return a.title.localeCompare(b.title, 'zh')
-  })
+      const ad = isAllDay(a)
+      const bd = isAllDay(b)
+      if (ad !== bd) return ad ? 1 : -1
+      const ta = timeSortKey(a)
+      const tb = timeSortKey(b)
+      if (ta !== tb) return ta.localeCompare(tb)
+      if (a.kind !== b.kind) return a.kind === 'deadline' ? -1 : 1
+      return a.title.localeCompare(b.title, 'zh')
+    })
 
   return (
     <div className="app">
@@ -512,6 +546,13 @@ export default function App() {
               items={items}
               onEditorOpenChange={(open) => {
                 editingRef.current = open
+                if (!open) {
+                  const q = pendingRemoteRef.current
+                  if (q) {
+                    pendingRemoteRef.current = null
+                    applyRemoteRef.current?.(q, 'poll')
+                  }
+                }
               }}
               onPrevDay={() => {
                 setSelectedKey((k) => {
@@ -529,62 +570,91 @@ export default function App() {
                 })
                 setPane('day')
               }}
-              onToggle={(id) => {
-                const list = (schedule[selectedKey] ?? []).map((item) =>
-                  item.id === id && item.date === selectedKey
-                    ? { ...item, done: !item.done }
-                    : item,
-                )
-                commit({ ...schedule, [selectedKey]: list })
+              onToggle={(item) => {
+                const label = item.done ? `标为未完成 ${clipTitle(item.title)}` : `勾完 ${clipTitle(item.title)}`
+                patchSelectedDay((list) => {
+                  const hit = list.findIndex((row) => row === item)
+                  const i =
+                    hit >= 0
+                      ? hit
+                      : list.findIndex((row) => slotKey(row) === slotKey(item))
+                  if (i < 0) return list
+                  return list.map((row, idx) =>
+                    idx === i ? { ...row, done: !row.done } : row,
+                  )
+                }, label)
               }}
-              onRemove={(id) => {
-                const list = (schedule[selectedKey] ?? []).filter(
-                  (item) => !(item.id === id && item.date === selectedKey),
-                )
-                const next = { ...schedule }
-                if (list.length === 0) delete next[selectedKey]
-                else next[selectedKey] = list
-                commit(next)
+              onRemove={(item) => {
+                patchSelectedDay((list) => {
+                  const hit = list.findIndex((row) => row === item)
+                  if (hit >= 0) return list.filter((_, idx) => idx !== hit)
+                  const k = slotKey(item)
+                  let once = false
+                  return list.filter((row) => {
+                    if (slotKey(row) !== k) return true
+                    if (once) return true
+                    once = true
+                    return false
+                  })
+                }, `删除 ${clipTitle(item.title)}`)
               }}
               onAdd={(draft) => {
-                commit({
-                  ...schedule,
-                  [selectedKey]: [
-                    ...(schedule[selectedKey] ?? []),
-                    {
-                      id: uid(),
-                      date: selectedKey,
-                      title: draft.title,
-                      done: false,
-                      kind: draft.kind,
-                      allDay: draft.allDay || undefined,
-                      start: draft.allDay ? undefined : draft.start || undefined,
-                      end: draft.allDay ? undefined : draft.end || undefined,
-                    },
-                  ],
-                })
+                commitFrom(
+                  (map) => ({
+                    ...map,
+                    [selectedKey]: [
+                      ...(map[selectedKey] ?? []),
+                      {
+                        id: uid(),
+                        date: selectedKey,
+                        title: draft.title,
+                        done: false,
+                        kind: draft.kind,
+                        allDay: draft.allDay || undefined,
+                        start: draft.allDay ? undefined : draft.start || undefined,
+                        end: draft.allDay ? undefined : draft.end || undefined,
+                      },
+                    ],
+                  }),
+                  `添加 ${clipTitle(draft.title)}`,
+                )
               }}
-              onUpdate={(id, draft) => {
-                let replaced = false
-                const list = (schedule[selectedKey] ?? []).map((item) => {
-                  if (replaced || item.id !== id || item.date !== selectedKey) return item
-                  replaced = true
-                  return {
-                    ...item,
-                    date: selectedKey,
-                    title: draft.title,
-                    kind: draft.kind,
-                    allDay: draft.allDay || undefined,
-                    start: draft.allDay ? undefined : draft.start || undefined,
-                    end: draft.allDay ? undefined : draft.end || undefined,
-                  }
-                })
-                commit({ ...schedule, [selectedKey]: list })
+              onUpdate={(item, draft) => {
+                patchSelectedDay((list) => {
+                  const hit = list.findIndex((row) => row === item)
+                  const i =
+                    hit >= 0
+                      ? hit
+                      : list.findIndex((row) => slotKey(row) === slotKey(item))
+                  if (i < 0) return list
+                  return list.map((row, idx) =>
+                    idx === i
+                      ? {
+                          ...row,
+                          date: selectedKey,
+                          title: draft.title,
+                          kind: draft.kind,
+                          allDay: draft.allDay || undefined,
+                          start: draft.allDay ? undefined : draft.start || undefined,
+                          end: draft.allDay ? undefined : draft.end || undefined,
+                        }
+                      : row,
+                  )
+                }, `修改 ${clipTitle(item.title)}`)
               }}
             />
           </>
         )}
       </div>
+      {undo ? (
+        <button
+          type="button"
+          className={`undo-bar${undoArmed ? ' armed' : ''}`}
+          onClick={runUndo}
+        >
+          {undoArmed ? `确定撤销「${undo.label}」` : `撤销「${undo.label}」`}
+        </button>
+      ) : null}
       {message ? <div className="toast">{message}</div> : null}
       {askPhrase ? (
         <div className="sync-scrim">
@@ -600,36 +670,15 @@ export default function App() {
               setUnlockError('')
               setUnlocking(true)
               window.setTimeout(() => {
-                const map = normalizeSchedule(pendingRef.current ?? schedule)
                 void unlockFromPublic(p)
                   .then((token) => {
                     setWriteToken(token)
                     setPhrase('')
-                    setMessage('口令正确，正在同步…')
-                    return pushCloud(map, shaRef.current)
-                  })
-                  .then((sha) => {
-                    shaRef.current = sha
-                    saveRemoteSha(sha)
-                    remoteRef.current = map
-                    saveRemoteSnap(map)
                     setAskPhrase(false)
                     setUnlocking(false)
-                    setPhase('ok')
-                    const later = pendingRef.current
-                    if (later && scheduleContentSig(later) !== scheduleContentSig(map)) {
-                      setSchedule(later)
-                      saveSchedule(later)
-                      setMessage('已同步，正在写入后续改动…')
-                      flush(later)
-                      return
-                    }
-                    dirtyRef.current = false
-                    pendingRef.current = null
-                    setPendingSync(false)
-                    setSchedule(map)
-                    saveSchedule(map)
-                    setMessage('已同步')
+                    setUnlockError('')
+                    setMessage('口令正确，正在同步…')
+                    flush(pendingRef.current ?? schedule)
                   })
                   .catch((err: unknown) => {
                     setUnlocking(false)

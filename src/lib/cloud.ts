@@ -69,12 +69,8 @@ export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | n
     if (api) return api
   }
 
+  // raw 通常比 Pages 新；不要用「条数更多」当新，删掉的条目会从旧 Pages 里复活
   const [raw, pages] = await Promise.all([pullJsonUrl(ghRaw(PATH)), pullJsonUrl(ghPages(PATH))])
-  if (raw && pages) {
-    const rn = flattenItems(raw.map).length
-    const pn = flattenItems(pages.map).length
-    return rn >= pn ? raw : pages
-  }
   if (raw) return raw
   if (pages) return pages
 
@@ -101,10 +97,11 @@ export async function pushCloud(map: ScheduleMap, sha: string) {
   const localCount = flattenItems(clean).length
   const snap = loadRemoteSnap()
   const snapCount = snap ? flattenItems(snap).length : 0
-  if (snapCount >= 80 && localCount < snapCount * 0.5) {
-    throw new Error(
-      `拒绝覆盖云端：本机仅 ${localCount} 条，云端 ${snapCount} 条（疑似本机缓存损坏）`,
-    )
+  if (snapCount >= 80 && localCount === 0) {
+    throw new Error('本机日程是空的，拒绝覆盖云端')
+  }
+  if (snapCount >= 40 && localCount > 0 && localCount * 2 < snapCount) {
+    throw new Error('本机条数不到云端一半，拒绝覆盖云端')
   }
 
   const headers = {

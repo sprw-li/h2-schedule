@@ -3,50 +3,32 @@ import { flattenItems, replaceSchedule } from './backup'
 
 const KINDS = new Set<ItemKind>(['task', 'deadline', 'holiday'])
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
-const KIND_RANK: Record<ItemKind, number> = {
-  deadline: 3,
-  holiday: 2,
-  task: 1,
-}
 
-/** 稳定身份：换 UUID 后仍能对上同一条事项 */
+/** 稳定身份：同日同类型同标题（CSV 对齐用，不含时刻） */
 export function itemKey(item: Pick<ScheduleItem, 'date' | 'kind' | 'title'>) {
   return `${item.date}\0${item.kind}\0${item.title.trim()}`
 }
 
-/** 课表改名/换教室后仍能对上：日期+类型+科目族 */
-const FAMILIES = [
-  '理论与计算化学导论',
-  '普通化学实验',
-  '今日化学 happytime',
-  '今日化学',
-  '普通化学习题课',
-  '普通化学',
-  '高等数学(B)(一)',
-  '计算概论(B)上机',
-  '计算概论(B)',
-  '化学实验室安全技术',
-  '大学生思想文化素养',
-  '英汉口译',
-  '数学习题课',
-  '博雅理学讲堂',
-  '军事理论直播课',
-  '组会',
-  '论文选题',
-  '论文提交',
-  '图书馆讲座',
-].sort((a, b) => b.length - a.length)
-
-export function familyOf(title: string) {
-  const t = title.trim()
-  for (const f of FAMILIES) {
-    if (t.includes(f)) return f
-  }
-  return t
+/** 同一天里的一条：normalize 后 date+id 唯一。删改只认这个，避免同课不同节次互撞。 */
+export function slotKey(item: Pick<ScheduleItem, 'date' | 'id'>) {
+  return `${item.date}|${item.id}`
 }
 
-export function softKey(item: Pick<ScheduleItem, 'date' | 'kind' | 'title'>) {
-  return `${item.date}\0${item.kind}\0${familyOf(item.title)}`
+/** @deprecated 与 slotKey 相同；留给旧调用 */
+export function instanceKey(item: Pick<ScheduleItem, 'date' | 'id'>) {
+  return slotKey(item)
+}
+
+/** 真重复：连时刻也相同才压条。同课不同节次必须保留。 */
+export function rowKey(item: ScheduleItem) {
+  return [
+    item.date,
+    item.kind,
+    item.title.trim(),
+    item.start ?? '',
+    item.end ?? '',
+    item.allDay ? '1' : '0',
+  ].join('\0')
 }
 
 function newId() {
@@ -80,39 +62,6 @@ export function parseScheduleJsonText(raw: string): { items: unknown[] } {
   if (end >= 0) t = t.slice(0, end + 1)
   const parsed = JSON.parse(t) as { items?: unknown }
   return { items: Array.isArray(parsed.items) ? parsed.items : [] }
-}
-
-/** 只丢掉抽血垃圾条，不再改写任何手写标题、也不再凭空塞一条血检。 */
-export function isBloodSpamTitle(title: string) {
-  const t = title.trim()
-  return /抽血|不要吃早饭|勿进食/.test(t)
-}
-
-export function isBloodNoiseTitle(title: string) {
-  return isBloodSpamTitle(title)
-}
-
-/** 化安只要第 6–14 周（学期从 2026-09-07 起算） */
-export function isHuaAnOutOfRange(item: Pick<ScheduleItem, 'date' | 'title'>) {
-  if (!item.title.includes('化学实验室安全技术')) return false
-  const start = Date.parse('2026-09-07T00:00:00')
-  const t = Date.parse(`${item.date}T00:00:00`)
-  if (!Number.isFinite(start) || !Number.isFinite(t)) return false
-  const week = Math.floor((t - start) / (7 * 86400000)) + 1
-  return week < 6 || week > 14
-}
-
-/** 12-28 无时刻考查堆等已知脏规则 */
-export function isExamPileJunk(item: Pick<ScheduleItem, 'date' | 'title' | 'start' | 'end'>) {
-  const t = item.title.trim()
-  if (item.date === '2026-12-28') {
-    if (t.includes('停课复习')) return false
-    if (/考试/.test(t) && (item.start || item.end)) return false
-    if (/考查/.test(t)) return true
-  }
-  if (item.date === '2027-01-05' && t.includes('普通化学习题课') && /考试|考查/.test(t)) return true
-  if (item.date === '2026-11-18' && (t === '今日化学' || t === '今日化学导论')) return true
-  return false
 }
 
 /** 把任意输入压成合法 ScheduleItem；缺字段则丢弃 */
@@ -152,22 +101,23 @@ export function coerceItems(raw: unknown[]): ScheduleItem[] {
   return out
 }
 
-/** 同一 id 只能对应一条；重复则给后来者稳定新 id（防改一条串多条/串日） */
+/** 同一天同一 id 只能一条；跨天允许相同 id。撞了就给后来者稳定新 id。 */
 export function ensureUniqueIds(items: ScheduleItem[]): ScheduleItem[] {
   const seen = new Set<string>()
   let nth = 0
   return items.map((it) => {
-    if (it.id && !seen.has(it.id)) {
-      seen.add(it.id)
+    const slot = `${it.date}|${it.id}`
+    if (it.id && !seen.has(slot)) {
+      seen.add(slot)
       return it
     }
     nth += 1
     let id = stableDupId(it, nth)
-    while (seen.has(id)) {
+    while (seen.has(`${it.date}|${id}`)) {
       nth += 1
       id = stableDupId(it, nth)
     }
-    seen.add(id)
+    seen.add(`${it.date}|${id}`)
     return { ...it, id }
   })
 }
@@ -192,75 +142,32 @@ export function scheduleContentSig(map: ScheduleMap) {
     .join('\n')
 }
 
-/**
- * exact key 去重；再按同日同标题压掉 deadline+task 双份。
- * 不按科目族压条——同日多场讲座会丢。
- */
+/** 只压完全相同的行，不按科目名/周次/「像不像课表」删改 */
 export function dedupeByIdentity(map: ScheduleMap): ScheduleMap {
-  const byExact = new Map<string, ScheduleItem>()
+  const byRow = new Map<string, ScheduleItem>()
   for (const it of flattenItems(map)) {
-    const k = itemKey(it)
-    const prev = byExact.get(k)
+    const k = rowKey(it)
+    const prev = byRow.get(k)
     if (!prev) {
-      byExact.set(k, { ...it })
+      byRow.set(k, { ...it })
       continue
     }
-    byExact.set(k, {
+    byRow.set(k, {
       ...prev,
       ...it,
       id: prev.id || it.id,
       done: !!(prev.done || it.done),
     })
   }
-
-  const byTitle = new Map<string, ScheduleItem>()
-  for (const it of byExact.values()) {
-    const k = `${it.date}\0${it.title.trim()}`
-    const prev = byTitle.get(k)
-    if (!prev) {
-      byTitle.set(k, it)
-      continue
-    }
-    const prefer =
-      KIND_RANK[it.kind] > KIND_RANK[prev.kind]
-        ? it
-        : KIND_RANK[it.kind] < KIND_RANK[prev.kind]
-          ? prev
-          : it.title.length >= prev.title.length
-            ? it
-            : prev
-    const other = prefer === it ? prev : it
-    byTitle.set(k, {
-      ...prefer,
-      id: prefer.id || other.id,
-      done: !!(prefer.done || other.done),
-      start: prefer.start || other.start,
-      end: prefer.end || other.end,
-    })
-  }
-
-  return replaceSchedule([...byTitle.values()])
+  return replaceSchedule([...byRow.values()])
 }
 
-export function sanitizeNoise(map: ScheduleMap): ScheduleMap {
-  const all = flattenItems(map)
-  const kept: ScheduleItem[] = []
-  for (const it of all) {
-    if (isExamPileJunk(it)) continue
-    if (isHuaAnOutOfRange(it)) continue
-    if (isBloodSpamTitle(it.title)) continue
-    kept.push(it)
-  }
-  return replaceSchedule(kept)
-}
-
-/** 唯一规范化入口：coerce → sanitize → dedupe → 唯一 id → 按 date 分桶 */
+/** 入口：合法化字段 + 撞 id 处理。不做课表规则核验。 */
 export function normalizeSchedule(input: ScheduleMap | ScheduleItem[] | unknown[]): ScheduleMap {
   const items = Array.isArray(input)
     ? coerceItems(input)
     : coerceItems(flattenItems(input as ScheduleMap) as unknown[])
-  const cleaned = ensureUniqueIds(flattenItems(dedupeByIdentity(sanitizeNoise(replaceSchedule(items)))))
-  return replaceSchedule(cleaned)
+  return replaceSchedule(ensureUniqueIds(flattenItems(dedupeByIdentity(replaceSchedule(items)))))
 }
 
 /** 序列化为可写入 GitHub / 本地的干净 JSON（真换行结尾） */
