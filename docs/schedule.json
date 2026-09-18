@@ -713,7 +713,7 @@
       "id": "3ce92b71-5fe9-411d-a883-df85dd74ab0c",
       "date": "2026-09-21",
       "title": "军理登记",
-      "done": false,
+      "done": true,
       "kind": "task"
     },
     {
