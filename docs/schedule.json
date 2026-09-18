@@ -659,6 +659,13 @@
       "kind": "task"
     },
     {
+      "id": "c04b19d3-fc27-4888-9979-8ff064b0bd8e",
+      "date": "2026-09-18",
+      "title": "政治和理计导书",
+      "done": false,
+      "kind": "task"
+    },
+    {
       "id": "eee6ae4a-7468-4048-9d2d-4cfbe1b617db",
       "date": "2026-09-18",
       "title": "H2部署向clab",
