@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, FormEvent } from 'react'
 import type { ItemKind, ScheduleItem } from '../types'
 import {
@@ -12,6 +12,7 @@ import {
   toDateKey,
   weekdayLabel,
 } from '../lib/dates'
+import { slotKey } from '../lib/schedule'
 
 type Draft = {
   title: string
@@ -38,10 +39,10 @@ const KIND_CHIPS: { kind: ItemKind; label: string }[] = [
 type Props = {
   date: Date
   items: ScheduleItem[]
-  onToggle: (id: string) => void
-  onRemove: (id: string) => void
+  onToggle: (item: ScheduleItem) => void
+  onRemove: (item: ScheduleItem) => void
   onAdd: (draft: Draft) => void
-  onUpdate: (id: string, draft: Draft) => void
+  onUpdate: (item: ScheduleItem, draft: Draft) => void
   onPrevDay: () => void
   onNextDay: () => void
   /** 编辑/新事项打开时通知父级，暂停轮询以免冲掉编辑框 */
@@ -271,7 +272,7 @@ function DayScale({ date, items }: { date: Date; items: ScheduleItem[] }) {
         ) : null}
         {bands.map((band, index) => (
           <span
-            key={`${dateKey}:${band.id}:${index}`}
+            key={`${dateKey}:${band.id}:${band.title}:${index}`}
             className={`day-scale-band ${band.kind}${band.done ? ' done' : ''}`}
             style={bandStyle(band)}
             title={band.title}
@@ -318,67 +319,41 @@ export function DayPanel({
   onEditorOpenChange,
 }: Props) {
   const [draft, setDraft] = useState<Draft>(emptyDraft)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingKey, setEditingKey] = useState<string | null>(null)
   const [editDraft, setEditDraft] = useState<Draft>(emptyDraft)
   const [composerOpen, setComposerOpen] = useState(false)
   const dateKey = toDateKey(date)
   const onEditorOpenChangeRef = useRef(onEditorOpenChange)
   onEditorOpenChangeRef.current = onEditorOpenChange
   const listRef = useRef<HTMLDivElement>(null)
-  const editorOpen = !!(editingId || composerOpen)
+  const editorOpen = !!(editingKey || composerOpen)
+  const frozenItemsRef = useRef(items)
+  if (!editorOpen) frozenItemsRef.current = items
+  const viewItems = editorOpen ? frozenItemsRef.current : items
+  const pending = viewItems.filter((i) => !i.done).length
+  const firstPin = `${dateKey}·${viewItems[0]?.id ?? 'none'}·${viewItems[0]?.title ?? ''}`
 
   // 只能依赖日期字符串：父组件每次渲染都会 new Date()，用 Date 对象当 deps 会误关编辑框
-  useEffect(() => {
-    setEditingId(null)
+  useLayoutEffect(() => {
+    setEditingKey(null)
     setEditDraft(emptyDraft())
     setComposerOpen(false)
     setDraft(emptyDraft())
   }, [dateKey])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = listRef.current
-    if (el) el.scrollTop = 0
-  }, [dateKey])
+    if (!el) return
+    el.scrollTop = 0
+    void el.offsetHeight
+  }, [dateKey, firstPin])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     onEditorOpenChangeRef.current?.(editorOpen)
   }, [editorOpen])
 
-  useEffect(() => {
-    if (!editorOpen) {
-      document.documentElement.style.setProperty('--kb', '0px')
-      return
-    }
-    const vv = window.visualViewport
-    const apply = () => {
-      const inset = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0
-      document.documentElement.style.setProperty('--kb', `${Math.round(inset)}px`)
-    }
-    apply()
-    vv?.addEventListener('resize', apply)
-    vv?.addEventListener('scroll', apply)
-    return () => {
-      vv?.removeEventListener('resize', apply)
-      vv?.removeEventListener('scroll', apply)
-      document.documentElement.style.setProperty('--kb', '0px')
-    }
-  }, [editorOpen])
-
-  // 同步合并可能换 id：只在当天清单里按标题接回，避免改一天串到别的天
-  useEffect(() => {
-    if (!editingId) return
-    if (items.some((i) => i.id === editingId && i.date === dateKey)) return
-    const title = editDraft.title.trim()
-    const hit = title
-      ? items.find((i) => i.date === dateKey && i.title.trim() === title)
-      : undefined
-    if (hit) setEditingId(hit.id)
-  }, [items, editingId, editDraft.title, dateKey])
-
-  const pending = items.filter((i) => !i.done).length
-
   function closeEditor() {
-    setEditingId(null)
+    setEditingKey(null)
     setComposerOpen(false)
   }
 
@@ -406,17 +381,26 @@ export function DayPanel({
           </div>
         </div>
         <div className="day-meta">
-          {weekdayLabel(date)} · 清单 {pending}/{items.length}
+          {weekdayLabel(date)} · 清单 {pending}/{viewItems.length}
         </div>
-        {!editorOpen ? <DayScale key={dateKey} date={date} items={items} /> : null}
+        {!editorOpen ? <DayScale key={dateKey} date={date} items={viewItems} /> : null}
       </div>
-      {items.length === 0 ? (
-        <div ref={listRef} className="sheet-scroll empty">
+      {viewItems.length === 0 ? (
+        <div key={`empty-${dateKey}`} ref={listRef} className="sheet-scroll empty">
           这一天还没有事项。点下方「新事项」写入。
         </div>
       ) : (
-        <div ref={listRef} className="sheet-scroll list">
-          {items.map((item, index) => {
+        <div
+          key={`list-${dateKey}-${viewItems[0]?.id ?? 'x'}`}
+          ref={listRef}
+          id={`day-list-${dateKey}`}
+          className="sheet-scroll list"
+          data-day={dateKey}
+        >
+          <span className="list-epoch" data-day={dateKey} aria-hidden>
+            {firstPin}
+          </span>
+          {viewItems.map((item) => {
             const holiday = item.kind === 'holiday'
             const due = item.kind === 'deadline'
             const allDay = isAllDay(item)
@@ -424,14 +408,16 @@ export function DayPanel({
             const label = allDay ? '全天' : formatWhen(s, e)
             return (
               <div
-                key={`${dateKey}:${item.id}:${index}`}
-                className={`item${item.done ? ' done' : ''}${due ? ' deadline' : ''}${holiday ? ' holiday' : ''}${editingId === item.id ? ' editing' : ''}`}
+                key={`${dateKey}:${item.id}`}
+                data-day={dateKey}
+                data-title={item.title}
+                className={`item${item.done ? ' done' : ''}${due ? ' deadline' : ''}${holiday ? ' holiday' : ''}${editingKey === slotKey(item) ? ' editing' : ''}`}
               >
                 <button
                   type="button"
                   className="item-main"
                   aria-label={item.done ? '标为未完成' : '标为完成'}
-                  onClick={() => onToggle(item.id)}
+                  onClick={() => onToggle(item)}
                 >
                   <span className="check" aria-hidden />
                   <span className="item-text">
@@ -449,7 +435,7 @@ export function DayPanel({
                     onClick={() => {
                       onEditorOpenChange?.(true)
                       setComposerOpen(false)
-                      setEditingId(item.id)
+                      setEditingKey(slotKey(item))
                       setEditDraft(toDraft(item))
                     }}
                   >
@@ -459,7 +445,7 @@ export function DayPanel({
                     type="button"
                     className="icon-btn"
                     aria-label="删除"
-                    onClick={() => onRemove(item.id)}
+                    onClick={() => onRemove(item)}
                   >
                     ×
                   </button>
@@ -470,7 +456,7 @@ export function DayPanel({
         </div>
       )}
 
-      {!editingId && !composerOpen ? (
+      {!editingKey && !composerOpen ? (
         <div className="composer-bar">
           <button
             type="button"
@@ -485,7 +471,7 @@ export function DayPanel({
         </div>
       ) : null}
 
-      {composerOpen && !editingId ? (
+      {composerOpen && !editingKey ? (
         <div className="sheet-editor" role="dialog" aria-label="新事项">
           <form className="composer sheet-editor-form" onSubmit={submit}>
             <div className="sheet-editor-head">
@@ -502,7 +488,7 @@ export function DayPanel({
         </div>
       ) : null}
 
-      {editingId ? (
+      {editingKey ? (
         <div className="sheet-editor" role="dialog" aria-label="修改事项">
           <form
             className="item-edit sheet-editor-form"
@@ -510,8 +496,10 @@ export function DayPanel({
               ev.preventDefault()
               const t = editDraft.title.trim()
               if (!t) return
-              onUpdate(editingId, { ...editDraft, title: t })
-              setEditingId(null)
+              const current = viewItems.find((i) => slotKey(i) === editingKey)
+              if (!current) return
+              onUpdate(current, { ...editDraft, title: t })
+              setEditingKey(null)
             }}
           >
             <div className="sheet-editor-head">

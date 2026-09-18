@@ -1046,9 +1046,26 @@ button {
   gap: 8px;
 }
 
+.panel.day-panel {
+  position: relative;
+}
+
 .day-panel .sheet-scroll {
   -webkit-overflow-scrolling: auto;
-  transform: translateZ(0);
+  overflow-anchor: none;
+}
+
+.list-epoch {
+  display: block;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  color: var(--paper);
+  font-size: 8px;
+  line-height: 1px;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 .day-panel .item .title {
@@ -1279,15 +1296,23 @@ button {
   flex-shrink: 0;
 }
 
-.day-panel.day-focus .sheet-scroll {
-  display: none;
+.day-panel.day-focus .sheet-scroll,
+.day-panel.day-focus .composer-bar {
+  pointer-events: none;
 }
 
 .day-panel.day-focus .sheet-editor {
-  flex: 1;
-  min-height: 0;
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  flex: none;
+  margin: 0;
+  border-top: 0;
+  padding: 22px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  background: var(--paper);
 }
 
 .composer input[aria-label='事项标题'] {
@@ -1356,6 +1381,24 @@ button {
   margin-top: 12px;
   font-size: 13px;
   color: var(--mute);
+}
+
+.undo-bar {
+  flex-shrink: 0;
+  margin-top: 8px;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.undo-bar.armed {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
 }
 
 .hidden-input {
@@ -1521,7 +1564,11 @@ button {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    padding-bottom: calc(8px + var(--kb, 0px));
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .day-panel.day-focus .sheet-editor {
+    padding: 14px 14px calc(10px + env(safe-area-inset-bottom));
   }
 
   .day-panel .day-meta {
@@ -1792,6 +1839,15 @@ button {
     margin: 0;
     z-index: 4;
     pointer-events: none;
+  }
+
+  .undo-bar {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: calc(52px + env(safe-area-inset-bottom));
+    margin: 0;
+    z-index: 5;
   }
 
   .composer input[aria-label='事项标题'] {

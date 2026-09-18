@@ -1,21 +1,14 @@
 import type { ScheduleItem, ScheduleMap } from '../types'
 import { flattenItems, replaceSchedule } from './backup'
-import {
-  itemKey,
-  normalizeSchedule,
-  scheduleContentSig,
-  softKey,
-} from './schedule'
+import { normalizeSchedule, rowKey, scheduleContentSig, slotKey } from './schedule'
 
 export {
   dedupeByIdentity,
-  familyOf,
   itemKey,
-  softKey,
+  instanceKey,
+  slotKey,
+  rowKey,
   normalizeSchedule,
-  sanitizeNoise as sanitizeScheduleNoise,
-  isBloodNoiseTitle,
-  isExamPileJunk,
   parseScheduleJsonText,
   serializeSchedule,
   scheduleContentSig,
@@ -92,15 +85,12 @@ function pickMerged(
   preferLocal: boolean,
 ): ScheduleItem | null {
   if (local && remote) {
-    const titleLocal = local.title.trim()
-    const titleRemote = remote.title.trim()
-    const contentDiff =
-      titleLocal !== titleRemote || local.start !== remote.start || local.end !== remote.end
-    if (contentDiff) {
-      return { ...local, done: !!(local.done || remote.done), date: local.date, id: local.id || remote.id }
-    }
     const base = preferLocal ? local : remote
-    return { ...base, done: !!(local.done || remote.done) }
+    return {
+      ...base,
+      done: !!(local.done || remote.done),
+      id: local.id || remote.id,
+    }
   }
   if (local) return { ...local }
   if (remote) return { ...remote }
@@ -108,10 +98,9 @@ function pickMerged(
 }
 
 /**
- * 双端对齐合并：
- * 1. 本机独有保留（手写日程不丢）
- * 2. exact / soft key 对齐，done 取或
- * 3. preferLocal + baseline：本机删过的 soft key 不接回
+ * 只按「同日同 id」或「完全相同的一行」对齐。
+ * 用下标标记已配对，避免 Map 把同课不同节次挤成一条、或同 slot 第二条被当成已处理而丢掉。
+ * 不用科目族猜测「这还是那节课」——取消/调课会被猜回去。
  */
 export function mergeByIdentity(
   remote: ScheduleMap,
@@ -121,93 +110,69 @@ export function mergeByIdentity(
 ): ScheduleMap {
   const remoteItems = flattenItems(remote)
   const localItems = flattenItems(local)
-  const baselineSoft = new Set(
-    baseline ? flattenItems(baseline).map((i) => softKey(i)) : [],
-  )
+  const localSlots = new Set(localItems.map(slotKey))
+  const baselineSlots = new Set(baseline ? flattenItems(baseline).map(slotKey) : [])
 
-  const remoteExact = new Map(remoteItems.map((i) => [itemKey(i), i]))
-  const localExact = new Map(localItems.map((i) => [itemKey(i), i]))
-  const remoteSoft = new Map<string, ScheduleItem>()
-  const localSoft = new Map<string, ScheduleItem>()
-  for (const i of remoteItems) {
-    const k = softKey(i)
-    if (!remoteSoft.has(k) || i.done) remoteSoft.set(k, i)
-  }
-  for (const i of localItems) {
-    const k = softKey(i)
-    if (!localSoft.has(k) || i.done) localSoft.set(k, i)
-  }
-
-  const usedRemote = new Set<string>()
-  const usedLocal = new Set<string>()
-  const usedRemoteIds = new Set<string>()
-  const usedLocalIds = new Set<string>()
+  const usedR = new Set<number>()
+  const usedL = new Set<number>()
   const out: ScheduleItem[] = []
 
-  // 0. 同日同 id：改标题后 exact/soft key 都对不上，必须先按 id 接上，否则会变成「两条」或串到别的天
-  const remoteById = new Map<string, ScheduleItem>()
-  for (const r of remoteItems) {
-    if (!remoteById.has(r.id)) remoteById.set(r.id, r)
-  }
-  for (const l of localItems) {
-    const r = remoteById.get(l.id)
-    if (!r || r.date !== l.date) continue
-    if (usedLocal.has(itemKey(l)) || usedRemote.has(itemKey(r))) continue
-    if (usedLocalIds.has(l.id) || usedRemoteIds.has(r.id)) continue
-    usedRemote.add(itemKey(r))
-    usedLocal.add(itemKey(l))
-    usedRemoteIds.add(r.id)
-    usedLocalIds.add(l.id)
+  const remoteBySlot = new Map<string, number>()
+  remoteItems.forEach((r, i) => {
+    const k = slotKey(r)
+    if (!remoteBySlot.has(k)) remoteBySlot.set(k, i)
+  })
+
+  localItems.forEach((l, li) => {
+    const ri = remoteBySlot.get(slotKey(l))
+    if (ri == null || usedR.has(ri) || usedL.has(li)) return
+    usedR.add(ri)
+    usedL.add(li)
+    const r = remoteItems[ri]
     const m = pickMerged(r, l, preferLocal)
     if (m) out.push({ ...m, id: l.id || r.id, date: l.date })
-  }
+  })
 
-  for (const [ek, l] of localExact) {
-    const r = remoteExact.get(ek)
-    if (!r) continue
-    if (usedLocal.has(ek) || usedRemote.has(itemKey(r))) continue
-    if (usedLocalIds.has(l.id) || usedRemoteIds.has(r.id)) continue
-    usedRemote.add(itemKey(r))
-    usedLocal.add(ek)
-    usedRemoteIds.add(r.id)
-    usedLocalIds.add(l.id)
-    const m = pickMerged(r, l, preferLocal)
+  const remoteByRow = new Map<string, number[]>()
+  remoteItems.forEach((r, i) => {
+    if (usedR.has(i)) return
+    const k = rowKey(r)
+    const arr = remoteByRow.get(k) ?? []
+    arr.push(i)
+    remoteByRow.set(k, arr)
+  })
+
+  localItems.forEach((l, li) => {
+    if (usedL.has(li)) return
+    const arr = remoteByRow.get(rowKey(l))
+    if (!arr?.length) return
+    const ri = arr.shift()!
+    if (usedR.has(ri)) return
+    usedR.add(ri)
+    usedL.add(li)
+    const m = pickMerged(remoteItems[ri], l, preferLocal)
     if (m) out.push(m)
-  }
+  })
 
-  for (const [sk, l] of localSoft) {
-    if (usedLocal.has(itemKey(l)) || usedLocalIds.has(l.id)) continue
-    const r = remoteSoft.get(sk)
-    if (!r || usedRemote.has(itemKey(r)) || usedRemoteIds.has(r.id)) continue
-    usedRemote.add(itemKey(r))
-    usedLocal.add(itemKey(l))
-    usedRemoteIds.add(r.id)
-    usedLocalIds.add(l.id)
-    const m = pickMerged(r, l, preferLocal)
-    if (m) out.push(m)
-  }
-
-  for (const l of localItems) {
-    if (usedLocal.has(itemKey(l)) || usedLocalIds.has(l.id)) continue
-    usedLocal.add(itemKey(l))
-    usedLocalIds.add(l.id)
+  localItems.forEach((l, li) => {
+    if (usedL.has(li)) return
+    usedL.add(li)
     out.push({ ...l })
-  }
+  })
 
-  for (const r of remoteItems) {
-    if (usedRemote.has(itemKey(r)) || usedRemoteIds.has(r.id)) continue
-    if (preferLocal && baseline && baselineSoft.has(softKey(r))) continue
-    usedRemote.add(itemKey(r))
-    usedRemoteIds.add(r.id)
+  remoteItems.forEach((r, ri) => {
+    if (usedR.has(ri)) return
+    const k = slotKey(r)
+    if (preferLocal && baseline && baselineSlots.has(k) && !localSlots.has(k)) return
+    usedR.add(ri)
     out.push({ ...r })
-  }
+  })
 
   return normalizeSchedule(replaceSchedule(out))
 }
 
 export function localHasUnsyncedExtras(remote: ScheduleMap, local: ScheduleMap) {
-  const remoteSoft = new Set(flattenItems(normalizeSchedule(remote)).map((i) => softKey(i)))
-  return flattenItems(normalizeSchedule(local)).some((i) => !remoteSoft.has(softKey(i)))
+  return localDiffersFromRemote(remote, local)
 }
 
 /** 标题/时刻/勾选/删除都算未同步，不能只看「多出来的科目族」 */

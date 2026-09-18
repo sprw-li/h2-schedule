@@ -10,6 +10,7 @@
     "build:apk": "npm run build:phone && npx cap sync android && cd android && gradlew.bat assembleDebug",
     "ota": "node scripts/make-ota.mjs",
     "check:schedule": "node scripts/check-schedule.mjs",
+    "check:logic": "node --experimental-strip-types --import ./scripts/register-ts.mjs scripts/check-logic.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },

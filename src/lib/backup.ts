@@ -29,7 +29,7 @@ export function replaceSchedule(items: ScheduleItem[]): ScheduleMap {
   for (const item of items) {
     if (!item.date || !item.title) continue
     const list = map[item.date] ?? []
-    list.push(item)
+    list.push({ ...item })
     map[item.date] = list
   }
   return map
