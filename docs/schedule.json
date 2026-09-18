@@ -577,7 +577,7 @@
       "id": "4076057b-bceb-42a6-93f5-cdc47ad51a29",
       "date": "2026-09-18",
       "title": "学院科协预实验（占用上课时间）",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "08:00",
       "end": "11:00"
@@ -586,7 +586,7 @@
       "id": "7cc24808-c703-4df3-b873-1891f97059ec",
       "date": "2026-09-18",
       "title": "高等数学(B)(一) · 理教202",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "10:10",
       "end": "12:00"
