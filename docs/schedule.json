@@ -473,7 +473,7 @@
       "end": "12:00"
     },
     {
-      "id": "dup-fb75f795",
+      "id": "e40a7cfc-e620-42c9-b36f-297cbad9c494",
       "date": "2026-09-16",
       "title": "化学实验室安全技术 · 二教207",
       "done": true,
@@ -692,7 +692,7 @@
       "end": "17:00"
     },
     {
-      "id": "12bf02f8-dc3c-43fa-a626-b303e67fa4af",
+      "id": "6e80ba79-fdae-4a93-8afa-946747de9c3d",
       "date": "2026-09-21",
       "title": "普通化学习题课 · 理教201",
       "done": false,
@@ -708,6 +708,13 @@
       "kind": "task",
       "start": "15:10",
       "end": "16:40"
+    },
+    {
+      "id": "3ce92b71-5fe9-411d-a883-df85dd74ab0c",
+      "date": "2026-09-21",
+      "title": "军理登记",
+      "done": false,
+      "kind": "task"
     },
     {
       "id": "c03c9027-35ad-4fd9-b8e2-c7a76369de7f",
