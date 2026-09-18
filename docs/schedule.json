@@ -692,7 +692,8 @@
       "title": "团支部推优大会CB215",
       "done": false,
       "kind": "task",
-      "start": "18:00"
+      "start": "18:00",
+      "end": "19:00"
     },
     {
       "id": "df2ddc79-069b-4c26-b9e5-ca0cfd2179f7",
