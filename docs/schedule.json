@@ -710,20 +710,6 @@
       "end": "16:40"
     },
     {
-      "id": "3ce92b71-5fe9-411d-a883-df85dd74ab0c",
-      "date": "2026-09-21",
-      "title": "军理登记",
-      "done": true,
-      "kind": "task"
-    },
-    {
-      "id": "d465aa16-78f9-47e6-9cca-5d9d974ee6af",
-      "date": "2026-09-21",
-      "title": "H2部署向clab",
-      "done": false,
-      "kind": "task"
-    },
-    {
       "id": "c03c9027-35ad-4fd9-b8e2-c7a76369de7f",
       "date": "2026-09-22",
       "title": "高等数学(B)(一) · 理教202",
