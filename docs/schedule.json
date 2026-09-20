@@ -29,7 +29,7 @@
       "id": "a7f689bc-00f8-4046-98a2-093d06ee9ff2",
       "date": "2026-09-07",
       "title": "找到小组加人",
-      "done": true,
+      "done": false,
       "kind": "task"
     },
     {
@@ -302,7 +302,7 @@
     {
       "id": "blood-2026-09-12",
       "date": "2026-09-12",
-      "title": "血检+腰椎诊断（上午空腹）",
+      "title": "血检—康复",
       "done": true,
       "kind": "task",
       "start": "08:00",
@@ -472,15 +472,6 @@
       "end": "09:50"
     },
     {
-      "id": "e40a7cfc-e620-42c9-b36f-297cbad9c494",
-      "date": "2026-09-16",
-      "title": "1220理论与计算化学上机",
-      "done": true,
-      "kind": "task",
-      "start": "10:10",
-      "end": "12:00"
-    },
-    {
       "id": "457e266a-c023-4be4-bc1f-8422dd296a6b",
       "date": "2026-09-16",
       "title": "31楼拿书",
@@ -493,6 +484,15 @@
       "id": "dup-fb75f795",
       "date": "2026-09-16",
       "title": "化学实验室安全技术 · 二教207",
+      "done": true,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "e40a7cfc-e620-42c9-b36f-297cbad9c494",
+      "date": "2026-09-16",
+      "title": "血检—康复",
       "done": true,
       "kind": "task",
       "start": "10:10",
@@ -639,7 +639,7 @@
       "id": "9b418bae-3c1d-4b90-be07-b14cb4264f07",
       "date": "2026-09-18",
       "title": "心理咨询-新太阳4楼",
-      "done": true,
+      "done": false,
       "kind": "task",
       "start": "15:30",
       "end": "16:00"
@@ -648,7 +648,7 @@
       "id": "5225486f-88f3-407c-953e-1cf45c1c13bf",
       "date": "2026-09-18",
       "title": "大学生思想文化素养 · 理教313",
-      "done": true,
+      "done": false,
       "kind": "task",
       "start": "18:40",
       "end": "20:30"
@@ -734,7 +734,7 @@
       "id": "ceabbab7-02f0-49cf-ac42-b07fe2f6646a",
       "date": "2026-09-19",
       "title": "团支部推优大会CB215",
-      "done": true,
+      "done": false,
       "kind": "task",
       "start": "18:00",
       "end": "19:00"
@@ -771,7 +771,7 @@
       "id": "d33f3596-4620-4aad-8667-83db909f162e",
       "date": "2026-09-20",
       "title": "验证撤销条目",
-      "done": true,
+      "done": false,
       "kind": "task"
     },
     {
