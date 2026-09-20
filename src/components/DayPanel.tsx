@@ -308,38 +308,6 @@ function toDraft(item: ScheduleItem): Draft {
   }
 }
 
-function useVisualViewportBox() {
-  const [box, setBox] = useState(() => ({
-    top: 0,
-    left: 0,
-    width: typeof window === 'undefined' ? 0 : window.innerWidth,
-    height: typeof window === 'undefined' ? 0 : window.innerHeight,
-  }))
-
-  useEffect(() => {
-    const sync = () => {
-      const vv = window.visualViewport
-      if (vv) {
-        setBox({ top: vv.offsetTop, left: vv.offsetLeft, width: vv.width, height: vv.height })
-        return
-      }
-      setBox({ top: 0, left: 0, width: window.innerWidth, height: window.innerHeight })
-    }
-    sync()
-    const vv = window.visualViewport
-    window.addEventListener('resize', sync)
-    vv?.addEventListener('resize', sync)
-    vv?.addEventListener('scroll', sync)
-    return () => {
-      window.removeEventListener('resize', sync)
-      vv?.removeEventListener('resize', sync)
-      vv?.removeEventListener('scroll', sync)
-    }
-  }, [])
-
-  return box
-}
-
 function EditorPortal({
   label,
   children,
@@ -349,15 +317,11 @@ function EditorPortal({
   children: ReactNode
   onClose: () => void
 }) {
-  const box = useVisualViewportBox()
   const rootRef = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
 
   useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.classList.add('h2-editing')
-    document.body.style.overflow = 'hidden'
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault()
@@ -371,25 +335,11 @@ function EditorPortal({
     return () => {
       window.clearTimeout(t)
       window.removeEventListener('keydown', onKey)
-      document.body.classList.remove('h2-editing')
-      document.body.style.overflow = prev
     }
   }, [])
 
   return createPortal(
-    <div
-      ref={rootRef}
-      className="sheet-editor-portal"
-      role="dialog"
-      aria-modal="true"
-      aria-label={label}
-      style={{
-        top: box.top,
-        left: box.left,
-        width: box.width,
-        height: box.height,
-      }}
-    >
+    <div ref={rootRef} className="sheet-editor-portal" role="dialog" aria-modal="true" aria-label={label}>
       {children}
     </div>,
     document.body,
@@ -431,13 +381,16 @@ export function DayPanel({
     setDraft(emptyDraft())
   }, [dateKey])
 
+  const editorOpenRef = useRef(editorOpen)
+  editorOpenRef.current = editorOpen
+
   useLayoutEffect(() => {
-    if (editorOpen) return
+    if (editorOpenRef.current) return
     const el = listRef.current
     if (!el) return
     el.scrollTop = 0
     void el.offsetHeight
-  }, [dateKey, firstPin, editorOpen])
+  }, [dateKey, firstPin])
 
   useLayoutEffect(() => {
     onEditorOpenChangeRef.current?.(editorOpen)
