@@ -285,7 +285,7 @@
     {
       "id": "blood-2026-09-12",
       "date": "2026-09-12",
-      "title": "血检+腰椎诊断（上午空腹）",
+      "title": "血检—康复",
       "done": true,
       "kind": "task",
       "start": "08:00",
@@ -455,15 +455,6 @@
       "end": "09:50"
     },
     {
-      "id": "e40a7cfc-e620-42c9-b36f-297cbad9c494",
-      "date": "2026-09-16",
-      "title": "1220理论与计算化学上机",
-      "done": true,
-      "kind": "task",
-      "start": "10:10",
-      "end": "12:00"
-    },
-    {
       "id": "457e266a-c023-4be4-bc1f-8422dd296a6b",
       "date": "2026-09-16",
       "title": "31楼拿书",
@@ -476,6 +467,15 @@
       "id": "dup-fb75f795",
       "date": "2026-09-16",
       "title": "化学实验室安全技术 · 二教207",
+      "done": true,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "e40a7cfc-e620-42c9-b36f-297cbad9c494",
+      "date": "2026-09-16",
+      "title": "血检—康复",
       "done": true,
       "kind": "task",
       "start": "10:10",
@@ -595,7 +595,7 @@
       "id": "9b418bae-3c1d-4b90-be07-b14cb4264f07",
       "date": "2026-09-18",
       "title": "心理咨询-新太阳4楼",
-      "done": true,
+      "done": false,
       "kind": "task",
       "start": "15:30",
       "end": "16:00"
@@ -690,7 +690,7 @@
       "id": "ceabbab7-02f0-49cf-ac42-b07fe2f6646a",
       "date": "2026-09-19",
       "title": "团支部推优大会CB215",
-      "done": true,
+      "done": false,
       "kind": "task",
       "start": "18:00",
       "end": "19:00"
@@ -900,7 +900,16 @@
       "end": "17:00"
     },
     {
-      "id": "de469320-5a0b-45a2-b8c0-303187478e63",
+      "id": "78cc9414-f0dc-4f45-99ba-112d834530e8",
+      "date": "2026-09-24",
+      "title": "图书馆讲座 · Photoshop使用技巧及应用案例（汪聪）· 培训教室208",
+      "done": false,
+      "kind": "task",
+      "start": "15:10",
+      "end": "16:40"
+    },
+    {
+      "id": "f7db9d1a-3c86-44af-9dff-e89c3ca6650e",
       "date": "2026-09-24",
       "title": "组会",
       "done": false,
