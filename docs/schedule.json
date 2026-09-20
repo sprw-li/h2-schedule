@@ -302,7 +302,7 @@
     {
       "id": "blood-2026-09-12",
       "date": "2026-09-12",
-      "title": "血检——康复",
+      "title": "血检+腰椎诊断（上午空腹）",
       "done": true,
       "kind": "task",
       "start": "08:00",
@@ -639,7 +639,7 @@
       "id": "9b418bae-3c1d-4b90-be07-b14cb4264f07",
       "date": "2026-09-18",
       "title": "心理咨询-新太阳4楼",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "15:30",
       "end": "16:00"
@@ -734,7 +734,7 @@
       "id": "ceabbab7-02f0-49cf-ac42-b07fe2f6646a",
       "date": "2026-09-19",
       "title": "团支部推优大会CB215",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "18:00",
       "end": "19:00"
