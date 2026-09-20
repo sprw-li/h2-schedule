@@ -29,7 +29,7 @@
       "id": "a7f689bc-00f8-4046-98a2-093d06ee9ff2",
       "date": "2026-09-07",
       "title": "找到小组加人",
-      "done": true,
+      "done": false,
       "kind": "task"
     },
     {
@@ -302,7 +302,7 @@
     {
       "id": "blood-2026-09-12",
       "date": "2026-09-12",
-      "title": "血检——康复",
+      "title": "血检—康复",
       "done": true,
       "kind": "task",
       "start": "08:00",
@@ -472,15 +472,6 @@
       "end": "09:50"
     },
     {
-      "id": "e40a7cfc-e620-42c9-b36f-297cbad9c494",
-      "date": "2026-09-16",
-      "title": "1220理论与计算化学上机",
-      "done": true,
-      "kind": "task",
-      "start": "10:10",
-      "end": "12:00"
-    },
-    {
       "id": "457e266a-c023-4be4-bc1f-8422dd296a6b",
       "date": "2026-09-16",
       "title": "31楼拿书",
@@ -493,6 +484,15 @@
       "id": "dup-fb75f795",
       "date": "2026-09-16",
       "title": "化学实验室安全技术 · 二教207",
+      "done": true,
+      "kind": "task",
+      "start": "10:10",
+      "end": "12:00"
+    },
+    {
+      "id": "e40a7cfc-e620-42c9-b36f-297cbad9c494",
+      "date": "2026-09-16",
+      "title": "血检—康复",
       "done": true,
       "kind": "task",
       "start": "10:10",
@@ -768,6 +768,13 @@
       "kind": "holiday"
     },
     {
+      "id": "d33f3596-4620-4aad-8667-83db909f162e",
+      "date": "2026-09-20",
+      "title": "验证撤销条目",
+      "done": false,
+      "kind": "task"
+    },
+    {
       "id": "55e183d3-3798-4e33-bdaf-1244ed245e1f",
       "date": "2026-09-21",
       "title": "普通化学 · 理教201",
@@ -786,7 +793,7 @@
       "end": "17:00"
     },
     {
-      "id": "dup-b0eb537b",
+      "id": "12bf02f8-dc3c-43fa-a626-b303e67fa4af",
       "date": "2026-09-21",
       "title": "普通化学习题课 · 理教201",
       "done": false,
