@@ -191,9 +191,7 @@ export function UpdateBar() {
               onClick={() => {
                 clearLocalBundle()
                 resetSchedule()
-                setLocal(localBuiltAt())
-                setHasUpdate(!!remote && remote.builtAt !== localBuiltAt())
-                setNote('已清空本机缓存，刷新后从云端重载')
+                window.location.reload()
               }}
             >
               清空本机缓存

@@ -82,14 +82,16 @@ export function clearLegacyOverlay() {
 function pickMerged(
   remote: ScheduleItem | undefined,
   local: ScheduleItem | undefined,
-  preferLocal: boolean,
+  _preferLocal: boolean,
 ): ScheduleItem | null {
   if (local && remote) {
-    const base = preferLocal ? local : remote
+    // 同一条已在本机：标题/时刻/勾选一律跟本机。远端优先会把刚改的 1220/血检盖回去。
     return {
-      ...base,
-      done: !!(local.done || remote.done),
+      ...remote,
+      ...local,
+      done: local.done,
       id: local.id || remote.id,
+      date: local.date,
     }
   }
   if (local) return { ...local }
@@ -151,7 +153,7 @@ export function mergeByIdentity(
     usedR.add(ri)
     usedL.add(li)
     const m = pickMerged(remoteItems[ri], l, preferLocal)
-    if (m) out.push(m)
+    if (m) out.push({ ...m, id: l.id || remoteItems[ri].id, date: l.date })
   })
 
   localItems.forEach((l, li) => {

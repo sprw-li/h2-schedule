@@ -136,8 +136,9 @@ export default function App() {
         pendingRemoteRef.current = remote
         return false
       }
+      const local = normalizeSchedule(pendingRef.current ?? loadSchedule())
       const incomingSig = scheduleContentSig(normalizeSchedule(remote.map))
-      if (reason === 'poll' && incomingSig === scheduleContentSig(normalizeSchedule(loadSchedule())) && !dirtyRef.current) {
+      if (reason === 'poll' && incomingSig === scheduleContentSig(local) && !dirtyRef.current && !pendingRef.current) {
         if (remote.sha) {
           shaRef.current = remote.sha
           saveRemoteSha(remote.sha)
@@ -145,9 +146,8 @@ export default function App() {
         return false
       }
       const prevBaseline = remoteRef.current
-      const local = normalizeSchedule(loadSchedule())
       const localN = flattenItems(local).length
-      const wantPending = localN > 0 && (dirtyRef.current || isPendingSync())
+      const wantPending = localN > 0 && (dirtyRef.current || isPendingSync() || !!pendingRef.current)
       const { merged, remoteClean, needPush } = integrateSchedules(remote.map, local, {
         pending: wantPending,
         baseline: wantPending ? prevBaseline : null,
@@ -183,9 +183,11 @@ export default function App() {
       setPhase('pull')
       try {
         // 只 normalize，不要对空远端做 integrate（会把全部本机标成 pending）
-        const boot = normalizeSchedule(loadSchedule())
-        saveSchedule(boot)
-        if (flattenItems(boot).length > 0) setSchedule(boot)
+        const boot = normalizeSchedule(pendingRef.current ?? loadSchedule())
+        if (!editingRef.current) {
+          saveSchedule(boot)
+          if (flattenItems(boot).length > 0) setSchedule(boot)
+        }
 
         const remote = await pullCloud()
         if (stop) return
@@ -197,15 +199,17 @@ export default function App() {
 
         const pending = applyRemote(remote, 'hydrate')
         if (!pending) {
-          const n = flattenItems(normalizeSchedule(loadSchedule())).length
+          const n = flattenItems(normalizeSchedule(pendingRef.current ?? loadSchedule())).length
           setMessage(n > 0 ? '加载完毕' : '还没有日程')
           setPhase('ok')
         }
       } catch (err) {
-        const local = normalizeSchedule(loadSchedule())
+        const local = normalizeSchedule(pendingRef.current ?? loadSchedule())
         if (flattenItems(local).length > 0) {
-          setSchedule(local)
-          saveSchedule(local)
+          if (!editingRef.current) {
+            setSchedule(local)
+            saveSchedule(local)
+          }
           setPhase('ok')
           setMessage('云端暂不通，先用本机（未丢）')
           return
@@ -221,10 +225,10 @@ export default function App() {
 
     const tick = window.setInterval(() => {
       // 编辑中/待推送/正在同步：不拉，避免重渲染冲掉编辑框或抢写
-      if (document.hidden || dirtyRef.current || isPendingSync() || syncingRef.current || editingRef.current) return
+      if (document.hidden || dirtyRef.current || isPendingSync() || syncingRef.current || editingRef.current || pendingRef.current) return
       void pullCloud()
         .then((remote) => {
-          if (!remote || dirtyRef.current || isPendingSync() || editingRef.current || stop) return
+          if (!remote || dirtyRef.current || isPendingSync() || editingRef.current || pendingRef.current || stop) return
           // 无 sha = 多半是 Pages 缓存；已有 API sha 时不要用旧 Pages 盖掉刚改的标题
           if (!remote.sha && shaRef.current) return
           if (remote.sha && remote.sha === shaRef.current) return
@@ -241,6 +245,11 @@ export default function App() {
   }, [])
 
   function flush(map: ScheduleMap) {
+    if (editingRef.current) {
+      window.clearTimeout(pushTimer.current)
+      pushTimer.current = window.setTimeout(() => flush(pendingRef.current ?? map), 800)
+      return
+    }
     const clean = normalizeSchedule(map)
     dirtyRef.current = true
     setPendingSync(true)
@@ -546,11 +555,15 @@ export default function App() {
               items={items}
               onEditorOpenChange={(open) => {
                 editingRef.current = open
+                document.body.classList.toggle('h2-editing', open)
                 if (!open) {
                   const q = pendingRemoteRef.current
                   if (q) {
-                    pendingRemoteRef.current = null
-                    applyRemoteRef.current?.(q, 'poll')
+                    window.setTimeout(() => {
+                      if (editingRef.current) return
+                      pendingRemoteRef.current = null
+                      applyRemoteRef.current?.(q, 'poll')
+                    }, 400)
                   }
                 }
               }}

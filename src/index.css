@@ -1048,11 +1048,27 @@ button {
 
 .panel.day-panel {
   position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: auto;
+  overflow-anchor: none;
+}
+
+.day-panel .day-chrome {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--paper);
 }
 
 .day-panel .sheet-scroll {
   -webkit-overflow-scrolling: auto;
+  overflow: visible;
+  flex: 0 0 auto;
+  max-height: none;
+  min-height: 0;
   overflow-anchor: none;
+  transform: translateX(var(--day-nudge, 0px));
 }
 
 .list-epoch {
@@ -1061,10 +1077,20 @@ button {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  color: var(--paper);
+  color: #c8c8c4;
   font-size: 8px;
   line-height: 1px;
   white-space: nowrap;
+  pointer-events: none;
+}
+
+.row-pin {
+  display: block;
+  height: 1px;
+  overflow: hidden;
+  color: #c8c8c4;
+  font-size: 6px;
+  line-height: 1px;
   pointer-events: none;
 }
 
@@ -1263,6 +1289,10 @@ button {
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--line);
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: var(--paper);
 }
 
 .composer-open {
@@ -1296,23 +1326,22 @@ button {
   flex-shrink: 0;
 }
 
-.day-panel.day-focus .sheet-scroll,
-.day-panel.day-focus .composer-bar {
-  pointer-events: none;
-}
-
-.day-panel.day-focus .sheet-editor {
-  position: absolute;
+.sheet-editor-portal {
+  position: fixed;
   inset: 0;
-  z-index: 6;
-  flex: none;
+  z-index: 40;
   margin: 0;
-  border-top: 0;
-  padding: 22px;
+  border: 0;
+  padding: 18px 16px calc(16px + env(safe-area-inset-bottom));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   background: var(--paper);
+}
+
+.sheet-editor-portal .sheet-editor-form {
+  max-width: 520px;
+  margin: 0 auto;
 }
 
 .composer input[aria-label='事项标题'] {
@@ -1567,8 +1596,8 @@ button {
     padding-bottom: calc(8px + env(safe-area-inset-bottom));
   }
 
-  .day-panel.day-focus .sheet-editor {
-    padding: 14px 14px calc(10px + env(safe-area-inset-bottom));
+  .sheet-editor-portal {
+    padding: 14px 14px calc(12px + env(safe-area-inset-bottom));
   }
 
   .day-panel .day-meta {

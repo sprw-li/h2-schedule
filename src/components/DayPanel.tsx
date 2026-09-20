@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { CSSProperties, FormEvent } from 'react'
+import { createPortal } from 'react-dom'
+import type { CSSProperties, FormEvent, ReactNode } from 'react'
 import type { ItemKind, ScheduleItem } from '../types'
 import {
   formatDayHeading,
@@ -307,6 +308,94 @@ function toDraft(item: ScheduleItem): Draft {
   }
 }
 
+function useVisualViewportBox() {
+  const [box, setBox] = useState(() => ({
+    top: 0,
+    left: 0,
+    width: typeof window === 'undefined' ? 0 : window.innerWidth,
+    height: typeof window === 'undefined' ? 0 : window.innerHeight,
+  }))
+
+  useEffect(() => {
+    const sync = () => {
+      const vv = window.visualViewport
+      if (vv) {
+        setBox({ top: vv.offsetTop, left: vv.offsetLeft, width: vv.width, height: vv.height })
+        return
+      }
+      setBox({ top: 0, left: 0, width: window.innerWidth, height: window.innerHeight })
+    }
+    sync()
+    const vv = window.visualViewport
+    window.addEventListener('resize', sync)
+    vv?.addEventListener('resize', sync)
+    vv?.addEventListener('scroll', sync)
+    return () => {
+      window.removeEventListener('resize', sync)
+      vv?.removeEventListener('resize', sync)
+      vv?.removeEventListener('scroll', sync)
+    }
+  }, [])
+
+  return box
+}
+
+function EditorPortal({
+  label,
+  children,
+  onClose,
+}: {
+  label: string
+  children: ReactNode
+  onClose: () => void
+}) {
+  const box = useVisualViewportBox()
+  const rootRef = useRef<HTMLDivElement>(null)
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+
+  useEffect(() => {
+    const prev = document.body.style.overflow
+    document.body.classList.add('h2-editing')
+    document.body.style.overflow = 'hidden'
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        onCloseRef.current()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    const t = window.setTimeout(() => {
+      rootRef.current?.querySelector<HTMLInputElement>('input[aria-label="事项标题"]')?.focus()
+    }, 40)
+    return () => {
+      window.clearTimeout(t)
+      window.removeEventListener('keydown', onKey)
+      document.body.classList.remove('h2-editing')
+      document.body.style.overflow = prev
+    }
+  }, [])
+
+  return createPortal(
+    <div
+      ref={rootRef}
+      className="sheet-editor-portal"
+      role="dialog"
+      aria-modal="true"
+      aria-label={label}
+      style={{
+        top: box.top,
+        left: box.left,
+        width: box.width,
+        height: box.height,
+      }}
+    >
+      {children}
+    </div>,
+    document.body,
+  )
+}
+
 export function DayPanel({
   date,
   items,
@@ -332,6 +421,7 @@ export function DayPanel({
   const viewItems = editorOpen ? frozenItemsRef.current : items
   const pending = viewItems.filter((i) => !i.done).length
   const firstPin = `${dateKey}·${viewItems[0]?.id ?? 'none'}·${viewItems[0]?.title ?? ''}`
+  const dayNudge = `${(Number(dateKey.replace(/-/g, '')) % 19) * 0.04}px`
 
   // 只能依赖日期字符串：父组件每次渲染都会 new Date()，用 Date 对象当 deps 会误关编辑框
   useLayoutEffect(() => {
@@ -342,11 +432,12 @@ export function DayPanel({
   }, [dateKey])
 
   useLayoutEffect(() => {
+    if (editorOpen) return
     const el = listRef.current
     if (!el) return
     el.scrollTop = 0
     void el.offsetHeight
-  }, [dateKey, firstPin])
+  }, [dateKey, firstPin, editorOpen])
 
   useLayoutEffect(() => {
     onEditorOpenChangeRef.current?.(editorOpen)
@@ -366,8 +457,57 @@ export function DayPanel({
     setComposerOpen(false)
   }
 
+  const editor = composerOpen && !editingKey ? (
+    <EditorPortal label="新事项" onClose={closeEditor}>
+      <form className="composer sheet-editor-form" onSubmit={submit}>
+        <div className="sheet-editor-head">
+          <strong>新事项</strong>
+          <button type="button" className="ghost" onClick={closeEditor}>
+            收起
+          </button>
+        </div>
+        <Fields draft={draft} onChange={setDraft} />
+        <button className="solid composer-add" type="submit">
+          加入
+        </button>
+      </form>
+    </EditorPortal>
+  ) : editingKey ? (
+    <EditorPortal label="修改事项" onClose={closeEditor}>
+      <form
+        className="item-edit sheet-editor-form"
+        onSubmit={(ev) => {
+          ev.preventDefault()
+          const t = editDraft.title.trim()
+          if (!t) return
+          const current = viewItems.find((i) => slotKey(i) === editingKey)
+          if (!current) return
+          onUpdate(current, { ...editDraft, title: t })
+          setEditingKey(null)
+        }}
+      >
+        <div className="sheet-editor-head">
+          <strong>修改事项</strong>
+          <button type="button" className="ghost" onClick={closeEditor}>
+            取消
+          </button>
+        </div>
+        <Fields draft={editDraft} onChange={setEditDraft} />
+        <div className="item-edit-actions">
+          <button className="solid" type="submit">
+            保存
+          </button>
+        </div>
+      </form>
+    </EditorPortal>
+  ) : null
+
   return (
-    <section className={`panel day-panel${editorOpen ? ' day-focus' : ''}`}>
+    <section
+      className={`panel day-panel${editorOpen ? ' day-focus' : ''}`}
+      data-day={dateKey}
+      style={{ '--day-nudge': dayNudge } as CSSProperties}
+    >
       <div className="day-chrome">
         <div className="cal-head">
           <h2>{formatDayHeading(date)}</h2>
@@ -383,15 +523,15 @@ export function DayPanel({
         <div className="day-meta">
           {weekdayLabel(date)} · 清单 {pending}/{viewItems.length}
         </div>
-        {!editorOpen ? <DayScale key={dateKey} date={date} items={viewItems} /> : null}
+        <DayScale key={dateKey} date={date} items={viewItems} />
       </div>
       {viewItems.length === 0 ? (
-        <div key={`empty-${dateKey}`} ref={listRef} className="sheet-scroll empty">
+        <div key={editorOpen ? `empty-lock-${dateKey}` : `empty-${firstPin}`} ref={listRef} className="sheet-scroll empty" data-day={dateKey}>
           这一天还没有事项。点下方「新事项」写入。
         </div>
       ) : (
         <div
-          key={`list-${dateKey}-${viewItems[0]?.id ?? 'x'}`}
+          key={editorOpen ? `list-lock-${dateKey}` : `list-${firstPin}`}
           ref={listRef}
           id={`day-list-${dateKey}`}
           className="sheet-scroll list"
@@ -408,7 +548,7 @@ export function DayPanel({
             const label = allDay ? '全天' : formatWhen(s, e)
             return (
               <div
-                key={`${dateKey}:${item.id}`}
+                key={`${dateKey}:${item.id}:${item.title}`}
                 data-day={dateKey}
                 data-title={item.title}
                 className={`item${item.done ? ' done' : ''}${due ? ' deadline' : ''}${holiday ? ' holiday' : ''}${editingKey === slotKey(item) ? ' editing' : ''}`}
@@ -421,7 +561,12 @@ export function DayPanel({
                 >
                   <span className="check" aria-hidden />
                   <span className="item-text">
-                    <span className="title">{item.title}</span>
+                    <span className="title">
+                      <span className="row-pin" aria-hidden>
+                        {dateKey}
+                      </span>
+                      {item.title}
+                    </span>
                     <span className={`time${due ? ' deadline' : ''}${holiday ? ' holiday' : ''}`}>
                       {label || (due ? '截止' : '')}
                     </span>
@@ -471,52 +616,7 @@ export function DayPanel({
         </div>
       ) : null}
 
-      {composerOpen && !editingKey ? (
-        <div className="sheet-editor" role="dialog" aria-label="新事项">
-          <form className="composer sheet-editor-form" onSubmit={submit}>
-            <div className="sheet-editor-head">
-              <strong>新事项</strong>
-              <button type="button" className="ghost" onClick={closeEditor}>
-                收起
-              </button>
-            </div>
-            <Fields draft={draft} onChange={setDraft} />
-            <button className="solid composer-add" type="submit">
-              加入
-            </button>
-          </form>
-        </div>
-      ) : null}
-
-      {editingKey ? (
-        <div className="sheet-editor" role="dialog" aria-label="修改事项">
-          <form
-            className="item-edit sheet-editor-form"
-            onSubmit={(ev) => {
-              ev.preventDefault()
-              const t = editDraft.title.trim()
-              if (!t) return
-              const current = viewItems.find((i) => slotKey(i) === editingKey)
-              if (!current) return
-              onUpdate(current, { ...editDraft, title: t })
-              setEditingKey(null)
-            }}
-          >
-            <div className="sheet-editor-head">
-              <strong>修改事项</strong>
-              <button type="button" className="ghost" onClick={closeEditor}>
-                取消
-              </button>
-            </div>
-            <Fields draft={editDraft} onChange={setEditDraft} />
-            <div className="item-edit-actions">
-              <button className="solid" type="submit">
-                保存
-              </button>
-            </div>
-          </form>
-        </div>
-      ) : null}
+      {editor}
     </section>
   )
 }
