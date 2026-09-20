@@ -1,14 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getWriteToken, setWriteToken } from '../lib/cloud'
-import {
-  applyUpdate,
-  checkForUpdate,
-  clearLocalBundle,
-  localBuiltAt,
-  type OtaManifest,
-} from '../lib/ota'
-import { getCampusOrigin, setCampusOrigin } from '../lib/origin'
-import { resetSchedule } from '../lib/storage'
+import { applyUpdate, checkForUpdate, localBuiltAt, type OtaManifest } from '../lib/ota'
 import { unlockFromPublic } from '../lib/unlock'
 
 function fmt(iso: string) {
@@ -40,14 +32,12 @@ export function UpdateBar() {
   const [note, setNote] = useState('')
   const [phrase, setPhrase] = useState('')
   const [needPhrase, setNeedPhrase] = useState(() => !getWriteToken())
-  const [campus, setCampus] = useState(() => getCampusOrigin())
 
   async function refresh(quiet = false) {
     setBusy(true)
     setErr('')
     if (!quiet) setNote('')
     try {
-      setCampusOrigin(campus)
       const r = await checkForUpdate()
       setLocal(r.localBuiltAt)
       setRemote(r.manifest)
@@ -104,8 +94,7 @@ export function UpdateBar() {
     setErr('')
     setNote('正在下载…')
     try {
-      setCampusOrigin(campus)
-      // 读更新包可走 Pages，无需口令；仅当 Pages 失败才提示口令走 API
+      // 有校地址时走校内 OTA；否则 Pages / API
       const bundle = await applyUpdate()
       setLocal(bundle.builtAt)
       setHasUpdate(false)
@@ -165,22 +154,6 @@ export function UpdateBar() {
               />
             </div>
           ) : null}
-          <div className="update-phrase">
-            <label htmlFor="campus-origin">校服务器（可空）</label>
-            <input
-              id="campus-origin"
-              type="url"
-              inputMode="url"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
-              placeholder="https://host:8765"
-              value={campus}
-              disabled={busy}
-              onChange={(e) => setCampus(e.target.value)}
-              onBlur={() => setCampusOrigin(campus)}
-            />
-          </div>
           {note ? <p className="update-note">{note}</p> : null}
           {err ? <p className="unlock-error">{err}</p> : null}
           <div className="update-actions">
@@ -203,18 +176,6 @@ export function UpdateBar() {
                 </button>
               </>
             )}
-            <button
-              type="button"
-              className="ghost"
-              disabled={busy}
-              onClick={() => {
-                clearLocalBundle()
-                resetSchedule()
-                window.location.reload()
-              }}
-            >
-              清空本机缓存
-            </button>
           </div>
         </div>
       ) : null}

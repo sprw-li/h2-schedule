@@ -4,7 +4,9 @@ import { DayPanel } from './components/DayPanel'
 import { RefsPanel } from './components/RefsPanel'
 import { WeatherPanel } from './components/WeatherPanel'
 import { getWriteToken, pullCloud, pushCloud, setWriteToken } from './lib/cloud'
-import { downloadCsv, mergeCsvIntoSchedule, readCsvText, scheduleToCsv } from './lib/csv'
+import { downloadCsv, downloadTextFile, mergeCsvIntoSchedule, readCsvText, scheduleToCsv } from './lib/csv'
+import { scheduleToIcs } from './lib/ics'
+import { campusIsLive } from './lib/origin'
 import { addDays, addMonths, isAllDay, parseDateKey, timeSortKey, toDateKey, todayKey } from './lib/dates'
 import { flattenItems } from './lib/backup'
 import { loadSchedule, saveSchedule, uid } from './lib/storage'
@@ -23,6 +25,7 @@ import {
   setPendingSync,
 } from './lib/sync'
 import { unlockFromPublic } from './lib/unlock'
+import { ExtraBar } from './components/ExtraBar'
 import { UpdateBar } from './components/UpdateBar'
 import type { ScheduleMap } from './types'
 
@@ -84,6 +87,28 @@ export default function App() {
       .catch((e: unknown) => {
         setPhase('err')
         setCsvSheet({ title: filename, text: csv, mode: 'export' })
+        setMessage(e instanceof Error ? e.message : '导出失败，可复制下方文本')
+      })
+  }
+
+  function exportIcs() {
+    const ics = scheduleToIcs(pendingRef.current ?? schedule)
+    const stamp = toDateKey(new Date())
+    const filename = `h2-schedule-${stamp}.ics`
+    csvTextRef.current = ics
+    void downloadTextFile(filename, ics, 'text/calendar;charset=utf-8')
+      .then((how) => {
+        setPhase('ok')
+        if (how === 'text') {
+          setCsvSheet({ title: filename, text: ics, mode: 'export' })
+          setMessage('WebView 不能直接存文件，请复制或分享下方文本')
+          return
+        }
+        setMessage(how === 'share' ? '已打开系统分享，请存成日历文件' : '已导出 ICS')
+      })
+      .catch((e: unknown) => {
+        setPhase('err')
+        setCsvSheet({ title: filename, text: ics, mode: 'export' })
         setMessage(e instanceof Error ? e.message : '导出失败，可复制下方文本')
       })
   }
@@ -211,7 +236,7 @@ export default function App() {
             saveSchedule(local)
           }
           setPhase('ok')
-          setMessage('云端暂不通，先用本机（未丢）')
+          setMessage(campusIsLive() ? '校服务器暂不通，先用本机（未丢、未改用 GitHub）' : '云端暂不通，先用本机（未丢）')
           return
         }
         setPhase('err')
@@ -273,7 +298,7 @@ export default function App() {
         saveRemoteSnap(clean)
         setAskPhrase(false)
         setPhase('ok')
-        setMessage('已同步')
+        setMessage(campusIsLive() ? '已写入校服务器（GitHub 后台备份）' : '已同步')
         // 推送期间又改过：不要用旧包盖掉新改动
         const later = pendingRef.current
         if (later && scheduleContentSig(later) !== scheduleContentSig(clean)) {
@@ -456,6 +481,15 @@ export default function App() {
         </div>
         <div className="top-actions">
           <UpdateBar />
+          <ExtraBar
+            undoLabel={undo?.label ?? null}
+            undoArmed={undoArmed}
+            onUndo={runUndo}
+            onExportCsv={exportCsv}
+            onExportIcs={exportIcs}
+            onImportFile={() => csvInputRef.current?.click()}
+            onPasteImport={() => setCsvSheet({ title: '粘贴 CSV', text: '', mode: 'import' })}
+          />
           <button
             type="button"
             className="ghost"
@@ -470,33 +504,17 @@ export default function App() {
           </button>
         </div>
       </header>
-      <div className="csv-bar" role="group" aria-label="CSV 同步">
-        <button type="button" className="solid csv-btn" onClick={exportCsv}>
-          导出 CSV
-        </button>
-        <button type="button" className="solid csv-btn" onClick={() => csvInputRef.current?.click()}>
-          导入文件
-        </button>
-        <button
-          type="button"
-          className="ghost csv-btn"
-          onClick={() => setCsvSheet({ title: '粘贴 CSV', text: '', mode: 'import' })}
-        >
-          粘贴导入
-        </button>
-        <input
-          ref={csvInputRef}
-          type="file"
-          accept=".csv,text/csv,text/plain,*/*"
-          hidden
-          onChange={(e) => {
-            const f = e.target.files?.[0]
-            e.target.value = ''
-            if (f) importCsvFile(f)
-          }}
-        />
-        <span className="csv-hint">手机建议：导出用分享/复制；导入选文件或粘贴</span>
-      </div>
+      <input
+        ref={csvInputRef}
+        type="file"
+        accept=".csv,text/csv,text/plain,*/*"
+        hidden
+        onChange={(e) => {
+          const f = e.target.files?.[0]
+          e.target.value = ''
+          if (f) importCsvFile(f)
+        }}
+      />
       <nav className="mobile-tabs" aria-label="视图切换">
         <button
           type="button"

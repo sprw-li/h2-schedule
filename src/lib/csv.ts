@@ -222,9 +222,13 @@ export async function readCsvText(file: File): Promise<string> {
   return new TextDecoder('utf-8').decode(bytes)
 }
 
-export async function downloadCsv(filename: string, csv: string): Promise<'share' | 'file' | 'text'> {
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const file = new File([blob], filename, { type: 'text/csv;charset=utf-8' })
+export async function downloadTextFile(
+  filename: string,
+  text: string,
+  mime = 'text/plain;charset=utf-8',
+): Promise<'share' | 'file' | 'text'> {
+  const blob = new Blob([text], { type: mime })
+  const file = new File([blob], filename, { type: mime })
   const nav = navigator as Navigator & {
     canShare?: (data: ShareData) => boolean
     share?: (data: ShareData) => Promise<void>
@@ -244,7 +248,7 @@ export async function downloadCsv(filename: string, csv: string): Promise<'share
 
   if (native && nav.share) {
     try {
-      await nav.share({ title: filename, text: csv })
+      await nav.share({ title: filename, text })
       return 'share'
     } catch {
       /* 取消则改在界面里展示文本 */
@@ -272,4 +276,8 @@ export async function downloadCsv(filename: string, csv: string): Promise<'share
   }
 
   return 'text'
+}
+
+export async function downloadCsv(filename: string, csv: string): Promise<'share' | 'file' | 'text'> {
+  return downloadTextFile(filename, csv, 'text/csv;charset=utf-8')
 }

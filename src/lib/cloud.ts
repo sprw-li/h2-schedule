@@ -1,6 +1,6 @@
 import { flattenItems } from './backup'
 import { fetchTextNoThrow, ghApiContents, ghPages, ghRaw, netErr } from './net'
-import { campusUrl, getCampusOrigin } from './origin'
+import { campusIsLive, campusUrl, getCampusOrigin } from './origin'
 import { normalizeSchedule, parseScheduleJsonText, serializeSchedule } from './schedule'
 import { loadRemoteSnap } from './sync'
 import type { ScheduleMap } from '../types'
@@ -100,13 +100,72 @@ async function pullFromApi(): Promise<{ map: ScheduleMap; sha: string } | null> 
   }
 }
 
+function guardAgainstWipe(map: ScheduleMap) {
+  const clean = normalizeSchedule(map)
+  const localCount = flattenItems(clean).length
+  const snap = loadRemoteSnap()
+  const snapCount = snap ? flattenItems(snap).length : 0
+  if (snapCount >= 80 && localCount === 0) {
+    throw new Error('本机日程是空的，拒绝覆盖云端')
+  }
+  if (snapCount >= 40 && localCount > 0 && localCount * 2 < snapCount) {
+    throw new Error('本机条数不到云端一半，拒绝覆盖云端')
+  }
+  return clean
+}
+
+/** GitHub 仅备份，失败不影响校内即时状态 */
+async function backupToGithub(map: ScheduleMap) {
+  const token = getWriteToken()
+  if (!token) return
+  const payload = serializeSchedule(normalizeSchedule(map))
+  const headers = {
+    Accept: 'application/vnd.github+json',
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  }
+  try {
+    const meta = await fetch(`${API}?ts=${Date.now()}`, {
+      headers: { Accept: headers.Accept, Authorization: headers.Authorization },
+    })
+    let useSha = ''
+    if (meta.ok) {
+      const body = (await meta.json()) as { sha?: string }
+      useSha = body.sha ?? ''
+    }
+    const putBody = (sha: string) =>
+      JSON.stringify({
+        message: 'Backup schedule from campus',
+        content: encodeBase64(payload),
+        branch: 'main',
+        ...(sha ? { sha } : {}),
+      })
+    let res = await fetch(API, { method: 'PUT', headers, body: putBody(useSha) })
+    if (res.status === 409 && useSha) {
+      const again = await fetch(`${API}?ts=${Date.now()}`, {
+        headers: { Accept: headers.Accept, Authorization: headers.Authorization },
+      })
+      if (again.ok) {
+        const body = (await again.json()) as { sha?: string }
+        res = await fetch(API, { method: 'PUT', headers, body: putBody(body.sha ?? '') })
+      }
+    }
+    if (!res.ok) return
+  } catch {
+    /* 校园网打不开 GitHub 时备份以后再补 */
+  }
+}
+
 /**
- * 有口令：Contents API（带 blob sha，刚 commit 立刻可读）。失败再公开源。
- * 无口令：raw 与 Pages 并行；raw 通常比 Pages 新。手机常打不开 api.github.com。
+ * 配了校服务器：只认校内（即时真相源）。GitHub 不参与读，避免旧备份盖掉校内。
+ * 未配置：Contents API → raw → Pages → 打包文件。
  */
 export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | null> {
-  const campus = await pullFromCampus()
-  if (campus) return campus
+  if (campusIsLive()) {
+    const campus = await pullFromCampus()
+    if (campus) return campus
+    throw new Error('校服务器读不到（未改用 GitHub，以免旧备份覆盖）')
+  }
 
   const token = getWriteToken()
   if (token) {
@@ -114,7 +173,6 @@ export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | n
     if (api) return api
   }
 
-  // raw 通常比 Pages 新；不要用「条数更多」当新，删掉的条目会从旧 Pages 里复活
   const [raw, pages] = await Promise.all([pullJsonUrl(ghRaw(PATH)), pullJsonUrl(ghPages(PATH))])
   if (raw) return raw
   if (pages) return pages
@@ -138,15 +196,12 @@ export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | n
 export async function pushCloud(map: ScheduleMap, sha: string) {
   const token = getWriteToken()
   if (!token) throw new Error('需要口令才能同步')
-  const clean = normalizeSchedule(map)
-  const localCount = flattenItems(clean).length
-  const snap = loadRemoteSnap()
-  const snapCount = snap ? flattenItems(snap).length : 0
-  if (snapCount >= 80 && localCount === 0) {
-    throw new Error('本机日程是空的，拒绝覆盖云端')
-  }
-  if (snapCount >= 40 && localCount > 0 && localCount * 2 < snapCount) {
-    throw new Error('本机条数不到云端一半，拒绝覆盖云端')
+  const clean = guardAgainstWipe(map)
+
+  if (getCampusOrigin()) {
+    const campusSha = await pushCampus(clean, sha)
+    void backupToGithub(clean)
+    return campusSha
   }
 
   const headers = {
@@ -155,20 +210,6 @@ export async function pushCloud(map: ScheduleMap, sha: string) {
     'Content-Type': 'application/json',
   }
   const payload = serializeSchedule(clean)
-
-  if (getCampusOrigin()) {
-    try {
-      return await pushCampus(clean, sha)
-    } catch (e) {
-      if (
-        e instanceof Error &&
-        (e.message === '冲突' || e.message.includes('口令') || e.message.includes('拒绝覆盖云端'))
-      ) {
-        throw e
-      }
-      // 校内失败再试 GitHub，方便家里网过渡
-    }
-  }
 
   async function put(useSha: string) {
     return fetch(API, {

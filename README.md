@@ -4,31 +4,26 @@
 
 **网页：** https://sprw-li.github.io/h2-schedule/
 
-电脑网页默认仍走 GitHub Pages。手机在校园网里经常打不开 `github.io` / `api.github.com`，所以 App 壳打进本地包；OTA 与日程可改走校服务器（见文末）。GitHub 仍作家里网备份。
+电脑网页默认仍走 GitHub Pages。配了校服务器后，**即时状态以校内为准**（即刻 OTA + 联网读写）；GitHub 只做每次改动的同步备份。换 CLab（预计 3～7 年）只改根地址，不要写死主机。
 
 ## 日常使用
 
 - 左边月历、右边当日清单。绿 / 灰 / 红点表示假日、事项、截止；某颜色当天全部勾完才不亮点。
 - 点「改」或删除就是最终结果。应用**不会**按「化安第几周」「像不像原课表」自动改回或删掉你的调整。
 - 手机：资料页点开课表/校历可放大；更换图片要口令，请用 JPG/PNG（不要 HEIC）。
-- **CSV（手机电脑互拷）**
-  - 电脑：导出为文件；导入选 `.csv`。
-  - 手机 WebView 往往不能真正「下载文件」。导出时会走系统分享，或弹出文本框「复制全部」。导入可用「导入文件」（不要只找 `.csv` 过滤器，选「所有文件」），或「粘贴导入」。
+- **CSV / ICS**：顶栏「其他功能」。ICS 给系统日历；CSV 给表格互拷。手机导出走系统分享或复制文本。
   - 表头：`date,kind,title,done,start,end,allDay,id`。也认中文表头和旧的 `time` 列。示例：[`docs/sample.csv`](docs/sample.csv)。
 
 ## 同步
 
-首次在某台设备上**改**日程：底部口令框填同一句口令（解密出只含本仓库 Contents 权限的 GitHub Token，存在该设备，不进 Git）。之后改动会写回 `docs/schedule.json`。
+首次在某台设备上**改**日程：底部口令框填同一句口令（解开写令牌，存在该设备，不进 Git）。
 
-拉取顺序：
+- **未填校服务器**：读写 GitHub `docs/schedule.json`（API / raw / Pages）。
+- **填了校服务器**：读写只走校内。GitHub 在写入成功后后台备份；校内读不到时**不会**改用 GitHub，以免旧备份盖掉即时状态。
 
-1. 已有口令 → GitHub Contents API（带 sha，刚提交立刻能读）
-2. 否则 **raw.githubusercontent.com** 与 **GitHub Pages** 并行（raw 通常比 Pages 新；校园网打不开 `api.github.com` 时仍能读）
-3. 再不行用壳/网页打包的 `schedule.json`
+推送前若本机条数不到云端快照的一半，会拒绝覆盖。
 
-推送前若本机条数不到云端快照的一半，会拒绝覆盖，避免空缓存冲掉全量。
-
-App 点「更新」：manifest / 整包 HTML 同样走 raw → Pages →（有口令）API，校验 sha256 后写入本地。
+App 点「更新」：有校地址只拉校内 OTA；否则 raw → Pages →（有口令）API。
 
 ## 开发
 
@@ -47,14 +42,15 @@ npm run check:schedule # 检查日程 JSON
 
 改完界面：`npm run build:phone` 与 `npm run build:pages`，推 `main`。不要把构建产物盖掉 `docs/schedule.json`。
 
-## 迁校服务器（预备）
+## 校服务器（CLab，即时真相源）
 
-更新面板可填「校服务器」根地址（存在本机）。有地址时先读/写校内，失败再 GitHub。
+「其他功能」填根地址（存在本机）。换机只改这个 URL。
 
 ```bash
-export H2_WRITE_TOKEN='…'   # 与口令解开后的写令牌相同，或另发一枚
-python3 scripts/campus_sync_server.py --data-dir ~/h2-data --port 8765
-# 拷 docs/ota/* 与 docs/schedule.json 到 ~/h2-data/ota/ 与 ~/h2-data/schedule.json
+export H2_WRITE_TOKEN='…'   # 与口令解开后的写令牌相同，或校内另发一枚
+python scripts/campus_sync_server.py --data-dir ~/h2-data --port 8765
+# 拷 docs/ota/* 与 docs/schedule.json 到 data-dir；或 PUT /ota/*、/schedule.json
+npm run test:campus         # 本机探活，不碰真实 CLab
 ```
 
-协议：`GET/PUT /schedule.json`（PUT 要 Bearer，可用 If-Match）、`GET /ota/manifest.json`、`GET /ota/app.html`。未点头不要代建云主机。打 APK 可设 `VITE_CAMPUS_ORIGIN`。
+协议：`GET /health`；`GET/PUT /schedule.json`（PUT 要 Bearer，If-Match 防冲突）；`GET/PUT /ota/manifest.json`、`GET/PUT /ota/app.html`。未点头不要代建云主机。打 APK 可设 `VITE_CAMPUS_ORIGIN`。

@@ -224,6 +224,20 @@ button {
 .csv-hint {
   color: var(--soft);
   font-size: 12px;
+  margin: 8px 0 0;
+}
+
+.extra-sheet {
+  max-height: min(78dvh, 640px);
+}
+
+.extra-sheet .undo-bar {
+  position: static;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  margin: 0 0 12px;
+  z-index: auto;
 }
 
 .sync-card.csv-sheet {

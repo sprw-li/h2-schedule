@@ -237,9 +237,15 @@ function parseMan(text: string): OtaManifest | null {
 /** Pages 常有缓存；raw 较新；有口令再试 API，取较新的 manifest */
 export async function fetchManifest(): Promise<OtaManifest> {
   const cands: OtaManifest[] = []
-  const readers = campusUrl(MANIFEST_PATH)
-    ? [readViaCampus, readViaRaw, readViaPages]
-    : [readViaRaw, readViaPages]
+  if (campusUrl(MANIFEST_PATH)) {
+    try {
+      const p = parseMan(await readViaCampus(MANIFEST_PATH))
+      if (p) return p
+    } catch {
+      /* 校内没有包时才看 GitHub 备份 */
+    }
+  }
+  const readers = [readViaRaw, readViaPages]
   for (const reader of readers) {
     try {
       const p = parseMan(await reader(MANIFEST_PATH))

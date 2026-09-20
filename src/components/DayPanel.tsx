@@ -370,7 +370,7 @@ export function DayPanel({
   if (!editorOpen) frozenItemsRef.current = items
   const viewItems = editorOpen ? frozenItemsRef.current : items
   const pending = viewItems.filter((i) => !i.done).length
-  const firstPin = `${dateKey}·${viewItems[0]?.id ?? 'none'}·${viewItems[0]?.title ?? ''}`
+  const listSig = `${dateKey}:${viewItems.length}:${viewItems[0]?.title ?? ''}:${viewItems[0]?.start ?? ''}`
   const dayNudge = `${(Number(dateKey.replace(/-/g, '')) % 19) * 0.04}px`
 
   // 只能依赖日期字符串：父组件每次渲染都会 new Date()，用 Date 对象当 deps 会误关编辑框
@@ -390,7 +390,7 @@ export function DayPanel({
     if (!el) return
     el.scrollTop = 0
     void el.offsetHeight
-  }, [dateKey, firstPin])
+  }, [dateKey, listSig])
 
   useLayoutEffect(() => {
     onEditorOpenChangeRef.current?.(editorOpen)
@@ -479,20 +479,17 @@ export function DayPanel({
         <DayScale key={dateKey} date={date} items={viewItems} />
       </div>
       {viewItems.length === 0 ? (
-        <div key={editorOpen ? `empty-lock-${dateKey}` : `empty-${firstPin}`} ref={listRef} className="sheet-scroll empty" data-day={dateKey}>
+        <div key={editorOpen ? `empty-lock-${dateKey}` : `empty-${listSig}`} ref={listRef} className="sheet-scroll empty" data-day={dateKey}>
           这一天还没有事项。点下方「新事项」写入。
         </div>
       ) : (
         <div
-          key={editorOpen ? `list-lock-${dateKey}` : `list-${firstPin}`}
+          key={editorOpen ? `list-lock-${dateKey}` : `list-${listSig}`}
           ref={listRef}
           id={`day-list-${dateKey}`}
           className="sheet-scroll list"
           data-day={dateKey}
         >
-          <span className="list-epoch" data-day={dateKey} aria-hidden>
-            {firstPin}
-          </span>
           {viewItems.map((item) => {
             const holiday = item.kind === 'holiday'
             const due = item.kind === 'deadline'
@@ -514,12 +511,7 @@ export function DayPanel({
                 >
                   <span className="check" aria-hidden />
                   <span className="item-text">
-                    <span className="title">
-                      <span className="row-pin" aria-hidden>
-                        {dateKey}
-                      </span>
-                      {item.title}
-                    </span>
+                    <span className="title">{item.title}</span>
                     <span className={`time${due ? ' deadline' : ''}${holiday ? ' holiday' : ''}`}>
                       {label || (due ? '截止' : '')}
                     </span>

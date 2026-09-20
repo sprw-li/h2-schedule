@@ -16,6 +16,11 @@ export function getCampusOrigin() {
   return env ? trimOrigin(env) : ''
 }
 
+/** 是否把校服务器当即时真相源（地址来自本机或构建变量，换 CLab 只改地址） */
+export function campusIsLive() {
+  return Boolean(getCampusOrigin())
+}
+
 export function setCampusOrigin(url: string) {
   const t = trimOrigin(url)
   try {

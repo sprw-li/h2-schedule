@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""校内同步预置：日程 JSON + OTA。不替代 Git，只给手机在打不开 GitHub 时用。
+"""校内即时真相源：日程 JSON + OTA。GitHub 只作改动备份。换 CLab 只改客户端里的根地址。
 
-  H2_WRITE_TOKEN=... python3 scripts/campus_sync_server.py --data-dir ~/h2-data --port 8765
+  H2_WRITE_TOKEN=... python scripts/campus_sync_server.py --data-dir ~/h2-data --port 8765
 
-PUT /schedule.json 需要 Authorization: Bearer <token>
-GET 公开。ETag 当 sha。CORS 全开。
+PUT /schedule.json、/ota/manifest.json、/ota/app.html 需要 Authorization: Bearer <token>
+GET 公开。ETag 当 sha。CORS 全开。GET /health 探活。
 """
 from __future__ import annotations
 
@@ -73,6 +73,10 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         path = self._path()
+        if path in ("/health", "/health/"):
+            body = json.dumps({"ok": True, "role": "sot"}).encode("utf-8")
+            self._send_bytes(200, body, "application/json; charset=utf-8")
+            return
         if path in ("/schedule.json", "/schedule.json/"):
             self._read_file("schedule.json", "application/json; charset=utf-8")
             return
@@ -105,6 +109,25 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_PUT(self) -> None:
         path = self._path()
+        ota_map = {
+            "/ota/manifest.json": "ota/manifest.json",
+            "/ota/app.html": "ota/app.html",
+        }
+        if path in ota_map:
+            if not self.token:
+                self._send_bytes(503, b"server token unset\n", "text/plain; charset=utf-8")
+                return
+            if not self._auth_ok():
+                self._send_bytes(401, b"unauthorized\n", "text/plain; charset=utf-8")
+                return
+            n = int(self.headers.get("Content-Length") or "0")
+            body = self.rfile.read(n)
+            dest = self._file(ota_map[path])
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_bytes(body)
+            etag = sha_of(body)
+            self._send_bytes(200, json.dumps({"sha": etag}).encode("utf-8"), "application/json; charset=utf-8", etag)
+            return
         if path not in ("/schedule.json", "/schedule.json/"):
             self._send_bytes(405, b"only PUT /schedule.json\n", "text/plain; charset=utf-8")
             return
