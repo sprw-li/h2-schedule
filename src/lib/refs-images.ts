@@ -1,5 +1,6 @@
 import { getWriteToken, setWriteToken } from './cloud'
 import { ghApiContents, ghPages, ghRaw } from './net'
+import { campusUrl } from './origin'
 import { unlockFromPublic } from './unlock'
 
 export type RefKind = 'timetable' | 'calendar'
@@ -137,6 +138,16 @@ async function blobUrlToDataUrl(url: string) {
 /** 优先 raw → Pages → API → 本机覆盖 → 内置图 */
 export async function resolveRefSrc(kind: RefKind, bundled: string) {
   const path = remotePath(kind)
+  try {
+    const cu = campusUrl(path)
+    const fromCampus = cu ? await blobUrlToDataUrl(cu) : null
+    if (fromCampus) {
+      setLocalRef(kind, fromCampus)
+      return fromCampus
+    }
+  } catch {
+    /* ignore */
+  }
   try {
     const fromRaw = await blobUrlToDataUrl(ghRaw(path))
     if (fromRaw) {

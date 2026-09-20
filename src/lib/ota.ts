@@ -2,6 +2,7 @@
 
 import { getWriteToken } from './cloud'
 import { ghPages, ghRaw, netErr } from './net'
+import { campusUrl } from './origin'
 
 export type OtaManifest = {
   builtAt: string
@@ -160,6 +161,18 @@ async function readViaRaw(path: string) {
   throw new Error('raw 内容无效')
 }
 
+async function readViaCampus(path: string) {
+  const url = campusUrl(path)
+  if (!url) throw new Error('未配置校服务器')
+  const text = await fetchText(url, undefined, path.endsWith('.html') ? 3 : 2)
+  if (path.endsWith('.json')) {
+    JSON.parse(text)
+    return text
+  }
+  if (text.includes('id="root"') || text.length > 5000) return text
+  throw new Error('校服务器内容无效')
+}
+
 async function readViaPages(path: string) {
   const text = await fetchText(pagesUrl(path), undefined, path.endsWith('.html') ? 3 : 2)
   if (path.endsWith('.json')) {
@@ -224,7 +237,10 @@ function parseMan(text: string): OtaManifest | null {
 /** Pages 常有缓存；raw 较新；有口令再试 API，取较新的 manifest */
 export async function fetchManifest(): Promise<OtaManifest> {
   const cands: OtaManifest[] = []
-  for (const reader of [readViaRaw, readViaPages]) {
+  const readers = campusUrl(MANIFEST_PATH)
+    ? [readViaCampus, readViaRaw, readViaPages]
+    : [readViaRaw, readViaPages]
+  for (const reader of readers) {
     try {
       const p = parseMan(await reader(MANIFEST_PATH))
       if (p) cands.push(p)
@@ -268,8 +284,14 @@ export async function downloadAndVerify(man: OtaManifest): Promise<OtaBundle> {
 
   let html = ''
   const errs: string[] = []
-  // API 优先（刚推的包），再 Pages
-  if (getWriteToken()) {
+  if (campusUrl(man.path)) {
+    try {
+      html = await tryHtml(readViaCampus)
+    } catch (e) {
+      errs.push(netErr(e, '校服务器下载失败'))
+    }
+  }
+  if (!html && getWriteToken()) {
     try {
       html = await tryHtml(readViaApi)
     } catch (e) {

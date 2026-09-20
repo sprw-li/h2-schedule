@@ -9,6 +9,8 @@ lerna-debug.log*
 
 node_modules
 dist
+docs-build-tmp
+campus-data
 phone
 android/.gradle
 android/app/build

@@ -4,7 +4,7 @@
 
 **网页：** https://sprw-li.github.io/h2-schedule/
 
-这不是 CLab / xlab 云主机上的服务。电脑和手机看的是仓库里的公开 `docs/schedule.json`（经 GitHub raw / Pages / Contents API 拉取）。
+电脑网页默认仍走 GitHub Pages。手机在校园网里经常打不开 `github.io` / `api.github.com`，所以 App 壳打进本地包；OTA 与日程可改走校服务器（见文末）。GitHub 仍作家里网备份。
 
 ## 日常使用
 
@@ -39,9 +39,22 @@ npm run dev
 
 ```bash
 npm run build          # 网页
+npm run build:pages    # 写入 docs/（不覆盖 schedule.json）
 npm run build:phone    # 单文件 HTML + OTA manifest
 npm run build:apk      # Capacitor debug APK
 npm run check:schedule # 检查日程 JSON
 ```
 
-GitHub Pages 发布源是仓库 `docs/`（构建产物与 `schedule.json`、OTA 包都在这里）。改完界面要让网页和手机 OTA 生效，需要构建后把 `docs/` 推到 `main`。
+改完界面：`npm run build:phone` 与 `npm run build:pages`，推 `main`。不要把构建产物盖掉 `docs/schedule.json`。
+
+## 迁校服务器（预备）
+
+更新面板可填「校服务器」根地址（存在本机）。有地址时先读/写校内，失败再 GitHub。
+
+```bash
+export H2_WRITE_TOKEN='…'   # 与口令解开后的写令牌相同，或另发一枚
+python3 scripts/campus_sync_server.py --data-dir ~/h2-data --port 8765
+# 拷 docs/ota/* 与 docs/schedule.json 到 ~/h2-data/ota/ 与 ~/h2-data/schedule.json
+```
+
+协议：`GET/PUT /schedule.json`（PUT 要 Bearer，可用 If-Match）、`GET /ota/manifest.json`、`GET /ota/app.html`。未点头不要代建云主机。打 APK 可设 `VITE_CAMPUS_ORIGIN`。

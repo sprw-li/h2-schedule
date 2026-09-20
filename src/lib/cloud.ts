@@ -1,5 +1,6 @@
 import { flattenItems } from './backup'
 import { fetchTextNoThrow, ghApiContents, ghPages, ghRaw, netErr } from './net'
+import { campusUrl, getCampusOrigin } from './origin'
 import { normalizeSchedule, parseScheduleJsonText, serializeSchedule } from './schedule'
 import { loadRemoteSnap } from './sync'
 import type { ScheduleMap } from '../types'
@@ -44,6 +45,47 @@ async function pullJsonUrl(url: string): Promise<{ map: ScheduleMap; sha: string
   }
 }
 
+function headerSha(res: Response) {
+  const raw = (res.headers.get('x-h2-sha') || res.headers.get('etag') || '').trim()
+  return raw.replace(/^W\//, '').replace(/"/g, '')
+}
+
+async function pullFromCampus(): Promise<{ map: ScheduleMap; sha: string } | null> {
+  const url = campusUrl('schedule.json')
+  if (!url) return null
+  try {
+    const res = await fetch(`${url}?ts=${Date.now()}`)
+    if (!res.ok) return null
+    const { items } = parseScheduleJsonText(await res.text())
+    return { map: normalizeSchedule(items), sha: headerSha(res) }
+  } catch {
+    return null
+  }
+}
+
+async function pushCampus(map: ScheduleMap, sha: string) {
+  const url = campusUrl('schedule.json')
+  if (!url) throw new Error('未配置校服务器')
+  const token = getWriteToken()
+  if (!token) throw new Error('需要口令才能同步')
+  const payload = serializeSchedule(normalizeSchedule(map))
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  }
+  if (sha && !sha.startsWith('sig:')) headers['If-Match'] = `"${sha}"`
+  const res = await fetch(url, { method: 'PUT', headers, body: payload })
+  if (res.status === 401 || res.status === 403) throw new Error('口令无效或权限不足')
+  if (res.status === 409) throw new Error('冲突')
+  if (!res.ok) throw new Error('同步失败')
+  try {
+    const body = (await res.json()) as { sha?: string }
+    return body.sha || headerSha(res) || sha
+  } catch {
+    return headerSha(res) || sha
+  }
+}
+
 async function pullFromApi(): Promise<{ map: ScheduleMap; sha: string } | null> {
   const token = getWriteToken()
   const headers: Record<string, string> = { Accept: 'application/vnd.github+json' }
@@ -63,6 +105,9 @@ async function pullFromApi(): Promise<{ map: ScheduleMap; sha: string } | null> 
  * 无口令：raw 与 Pages 并行；raw 通常比 Pages 新。手机常打不开 api.github.com。
  */
 export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | null> {
+  const campus = await pullFromCampus()
+  if (campus) return campus
+
   const token = getWriteToken()
   if (token) {
     const api = await pullFromApi()
@@ -110,6 +155,20 @@ export async function pushCloud(map: ScheduleMap, sha: string) {
     'Content-Type': 'application/json',
   }
   const payload = serializeSchedule(clean)
+
+  if (getCampusOrigin()) {
+    try {
+      return await pushCampus(clean, sha)
+    } catch (e) {
+      if (
+        e instanceof Error &&
+        (e.message === '冲突' || e.message.includes('口令') || e.message.includes('拒绝覆盖云端'))
+      ) {
+        throw e
+      }
+      // 校内失败再试 GitHub，方便家里网过渡
+    }
+  }
 
   async function put(useSha: string) {
     return fetch(API, {
