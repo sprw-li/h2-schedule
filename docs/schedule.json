@@ -1,6 +1,14 @@
 {
   "items": [
     {
+      "id": "56a9411a-af03-4d61-9ef9-877ab133ad81",
+      "date": "2026-09-07",
+      "title": "上午实验记录整理",
+      "done": false,
+      "kind": "task",
+      "start": "09:30"
+    },
+    {
       "id": "ff698002-b6d7-468a-a715-2dc7c5a81adf",
       "date": "2026-09-07",
       "title": "普通化学 · 理教201",
@@ -17,6 +25,14 @@
       "kind": "task",
       "start": "15:10",
       "end": "17:00"
+    },
+    {
+      "id": "0ab31726-6368-4b61-acc6-0c41691a62c7",
+      "date": "2026-09-07",
+      "title": "交周报",
+      "done": false,
+      "kind": "deadline",
+      "start": "18:00"
     },
     {
       "id": "8f017cd0-1ad8-48de-96f5-3a8ef1a29450",
@@ -89,6 +105,13 @@
       "title": "内务检查",
       "done": false,
       "kind": "task"
+    },
+    {
+      "id": "b4d14ba2-7230-4221-9eac-236acb87fd15",
+      "date": "2026-09-08",
+      "title": "手机端补实验",
+      "done": false,
+      "kind": "deadline"
     },
     {
       "id": "720336b3-d4be-4340-9d59-8531e999196e",
