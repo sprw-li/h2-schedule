@@ -162,12 +162,61 @@ export function dedupeByIdentity(map: ScheduleMap): ScheduleMap {
   return replaceSchedule([...byRow.values()])
 }
 
+/** 「理论与计算化学导论 · 理教410」相对「……（杨立江）· 机房」的课名前缀 */
+function courseHead(title: string) {
+  return title.trim().split(/[·（]/)[0].replace(/\s+/g, ' ').trim()
+}
+
+function sameSlot(a: ScheduleItem, b: ScheduleItem) {
+  return (
+    a.date === b.date &&
+    (a.start ?? '') === (b.start ?? '') &&
+    (a.end ?? '') === (b.end ?? '') &&
+    !!a.allDay === !!b.allDay
+  )
+}
+
+function coversTitle(specific: string, generic: string) {
+  const s = specific.trim()
+  const g = generic.trim()
+  if (!s || !g || s === g) return false
+  if (s.startsWith(g)) return true
+  const hs = courseHead(s)
+  const hg = courseHead(g)
+  if (!hs || !hg) return false
+  if (hs === hg && s.length > g.length) return true
+  return hs.startsWith(hg) && s.length > g.length
+}
+
+/**
+ * 同一天同一时刻：骨架课名被更具体的一条盖住就丢掉。
+ * 理计导 / 今化 / 普化实验 常见「简写 + 带老师教室」并存。
+ */
+export function collapseCoveredDuplicates(map: ScheduleMap): ScheduleMap {
+  const items = flattenItems(map).map((it) => ({ ...it }))
+  const drop = new Set<number>()
+  for (let i = 0; i < items.length; i++) {
+    for (let j = 0; j < items.length; j++) {
+      if (i === j || drop.has(i)) continue
+      const a = items[i]
+      const b = items[j]
+      if (!sameSlot(a, b)) continue
+      if (!coversTitle(b.title, a.title)) continue
+      items[j] = { ...b, done: !!(a.done || b.done) }
+      drop.add(i)
+    }
+  }
+  return replaceSchedule(items.filter((_, idx) => !drop.has(idx)))
+}
+
 /** 入口：合法化字段 + 撞 id 处理。不做课表规则核验。 */
 export function normalizeSchedule(input: ScheduleMap | ScheduleItem[] | unknown[]): ScheduleMap {
   const items = Array.isArray(input)
     ? coerceItems(input)
     : coerceItems(flattenItems(input as ScheduleMap) as unknown[])
-  return replaceSchedule(ensureUniqueIds(flattenItems(dedupeByIdentity(replaceSchedule(items)))))
+  return replaceSchedule(
+    ensureUniqueIds(flattenItems(collapseCoveredDuplicates(dedupeByIdentity(replaceSchedule(items))))),
+  )
 }
 
 /** 序列化为可写入 GitHub / 本地的干净 JSON（真换行结尾） */

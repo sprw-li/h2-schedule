@@ -105,4 +105,39 @@ assert(
   '改 16 号标题不得挂到 22 号',
 )
 
+const skeleton = item({
+  id: 'theo-short',
+  date,
+  title: '理论与计算化学导论 · 理教410',
+  start: '13:00',
+  end: '14:50',
+})
+const detailed = item({
+  id: 'theo-long',
+  date,
+  title: '理论与计算化学导论（杨立江） · 理教410',
+  start: '13:00',
+  end: '14:50',
+})
+const jinShort = item({
+  id: 'jin-short',
+  date,
+  title: '今日化学',
+  start: '15:10',
+  end: '17:00',
+})
+const jinLong = item({
+  id: 'jin-long',
+  date,
+  title: '今日化学 · 高分子化学（刘允） · 化学楼B400',
+  start: '15:10',
+  end: '17:00',
+})
+const collapsed = normalizeSchedule([skeleton, detailed, jinShort, jinLong])
+assert(flattenItems(collapsed).length === 2, '理计导/今化骨架不得与详条并存')
+assert(
+  flattenItems(collapsed).every((i) => i.title.includes('杨立江') || i.title.includes('刘允')),
+  '应留下带老师/专题的那条',
+)
+
 console.log('check-logic: ok')
