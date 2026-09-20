@@ -1337,6 +1337,7 @@ button {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   background: var(--paper);
+  box-sizing: border-box;
 }
 
 .sheet-editor-portal .sheet-editor-form {

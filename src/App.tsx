@@ -396,6 +396,19 @@ export default function App() {
     setMessage(`已撤销「${label}」`)
   }
 
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 'z' || e.shiftKey) return
+      const t = e.target as HTMLElement | null
+      if (t?.closest('input, textarea, select, [contenteditable="true"]')) return
+      if (!undo || editingRef.current) return
+      e.preventDefault()
+      runUndo()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [undo, undoArmed])
+
   function patchSelectedDay(
     updater: (list: NonNullable<ScheduleMap[string]>) => NonNullable<ScheduleMap[string]>,
     label?: string,
