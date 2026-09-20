@@ -62,7 +62,7 @@ async function main() {
     })
     if (!put1.ok) throw new Error(`PUT 失败 ${put1.status} ${out}`)
     const { sha } = await put1.json()
-    const got = await fetch(`${BASE}/schedule.json`)
+    const got = await fetch(`${BASE}/schedule.json`, { headers: { Authorization: `Bearer ${TOKEN}` } })
     if (!got.ok) throw new Error('GET 失败')
     const body = await got.text()
     if (!body.includes('校同步探针')) throw new Error('GET 内容不对')
@@ -101,9 +101,44 @@ async function main() {
     await writeFile(join(data, 'ota', 'app.html'), '<div id="root">x</div>', 'utf8')
     const html = await fetch(`${BASE}/ota/app.html`)
     if (!html.ok) throw new Error('OTA html GET 失败')
+    const home = await fetch(`${BASE}/`)
+    if (!home.ok) throw new Error(`根路径期望日程页，得到 ${home.status}`)
+    if (!(await home.text()).includes('id="root"')) throw new Error('根路径不是日程 HTML')
+
+    const noAuthGet = await fetch(`${BASE}/schedule.json`)
+    if (noAuthGet.status !== 401) throw new Error(`无账密 GET 期望 401，得到 ${noAuthGet.status}`)
 
     const noAuth = await fetch(`${BASE}/schedule.json`, { method: 'PUT', body: payload })
     if (noAuth.status !== 401) throw new Error(`无口令期望 401，得到 ${noAuth.status}`)
+
+    const ghPayload = JSON.stringify({
+      version: 1,
+      items: [
+        {
+          id: 'gh1',
+          date: '2026-09-21',
+          title: '从GitHub镜像',
+          done: false,
+          kind: 'task',
+          start: '14:00',
+          end: '15:00',
+        },
+      ],
+    })
+    const cur = await fetch(`${BASE}/schedule.json`, { headers: { Authorization: `Bearer ${TOKEN}` } })
+    const campusSha = (cur.headers.get('x-h2-sha') || '').trim()
+    const mirrored = await fetch(`${BASE}/schedule.json`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${TOKEN}`,
+        'Content-Type': 'application/json',
+        ...(campusSha ? { 'If-Match': `"${campusSha}"` } : {}),
+      },
+      body: ghPayload,
+    })
+    if (!mirrored.ok) throw new Error(`GitHub→CLab 镜像 PUT 失败 ${mirrored.status}`)
+    const after = await fetch(`${BASE}/schedule.json`, { headers: { Authorization: `Bearer ${TOKEN}` } })
+    if (!(await after.text()).includes('从GitHub镜像')) throw new Error('GitHub→CLab 镜像内容没写上')
 
     console.log('campus sync ok')
   } finally {

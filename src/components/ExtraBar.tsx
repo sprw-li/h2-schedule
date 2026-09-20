@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { getCampusOrigin, setCampusOrigin } from '../lib/origin'
+import { getCampusOrigin, getCampusPass, getCampusUser, setCampusAccount, setCampusOrigin } from '../lib/origin'
 import { clearLocalBundle } from '../lib/ota'
 import { resetSchedule } from '../lib/storage'
 
@@ -24,9 +24,12 @@ export function ExtraBar({
 }: ExtraBarProps) {
   const [open, setOpen] = useState(false)
   const [campus, setCampus] = useState(() => getCampusOrigin())
+  const [campusUser, setCampusUser] = useState(() => getCampusUser())
+  const [campusPass, setCampusPass] = useState(() => getCampusPass())
 
   function persistCampus() {
     setCampusOrigin(campus)
+    setCampusAccount(campusUser, campusPass)
   }
 
   return (
@@ -38,7 +41,11 @@ export function ExtraBar({
         onClick={() => {
           const next = !open
           setOpen(next)
-          if (next) setCampus(getCampusOrigin())
+          if (next) {
+            setCampus(getCampusOrigin())
+            setCampusUser(getCampusUser())
+            setCampusPass(getCampusPass())
+          }
         }}
       >
         其他功能
@@ -78,7 +85,7 @@ export function ExtraBar({
           </div>
           <p className="csv-hint">ICS 给系统日历。CSV 给表格互拷。手机导出走分享或复制。</p>
           <div className="update-phrase">
-            <label htmlFor="campus-origin">校服务器（CLab，换机只改这个地址）</label>
+            <label htmlFor="campus-origin">CLab 地址（换机只改这里）</label>
             <input
               id="campus-origin"
               type="url"
@@ -86,13 +93,34 @@ export function ExtraBar({
               autoCapitalize="off"
               autoCorrect="off"
               spellCheck={false}
-              placeholder="https://host:8765"
+              placeholder="http://10.129.x.x:8765"
               value={campus}
               onChange={(e) => setCampus(e.target.value)}
               onBlur={persistCampus}
             />
+            <label htmlFor="campus-user">CLab 用户名（与 SSH 同一组，已预填）</label>
+            <input
+              id="campus-user"
+              type="text"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              autoComplete="username"
+              value={campusUser}
+              onChange={(e) => setCampusUser(e.target.value)}
+              onBlur={persistCampus}
+            />
+            <label htmlFor="campus-pass">CLab 密码（已预填）</label>
+            <input
+              id="campus-pass"
+              type="password"
+              autoComplete="current-password"
+              value={campusPass}
+              onChange={(e) => setCampusPass(e.target.value)}
+              onBlur={persistCampus}
+            />
           </div>
-          <p className="mute">填了就以校内为准；GitHub 只做改动备份。空着则仍走 GitHub。</p>
+          <p className="mute">顶栏点 CLab 或 GitHub，不会自动切换。任一边写入后会尽量再记一份到另一边。</p>
           <div className="update-actions">
             <button type="button" className="ghost" onClick={persistCampus}>
               保存服务器地址

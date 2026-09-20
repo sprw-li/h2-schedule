@@ -171,9 +171,10 @@ button {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px 16px;
   margin-bottom: 22px;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .brand {
@@ -265,6 +266,41 @@ button {
 .update-chip.hot {
   border-color: var(--deadline);
   color: var(--deadline);
+}
+
+.source-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  flex-shrink: 0;
+}
+
+.source-chip {
+  border: 0;
+  background: transparent;
+  color: var(--mute);
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.source-chip.source-on {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.app-dock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-top: 8px;
+  min-width: 0;
 }
 
 /* 贴屏幕底部，纸面浮层，不要系统蓝框感 */
@@ -1061,28 +1097,27 @@ button {
 }
 
 .panel.day-panel {
-  position: relative;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: auto;
-  overflow-anchor: none;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
 }
 
 .day-panel .day-chrome {
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  min-width: 0;
   background: var(--paper);
 }
 
 .day-panel .sheet-scroll {
-  -webkit-overflow-scrolling: auto;
-  overflow: visible;
-  flex: 0 0 auto;
-  max-height: none;
+  -webkit-overflow-scrolling: touch;
   min-height: 0;
+  min-width: 0;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
   overflow-anchor: none;
-  transform: translateX(var(--day-nudge, 0px));
+  contain: paint;
+  margin-left: var(--day-nudge, 0px);
+  padding-bottom: 8px;
 }
 
 .list-epoch {
@@ -1298,15 +1333,22 @@ button {
   flex-shrink: 0;
 }
 
-.composer-bar {
-  flex-shrink: 0;
-  margin-top: 8px;
-  padding-top: 8px;
+.composer-bar,
+.day-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 0;
+  padding-top: 10px;
   border-top: 1px solid var(--line);
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
   background: var(--paper);
+  z-index: 3;
+}
+
+.day-footer .undo-bar {
+  margin: 0;
+  width: 100%;
 }
 
 .composer-open {
@@ -1580,6 +1622,20 @@ button {
     align-items: center;
     margin-bottom: 10px;
     flex-shrink: 0;
+    gap: 8px;
+  }
+
+  .top-actions {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  .top-actions > .ghost,
+  .top-actions .update-chip {
+    min-height: 36px;
+    padding: 6px 11px;
+    font-size: 13px;
   }
 
   .brand-kicker,
@@ -1701,6 +1757,10 @@ button {
 
   .sheet-scroll {
     padding-bottom: 28px;
+  }
+
+  .day-panel .sheet-scroll {
+    padding-bottom: 8px;
   }
 
   .place-tabs {
@@ -1876,22 +1936,29 @@ button {
   }
 
   .toast {
-    position: absolute;
-    left: 12px;
-    right: 12px;
-    bottom: calc(8px + env(safe-area-inset-bottom));
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
     margin: 0;
-    z-index: 4;
+    z-index: auto;
     pointer-events: none;
+    font-size: 12px;
+    line-height: 1.35;
   }
 
   .undo-bar {
-    position: absolute;
-    left: 12px;
-    right: 12px;
-    bottom: calc(52px + env(safe-area-inset-bottom));
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
     margin: 0;
-    z-index: 5;
+    z-index: auto;
+  }
+
+  .app-dock {
+    margin-top: 6px;
+    gap: 4px;
   }
 
   .composer input[aria-label='事项标题'] {

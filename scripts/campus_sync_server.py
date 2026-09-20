@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """校内即时真相源：日程 JSON + OTA。GitHub 只作改动备份。换 CLab 只改客户端里的根地址。
 
-  H2_WRITE_TOKEN=... python scripts/campus_sync_server.py --data-dir ~/h2-data --port 8765
+  H2_USER=... H2_PASS=... python scripts/campus_sync_server.py --data-dir ~/h2-data --port 8765
 
-PUT /schedule.json、/ota/manifest.json、/ota/app.html 需要 Authorization: Bearer <token>
-GET 公开。ETag 当 sha。CORS 全开。GET /health 探活。
+GET/PUT /schedule.json 要 Basic 账密或 Bearer。OTA GET 公开（方便手机拉包）。
 """
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
+import hmac
 import json
 import os
 import ssl
@@ -22,9 +23,17 @@ def sha_of(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _eq(a: str, b: str) -> bool:
+    if not a or not b or len(a) != len(b):
+        return False
+    return hmac.compare_digest(a, b)
+
+
 class Handler(BaseHTTPRequestHandler):
     data_dir: Path
     token: str
+    user: str
+    password: str
     web_root: Path | None
 
     def log_message(self, fmt: str, *args) -> None:
@@ -50,6 +59,8 @@ class Handler(BaseHTTPRequestHandler):
     def _send_bytes(self, code: int, body: bytes, ctype: str, etag: str | None = None) -> None:
         self.send_response(code)
         self.cors()
+        if code == 401:
+            self.send_header("WWW-Authenticate", 'Basic realm="h2-campus"')
         self.send_header("Content-Type", ctype)
         self.send_header("Cache-Control", "no-store")
         if etag:
@@ -59,6 +70,24 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         if self.command != "HEAD":
             self.wfile.write(body)
+
+    def _auth_ok(self) -> bool:
+        got = self.headers.get("Authorization", "")
+        if self.token and _eq(got, f"Bearer {self.token}"):
+            return True
+        if self.password and _eq(got, f"Bearer {self.password}"):
+            return True
+        if got.lower().startswith("basic "):
+            try:
+                raw = base64.b64decode(got.split(None, 1)[1]).decode("utf-8")
+            except Exception:
+                return False
+            u, _, p = raw.partition(":")
+            return _eq(u, self.user) and _eq(p, self.password)
+        return False
+
+    def _need_schedule_auth(self) -> bool:
+        return bool(self.token or self.password)
 
     def _read_file(self, rel: str, ctype: str) -> None:
         p = self._file(rel)
@@ -77,7 +106,13 @@ class Handler(BaseHTTPRequestHandler):
             body = json.dumps({"ok": True, "role": "sot"}).encode("utf-8")
             self._send_bytes(200, body, "application/json; charset=utf-8")
             return
+        if path in ("/", "/index.html", "/index.html/"):
+            self._read_file("ota/app.html", "text/html; charset=utf-8")
+            return
         if path in ("/schedule.json", "/schedule.json/"):
+            if self._need_schedule_auth() and not self._auth_ok():
+                self._send_bytes(401, b"unauthorized\n", "text/plain; charset=utf-8")
+                return
             self._read_file("schedule.json", "application/json; charset=utf-8")
             return
         if path in ("/ota/manifest.json", "/ota/manifest.json/"):
@@ -101,12 +136,6 @@ class Handler(BaseHTTPRequestHandler):
                 return
         self._send_bytes(404, b"not found\n", "text/plain; charset=utf-8")
 
-    def _auth_ok(self) -> bool:
-        got = self.headers.get("Authorization", "")
-        if got == f"Bearer {self.token}":
-            return True
-        return False
-
     def do_PUT(self) -> None:
         path = self._path()
         ota_map = {
@@ -114,10 +143,7 @@ class Handler(BaseHTTPRequestHandler):
             "/ota/app.html": "ota/app.html",
         }
         if path in ota_map:
-            if not self.token:
-                self._send_bytes(503, b"server token unset\n", "text/plain; charset=utf-8")
-                return
-            if not self._auth_ok():
+            if self._need_schedule_auth() and not self._auth_ok():
                 self._send_bytes(401, b"unauthorized\n", "text/plain; charset=utf-8")
                 return
             n = int(self.headers.get("Content-Length") or "0")
@@ -131,11 +157,11 @@ class Handler(BaseHTTPRequestHandler):
         if path not in ("/schedule.json", "/schedule.json/"):
             self._send_bytes(405, b"only PUT /schedule.json\n", "text/plain; charset=utf-8")
             return
-        if not self.token:
-            self._send_bytes(503, b"server token unset\n", "text/plain; charset=utf-8")
-            return
-        if not self._auth_ok():
+        if self._need_schedule_auth() and not self._auth_ok():
             self._send_bytes(401, b"unauthorized\n", "text/plain; charset=utf-8")
+            return
+        if not self.token and not self.password:
+            self._send_bytes(503, b"server token unset\n", "text/plain; charset=utf-8")
             return
         n = int(self.headers.get("Content-Length") or "0")
         body = self.rfile.read(n)
@@ -167,18 +193,25 @@ def main() -> None:
     ap.add_argument("--tls-key", default="")
     args = ap.parse_args()
     token = os.environ.get("H2_WRITE_TOKEN", "").strip()
+    user = os.environ.get("H2_USER", "").strip()
+    password = os.environ.get("H2_PASS", "").strip()
     data = Path(args.data_dir)
     data.mkdir(parents=True, exist_ok=True)
     (data / "ota").mkdir(exist_ok=True)
     Handler.data_dir = data
     Handler.token = token
+    Handler.user = user
+    Handler.password = password
     Handler.web_root = Path(args.web_root).resolve() if args.web_root else None
     httpd = ThreadingHTTPServer((args.host, args.port), Handler)
     if args.tls_cert and args.tls_key:
         ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         ctx.load_cert_chain(args.tls_cert, args.tls_key)
         httpd.socket = ctx.wrap_socket(httpd.socket, server_side=True)
-    print(f"h2 campus sync on {args.host}:{args.port} data={data} token_set={bool(token)}")
+    print(
+        f"h2 campus sync on {args.host}:{args.port} data={data} "
+        f"token_set={bool(token)} user_set={bool(user)}"
+    )
     httpd.serve_forever()
 
 

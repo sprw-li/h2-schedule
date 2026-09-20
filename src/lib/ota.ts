@@ -2,7 +2,7 @@
 
 import { getWriteToken } from './cloud'
 import { ghPages, ghRaw, netErr } from './net'
-import { campusUrl } from './origin'
+import { campusAuthHeaders, campusUrl, getSyncSource } from './origin'
 
 export type OtaManifest = {
   builtAt: string
@@ -164,7 +164,8 @@ async function readViaRaw(path: string) {
 async function readViaCampus(path: string) {
   const url = campusUrl(path)
   if (!url) throw new Error('未配置校服务器')
-  const text = await fetchText(url, undefined, path.endsWith('.html') ? 3 : 2)
+  const headers = campusAuthHeaders()
+  const text = await fetchText(url, headers.Authorization ? { headers } : undefined, path.endsWith('.html') ? 3 : 2)
   if (path.endsWith('.json')) {
     JSON.parse(text)
     return text
@@ -236,15 +237,16 @@ function parseMan(text: string): OtaManifest | null {
 
 /** Pages 常有缓存；raw 较新；有口令再试 API，取较新的 manifest */
 export async function fetchManifest(): Promise<OtaManifest> {
-  const cands: OtaManifest[] = []
-  if (campusUrl(MANIFEST_PATH)) {
+  if (getSyncSource() === 'clab') {
     try {
       const p = parseMan(await readViaCampus(MANIFEST_PATH))
       if (p) return p
-    } catch {
-      /* 校内没有包时才看 GitHub 备份 */
+    } catch (e) {
+      throw new Error(netErr(e, 'CLab 查不到更新（未改用 GitHub）'))
     }
+    throw new Error('CLab 查不到更新（未改用 GitHub）')
   }
+  const cands: OtaManifest[] = []
   const readers = [readViaRaw, readViaPages]
   for (const reader of readers) {
     try {
@@ -290,11 +292,11 @@ export async function downloadAndVerify(man: OtaManifest): Promise<OtaBundle> {
 
   let html = ''
   const errs: string[] = []
-  if (campusUrl(man.path)) {
+  if (getSyncSource() === 'clab') {
     try {
       html = await tryHtml(readViaCampus)
     } catch (e) {
-      errs.push(netErr(e, '校服务器下载失败'))
+      throw new Error(netErr(e, 'CLab 下载失败（未改用 GitHub）'))
     }
   }
   if (!html && getWriteToken()) {

@@ -6,7 +6,10 @@ import { WeatherPanel } from './components/WeatherPanel'
 import { getWriteToken, pullCloud, pushCloud, setWriteToken } from './lib/cloud'
 import { downloadCsv, downloadTextFile, mergeCsvIntoSchedule, readCsvText, scheduleToCsv } from './lib/csv'
 import { scheduleToIcs } from './lib/ics'
-import { campusIsLive } from './lib/origin'
+import { ExtraBar } from './components/ExtraBar'
+import { SourceBar } from './components/SourceBar'
+import { UpdateBar } from './components/UpdateBar'
+import { campusAuthHeaders, campusIsLive, getCampusOrigin, getSyncSource, seedCampusLogin, type SyncSource } from './lib/origin'
 import { addDays, addMonths, isAllDay, parseDateKey, timeSortKey, toDateKey, todayKey } from './lib/dates'
 import { flattenItems } from './lib/backup'
 import { loadSchedule, saveSchedule, uid } from './lib/storage'
@@ -25,8 +28,6 @@ import {
   setPendingSync,
 } from './lib/sync'
 import { unlockFromPublic } from './lib/unlock'
-import { ExtraBar } from './components/ExtraBar'
-import { UpdateBar } from './components/UpdateBar'
 import type { ScheduleMap } from './types'
 
 type SyncPhase = 'off' | 'pull' | 'push' | 'ok' | 'err'
@@ -54,6 +55,7 @@ export default function App() {
   const [csvSheet, setCsvSheet] = useState<{ title: string; text: string; mode: 'export' | 'import' } | null>(null)
   const [undo, setUndo] = useState<{ label: string; before: ScheduleMap } | null>(null)
   const [undoArmed, setUndoArmed] = useState(false)
+  const [source, setSource] = useState<SyncSource>(() => getSyncSource())
   const pendingRemoteRef = useRef<{ map: ScheduleMap; sha: string } | null>(null)
   const applyRemoteRef = useRef<
     ((remote: { map: ScheduleMap; sha: string }, reason: 'hydrate' | 'poll') => boolean) | undefined
@@ -205,6 +207,7 @@ export default function App() {
     }
 
     async function hydrate() {
+      seedCampusLogin()
       setPhase('pull')
       try {
         // 只 normalize，不要对空远端做 integrate（会把全部本机标成 pending）
@@ -230,13 +233,20 @@ export default function App() {
         }
       } catch (err) {
         const local = normalizeSchedule(pendingRef.current ?? loadSchedule())
+        const text = err instanceof Error ? err.message : ''
         if (flattenItems(local).length > 0) {
           if (!editingRef.current) {
             setSchedule(local)
             saveSchedule(local)
           }
           setPhase('ok')
-          setMessage(campusIsLive() ? '校服务器暂不通，先用本机（未丢、未改用 GitHub）' : '云端暂不通，先用本机（未丢）')
+          if (text.includes('CLab 登录') || text.includes('账密') || text.includes('账号密码')) {
+            setMessage(text)
+            return
+          }
+          setMessage(
+            campusIsLive() ? 'CLab 暂不通，先用本机（未改用 GitHub）' : 'GitHub 暂不通，先用本机（未丢）',
+          )
           return
         }
         setPhase('err')
@@ -281,10 +291,10 @@ export default function App() {
     pendingRef.current = clean
     saveSchedule(clean)
 
-    if (!getWriteToken()) {
+    if (!getWriteToken() && !campusAuthHeaders().Authorization) {
       setAskPhrase(true)
       setPhase('ok')
-      setMessage('改动已记下，输入口令后即可同步')
+      setMessage('改动已记下，输入口令或校服务器账密后即可同步')
       return
     }
     if (syncingRef.current) return
@@ -298,7 +308,13 @@ export default function App() {
         saveRemoteSnap(clean)
         setAskPhrase(false)
         setPhase('ok')
-        setMessage(campusIsLive() ? '已写入校服务器（GitHub 后台备份）' : '已同步')
+        setMessage(
+          campusIsLive()
+            ? '已写入 CLab（并尽量同步到 GitHub）'
+            : getCampusOrigin()
+              ? '已同步到 GitHub（并尽量同步到 CLab）'
+              : '已同步到 GitHub',
+        )
         // 推送期间又改过：不要用旧包盖掉新改动
         const later = pendingRef.current
         if (later && scheduleContentSig(later) !== scheduleContentSig(clean)) {
@@ -314,7 +330,7 @@ export default function App() {
       })
       .catch(async (err) => {
         const text = err instanceof Error ? err.message : '同步失败'
-        if (text.includes('令牌') || text.includes('口令')) {
+        if (text.includes('令牌') || text.includes('口令') || text.includes('账密') || text.includes('CLab 登录')) {
           setAskPhrase(true)
           setPhase('ok')
           setMessage('需要口令才能同步（本机改动已保留）')
@@ -480,6 +496,13 @@ export default function App() {
           <h1>H2 Schedule</h1>
         </div>
         <div className="top-actions">
+          <SourceBar
+            value={source}
+            onChange={(next) => {
+              setSource(next)
+              window.location.reload()
+            }}
+          />
           <UpdateBar />
           <ExtraBar
             undoLabel={undo?.label ?? null}
@@ -584,6 +607,9 @@ export default function App() {
               key={selectedKey}
               date={selected}
               items={items}
+              undoLabel={undo?.label ?? null}
+              undoArmed={undoArmed}
+              onUndo={runUndo}
               onEditorOpenChange={(open) => {
                 editingRef.current = open
                 document.body.classList.toggle('h2-editing', open)
@@ -690,16 +716,26 @@ export default function App() {
           </>
         )}
       </div>
-      {undo ? (
-        <button
-          type="button"
-          className={`undo-bar${undoArmed ? ' armed' : ''}`}
-          onClick={runUndo}
-        >
-          {undoArmed ? `确定撤销「${undo.label}」` : `撤销「${undo.label}」`}
-        </button>
+      {pane === 'weather' || pane === 'refs' ? (
+        undo || message ? (
+          <div className="app-dock">
+            {undo ? (
+              <button
+                type="button"
+                className={`undo-bar${undoArmed ? ' armed' : ''}`}
+                onClick={runUndo}
+              >
+                {undoArmed ? `确定撤销「${undo.label}」` : `撤销「${undo.label}」`}
+              </button>
+            ) : null}
+            {message ? <div className="toast">{message}</div> : null}
+          </div>
+        ) : null
+      ) : message ? (
+        <div className="app-dock">
+          <div className="toast">{message}</div>
+        </div>
       ) : null}
-      {message ? <div className="toast">{message}</div> : null}
       {askPhrase ? (
         <div className="sync-scrim">
           <form

@@ -4,7 +4,7 @@
 
 **网页：** https://sprw-li.github.io/h2-schedule/
 
-电脑网页默认仍走 GitHub Pages。配了校服务器后，**即时状态以校内为准**（即刻 OTA + 联网读写）；GitHub 只做每次改动的同步备份。换 CLab（预计 3～7 年）只改根地址，不要写死主机。
+电脑网页默认仍走 GitHub Pages（https://sprw-li.github.io/h2-schedule/）。手机 APK 打进两个源：校园网优先 CLab，连不上再走 GitHub。换 CLab 只改根地址，不要写死主机名。
 
 ## 日常使用
 
@@ -18,8 +18,8 @@
 
 首次在某台设备上**改**日程：底部口令框填同一句口令（解开写令牌，存在该设备，不进 Git）。
 
-- **未填校服务器**：读写 GitHub `docs/schedule.json`（API / raw / Pages）。
-- **填了校服务器**：读写只走校内。GitHub 在写入成功后后台备份；校内读不到时**不会**改用 GitHub，以免旧备份盖掉即时状态。
+- **顶栏选 CLab**：读写校内。成功后尽量再写入 GitHub `docs/schedule.json`。
+- **顶栏选 GitHub**：读写仓库（API / raw / Pages）。成功后尽量再写入 CLab。电脑 github.io 默认这一路。
 
 推送前若本机条数不到云端快照的一半，会拒绝覆盖。
 
@@ -47,10 +47,11 @@ npm run check:schedule # 检查日程 JSON
 「其他功能」填根地址（存在本机）。换机只改这个 URL。
 
 ```bash
-export H2_WRITE_TOKEN='…'   # 与口令解开后的写令牌相同，或校内另发一枚
+export H2_USER='…'
+export H2_PASS='…'          # 只放虚拟机环境变量，不进 Git
 python scripts/campus_sync_server.py --data-dir ~/h2-data --port 8765
-# 拷 docs/ota/* 与 docs/schedule.json 到 data-dir；或 PUT /ota/*、/schedule.json
+# 拷 docs/ota/* 与 docs/schedule.json 到 data-dir
 npm run test:campus         # 本机探活，不碰真实 CLab
 ```
 
-协议：`GET /health`；`GET/PUT /schedule.json`（PUT 要 Bearer，If-Match 防冲突）；`GET/PUT /ota/manifest.json`、`GET/PUT /ota/app.html`。未点头不要代建云主机。打 APK 可设 `VITE_CAMPUS_ORIGIN`。
+协议：`GET /` 日程页；`GET /health` 公开；`GET/PUT /schedule.json` 要 Basic 或 Bearer；OTA GET 公开。If-Match 防冲突。未点头不要代建云主机。APK 用 `.env.phone` 的 `VITE_CAMPUS_ORIGIN`。
