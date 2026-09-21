@@ -1,0 +1,7 @@
+---
+description: 改核心逻辑时读 app-dev-code；常开常更新
+globs: src/lib/**/*.ts,src/lib/**/*.tsx
+alwaysApply: false
+---
+
+读个人 skill **`app-dev-code`**。身份键、禁止领域启发式改回用户数据。新不变量写回该 skill。

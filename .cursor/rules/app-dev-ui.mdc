@@ -1,0 +1,7 @@
+---
+description: 改界面时读 app-dev-ui；常开常更新
+globs: src/**/*.tsx,src/**/*.css,index.html
+alwaysApply: false
+---
+
+读个人 skill **`app-dev-ui`**。多源共用一套布局；OTA 条仅原生壳。新布局不变量写回该 skill。

@@ -1,0 +1,7 @@
+---
+description: 改网络/双源时读 app-dev-network；常开常更新
+globs: src/lib/net.ts,src/lib/origin.ts,src/lib/unlock.ts,src/lib/ota.ts
+alwaysApply: false
+---
+
+读个人 skill **`app-dev-network`**。顶栏明示 CLab/GitHub；校园网与非安全 HTTP 按环境处理。新网络不变量写回该 skill。

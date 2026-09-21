@@ -1,0 +1,7 @@
+---
+description: 改同步/课表数据时读 app-dev-sync；常开常更新
+globs: src/lib/sync.ts,src/lib/cloud.ts,src/lib/backup.ts,src/App.tsx,docs/schedule.json
+alwaysApply: false
+---
+
+读个人 skill **`app-dev-sync`** 与本仓 **`h2-schedule-ops`**。禁止包内 JSON 当远端；用户改/删是真相。新合并不变量写回 `app-dev-sync`。

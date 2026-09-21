@@ -1,0 +1,7 @@
+---
+description: 改构建/OTA/脚本时读 app-dev-release；常开常更新
+globs: scripts/**,vite*.ts,capacitor.config.ts,package.json,android/**
+alwaysApply: false
+---
+
+读个人 skill **`app-dev-release`** 与 **`h2-schedule-ops`**。不要 emptyOutDir 盖 `docs/schedule.json`。新发布不变量写回 `app-dev-release`。
