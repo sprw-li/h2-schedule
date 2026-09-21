@@ -128,7 +128,11 @@ export function clearLocalBundle() {
 }
 
 export async function sha256Hex(text: string) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
+  const subtle = globalThis.crypto?.subtle
+  if (!subtle) {
+    throw new Error('需要 HTTPS 才能校验更新包（请用 github.io 或手机 App）')
+  }
+  const buf = await subtle.digest('SHA-256', new TextEncoder().encode(text))
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 

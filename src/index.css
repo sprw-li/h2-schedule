@@ -1114,13 +1114,14 @@ button {
   background: var(--paper);
 }
 
-.day-panel .sheet-scroll {
+.day-panel .sheet-scroll,
+.day-panel .sheet-scroll.list {
   -webkit-overflow-scrolling: touch;
   min-height: 0;
   min-width: 0;
   max-height: none;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
   overflow-anchor: none;
   isolation: isolate;
   z-index: 0;
@@ -1661,7 +1662,8 @@ button {
   }
 
   .top-actions > .ghost,
-  .top-actions .update-chip {
+  .top-actions .update-chip,
+  .top-actions .extra-chip {
     min-height: 36px;
     padding: 6px 11px;
     font-size: 13px;
@@ -2055,7 +2057,8 @@ button {
   }
 
   .top-actions > .ghost,
-  .top-actions .update-chip {
+  .top-actions .update-chip,
+  .top-actions .extra-chip {
     border: 0;
     background: transparent;
     padding: 6px 8px;

@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, rmSync, readFileSync, writeFileSync, readdirSync, copyFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
@@ -33,6 +33,26 @@ for (const name of ['index.html', 'assets', 'favicon.svg', 'unlock.json', 'sampl
 
 if (!existsSync(join(docs, 'schedule.json')) && existsSync(join(root, 'public', 'schedule.json'))) {
   writeFileSync(join(docs, 'schedule.json'), readFileSync(join(root, 'public', 'schedule.json')))
+}
+
+// GitHub Pages 常缓存旧 index.html，仍会请求上一轮 hash。把本轮包再写一份旧文件名，缓存命中也能拿到新逻辑。
+const assetsDir = join(docs, 'assets')
+if (existsSync(assetsDir)) {
+  const names = readdirSync(assetsDir)
+  const js = names.find((n) => /^index-.*\.js$/.test(n))
+  const css = names.find((n) => /^index-.*\.css$/.test(n))
+  const aliasJs = ['index-uB_jgYOj.js', 'index-DNqgafjr.js']
+  const aliasCss = ['index-BHMOI57z.css', 'index-8VWqQ_XF.css']
+  if (js) {
+    for (const a of aliasJs) {
+      if (js !== a) copyFileSync(join(assetsDir, js), join(assetsDir, a))
+    }
+  }
+  if (css) {
+    for (const a of aliasCss) {
+      if (css !== a) copyFileSync(join(assetsDir, css), join(assetsDir, a))
+    }
+  }
 }
 
 void keep

@@ -27,10 +27,10 @@ export function ExtraBar({
   }
 
   return (
-    <div className="update-wrap extra-wrap">
+    <div className="extra-wrap">
       <button
         type="button"
-        className="ghost update-chip"
+        className="ghost extra-chip"
         aria-expanded={open}
         onClick={() => {
           const next = !open

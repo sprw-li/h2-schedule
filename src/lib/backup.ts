@@ -93,11 +93,15 @@ export async function decryptBackup(raw: string, password: string): Promise<Sche
 }
 
 async function deriveKey(password: string, salt?: Uint8Array<ArrayBuffer>) {
+  const subtle = globalThis.crypto?.subtle
+  if (!subtle) {
+    throw new Error('需要 HTTPS 才能加密备份（请用 github.io）')
+  }
   const used = salt ?? randomBytes(16)
-  const base = await crypto.subtle.importKey('raw', te.encode(password), 'PBKDF2', false, [
+  const base = await subtle.importKey('raw', te.encode(password), 'PBKDF2', false, [
     'deriveKey',
   ])
-  const cryptoKey = await crypto.subtle.deriveKey(
+  const cryptoKey = await subtle.deriveKey(
     { name: 'PBKDF2', salt: used, iterations: 210000, hash: 'SHA-256' },
     base,
     { name: 'AES-GCM', length: 256 },

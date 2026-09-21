@@ -22,10 +22,18 @@ export function isUnlockPack(raw: string) {
 
 const ITERATIONS = 60000
 
+function subtle() {
+  const s = globalThis.crypto?.subtle
+  if (!s) {
+    throw new Error('需要 HTTPS 才能解口令（请打开 github.io，http://10.129 校内页在校外打不开）')
+  }
+  return s
+}
+
 export async function encryptWriteSecret(token: string, phrase: string) {
   const key = await deriveKey(phrase)
   const iv = randomBytes(12)
-  const buf = await crypto.subtle.encrypt(
+  const buf = await subtle().encrypt(
     { name: 'AES-GCM', iv },
     key.cryptoKey,
     te.encode(JSON.stringify({ token })),
@@ -45,7 +53,7 @@ export async function decryptWriteSecret(raw: string, phrase: string) {
   const pack = JSON.parse(raw) as UnlockPack
   const key = await deriveKey(phrase, fromB64(pack.salt))
   try {
-    const buf = await crypto.subtle.decrypt(
+    const buf = await subtle().decrypt(
       { name: 'AES-GCM', iv: fromB64(pack.iv) },
       key.cryptoKey,
       fromB64(pack.data),
@@ -85,8 +93,8 @@ export async function unlockFromPublic(phrase: string) {
 
 async function deriveKey(password: string, salt?: Uint8Array<ArrayBuffer>) {
   const used = salt ?? randomBytes(16)
-  const base = await crypto.subtle.importKey('raw', te.encode(password), 'PBKDF2', false, ['deriveKey'])
-  const cryptoKey = await crypto.subtle.deriveKey(
+  const base = await subtle().importKey('raw', te.encode(password), 'PBKDF2', false, ['deriveKey'])
+  const cryptoKey = await subtle().deriveKey(
     { name: 'PBKDF2', salt: used, iterations: ITERATIONS, hash: 'SHA-256' },
     base,
     { name: 'AES-GCM', length: 256 },

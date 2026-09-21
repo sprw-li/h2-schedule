@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:phone": "tsc -b && vite build --config vite.phone.config.ts && node scripts/make-ota.mjs",
+    "build:phone": "tsc -b && vite build --config vite.phone.config.ts --mode phone && node scripts/make-ota.mjs",
     "build:apk": "npm run build:phone && npx cap sync android && cd android && gradlew.bat assembleDebug",
     "build:pages": "node scripts/publish-docs.mjs",
     "campus": "python scripts/campus_sync_server.py",
