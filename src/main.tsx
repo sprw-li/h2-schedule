@@ -2,6 +2,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { isNativeApp } from './lib/ota'
+
+try {
+  document.documentElement.dataset.shell = isNativeApp() ? 'native' : 'web'
+} catch {
+  document.documentElement.dataset.shell = 'web'
+}
 
 // 点按后立刻取消焦点，避免 WebView 残留蓝框
 function clearTapFocus(e: Event) {

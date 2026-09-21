@@ -10,8 +10,18 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>H2 Schedule</title>
-    <script type="module" crossorigin src="/h2-schedule/assets/index-BtpLKraA.js"></script>
-    <link rel="stylesheet" crossorigin href="/h2-schedule/assets/index-CKfylkJD.css">
+    <script>
+      try {
+        document.documentElement.dataset.shell =
+          window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()
+            ? 'native'
+            : 'web'
+      } catch (e) {
+        document.documentElement.dataset.shell = 'web'
+      }
+    </script>
+    <script type="module" crossorigin src="/h2-schedule/assets/index-BP__83wl.js"></script>
+    <link rel="stylesheet" crossorigin href="/h2-schedule/assets/index-CSf6Sw6O.css">
   </head>
   <body>
     <div id="root"></div>

@@ -10,6 +10,16 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>H2 Schedule</title>
+    <script>
+      try {
+        document.documentElement.dataset.shell =
+          window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()
+            ? 'native'
+            : 'web'
+      } catch (e) {
+        document.documentElement.dataset.shell = 'web'
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

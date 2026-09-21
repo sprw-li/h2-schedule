@@ -58,12 +58,12 @@ export function CalendarPanel({
           </button>
         </div>
       </div>
+      <div className="weekdays">
+        {WEEKDAYS.map((d) => (
+          <span key={d}>{d}</span>
+        ))}
+      </div>
       <div className="sheet-scroll">
-        <div className="weekdays">
-          {WEEKDAYS.map((d) => (
-            <span key={d}>{d}</span>
-          ))}
-        </div>
         <div className="grid">
           {cells.map((d) => {
             const key = toDateKey(d)

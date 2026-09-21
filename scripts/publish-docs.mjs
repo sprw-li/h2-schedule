@@ -41,8 +41,8 @@ if (existsSync(assetsDir)) {
   const names = readdirSync(assetsDir)
   const js = names.find((n) => /^index-.*\.js$/.test(n))
   const css = names.find((n) => /^index-.*\.css$/.test(n))
-  const aliasJs = ['index-uB_jgYOj.js', 'index-DNqgafjr.js']
-  const aliasCss = ['index-BHMOI57z.css', 'index-8VWqQ_XF.css']
+  const aliasJs = ['index-uB_jgYOj.js', 'index-DNqgafjr.js', 'index-BtpLKraA.js']
+  const aliasCss = ['index-BHMOI57z.css', 'index-8VWqQ_XF.css', 'index-CKfylkJD.css']
   if (js) {
     for (const a of aliasJs) {
       if (js !== a) copyFileSync(join(assetsDir, js), join(assetsDir, a))

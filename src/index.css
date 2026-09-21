@@ -861,6 +861,10 @@ button {
 
 .weekdays {
   margin-bottom: 8px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  background: var(--paper);
 }
 
 .weekdays span {
@@ -1101,16 +1105,22 @@ button {
   gap: 8px;
 }
 
+.panel.calendar-panel,
+.panel.day-panel {
+  overflow: clip;
+  isolation: isolate;
+}
+
 .panel.day-panel {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  overflow: hidden;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .day-panel .day-chrome {
   min-width: 0;
   position: relative;
-  z-index: 2;
+  z-index: 4;
   background: var(--paper);
 }
 
@@ -1120,13 +1130,19 @@ button {
   min-height: 0;
   min-width: 0;
   max-height: none;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
+  overflow-x: hidden;
+  overflow-y: auto;
   overflow-anchor: none;
   isolation: isolate;
   z-index: 0;
   margin-left: var(--day-nudge, 0px);
   padding-bottom: 8px;
+  overscroll-behavior: contain;
+}
+
+.day-panel .day-footer {
+  z-index: 4;
+  background: var(--paper);
 }
 
 .list-epoch {
@@ -1598,9 +1614,9 @@ button {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  /* 月历滚动条走面板边，不要在「一二三…」日期格上开一条把事项顶穿 */
+  /* 月历只滚日期格，星期行固定，避免滚动条和事项顶穿「一二三」 */
   .calendar-panel {
-    overflow: hidden;
+    overflow: clip;
   }
 
   .calendar-panel .sheet-scroll {
@@ -1609,7 +1625,7 @@ button {
   }
 
   .panel.day-panel {
-    overflow: hidden;
+    overflow: clip;
   }
 
   .day-panel .sheet-scroll {
@@ -1618,8 +1634,28 @@ button {
   }
 }
 
+/* 电脑浏览器（GitHub Pages 与 CLab 网页）一律双栏完整 UI，不要套手机窄屏 */
+html[data-shell='web'] .mobile-tabs {
+  display: none !important;
+}
+
+html[data-shell='web'] .desk-tabs {
+  display: flex;
+}
+
+html[data-shell='web'] .layout.pane-calendar,
+html[data-shell='web'] .layout.pane-day {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+html[data-shell='web'] .panel.day-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
 @media (max-width: 860px) {
-  html,
+  html[data-shell='native'] {
+  &,
   body,
   #root,
   .app {
@@ -1992,7 +2028,7 @@ button {
     gap: 2px;
   }
 
-  html,
+  &,
   body,
   .app {
     background: var(--paper);
@@ -2096,6 +2132,7 @@ button {
 
   .composer input[aria-label='事项标题'] {
     grid-column: 1 / -1;
+  }
   }
 }
 
