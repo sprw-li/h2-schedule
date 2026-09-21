@@ -48,6 +48,9 @@ type Props = {
   onNextDay: () => void
   /** 编辑/新事项打开时通知父级，暂停轮询以免冲掉编辑框 */
   onEditorOpenChange?: (open: boolean) => void
+  undoLabel?: string | null
+  undoArmed?: boolean
+  onUndo?: () => void
 }
 
 function Fields({
@@ -356,6 +359,9 @@ export function DayPanel({
   onPrevDay,
   onNextDay,
   onEditorOpenChange,
+  undoLabel,
+  undoArmed,
+  onUndo,
 }: Props) {
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [editingKey, setEditingKey] = useState<string | null>(null)
@@ -546,18 +552,29 @@ export function DayPanel({
         </div>
       )}
 
-      {!editingKey && !composerOpen ? (
-        <div className="composer-bar">
-          <button
-            type="button"
-            className="solid composer-open"
-            onClick={() => {
-              onEditorOpenChange?.(true)
-              setComposerOpen(true)
-            }}
-          >
-            新事项
-          </button>
+      {(undoLabel && onUndo) || (!editingKey && !composerOpen) ? (
+        <div className="day-footer">
+          {undoLabel && onUndo ? (
+            <button
+              type="button"
+              className={`undo-bar${undoArmed ? ' armed' : ''}`}
+              onClick={onUndo}
+            >
+              {undoArmed ? `确定撤销「${undoLabel}」` : `撤销「${undoLabel}」`}
+            </button>
+          ) : null}
+          {!editingKey && !composerOpen ? (
+            <button
+              type="button"
+              className="solid composer-open"
+              onClick={() => {
+                onEditorOpenChange?.(true)
+                setComposerOpen(true)
+              }}
+            >
+              新事项
+            </button>
+          ) : null}
         </div>
       ) : null}
 

@@ -4,9 +4,6 @@ import { clearLocalBundle } from '../lib/ota'
 import { resetSchedule } from '../lib/storage'
 
 type ExtraBarProps = {
-  undoLabel: string | null
-  undoArmed: boolean
-  onUndo: () => void
   onExportCsv: () => void
   onExportIcs: () => void
   onImportFile: () => void
@@ -14,9 +11,6 @@ type ExtraBarProps = {
 }
 
 export function ExtraBar({
-  undoLabel,
-  undoArmed,
-  onUndo,
   onExportCsv,
   onExportIcs,
   onImportFile,
@@ -51,24 +45,15 @@ export function ExtraBar({
         其他功能
       </button>
       {open ? (
-        <div className="update-sheet extra-sheet" role="dialog" aria-label="其他功能">
+        <>
+          <button type="button" className="extra-scrim" aria-label="关闭其他功能" onClick={() => setOpen(false)} />
+          <div className="update-sheet extra-sheet" role="dialog" aria-label="其他功能">
           <div className="update-card-head">
             <strong>其他功能</strong>
             <button type="button" className="ghost" onClick={() => setOpen(false)}>
               收起
             </button>
           </div>
-          {undoLabel ? (
-            <button
-              type="button"
-              className={`undo-bar extra-undo${undoArmed ? ' armed' : ''}`}
-              onClick={onUndo}
-            >
-              {undoArmed ? `确定撤销「${undoLabel}」` : `撤销「${undoLabel}」`}
-            </button>
-          ) : (
-            <p className="mute">没有可撤销的操作（改完条目后会出现）</p>
-          )}
           <div className="update-actions">
             <button type="button" className="solid csv-btn" onClick={onExportIcs}>
               导出 ICS
@@ -139,6 +124,7 @@ export function ExtraBar({
             </button>
           </div>
         </div>
+        </>
       ) : null}
     </div>
   )

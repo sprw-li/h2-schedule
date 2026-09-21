@@ -505,9 +505,6 @@ export default function App() {
           />
           <UpdateBar />
           <ExtraBar
-            undoLabel={undo?.label ?? null}
-            undoArmed={undoArmed}
-            onUndo={runUndo}
             onExportCsv={exportCsv}
             onExportIcs={exportIcs}
             onImportFile={() => csvInputRef.current?.click()}
