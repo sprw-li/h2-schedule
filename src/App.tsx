@@ -9,6 +9,7 @@ import { scheduleToIcs } from './lib/ics'
 import { ExtraBar } from './components/ExtraBar'
 import { SourceBar } from './components/SourceBar'
 import { UpdateBar } from './components/UpdateBar'
+import { isNativeApp } from './lib/ota'
 import { campusAuthHeaders, campusIsLive, getCampusOrigin, getSyncSource, seedCampusLogin, type SyncSource } from './lib/origin'
 import { addDays, addMonths, isAllDay, parseDateKey, timeSortKey, toDateKey, todayKey } from './lib/dates'
 import { flattenItems } from './lib/backup'
@@ -506,7 +507,7 @@ export default function App() {
               window.location.reload()
             }}
           />
-          <UpdateBar />
+          {isNativeApp() ? <UpdateBar /> : null}
           <ExtraBar
             onExportCsv={exportCsv}
             onExportIcs={exportIcs}

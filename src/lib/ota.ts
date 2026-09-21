@@ -30,6 +30,15 @@ const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents`
 
 declare const __H2_BUILT_AT__: string | undefined
 
+/** OTA 只给 Capacitor 壳用。浏览器 / localhost 已经是当前网页，不必对手机包时间戳。 */
+export function isNativeApp() {
+  try {
+    return !!(window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()
+  } catch {
+    return false
+  }
+}
+
 export function bundledBuiltAt() {
   try {
     if (typeof __H2_BUILT_AT__ === 'string' && __H2_BUILT_AT__ && !__H2_BUILT_AT__.includes('PLACEHOLDER')) {
