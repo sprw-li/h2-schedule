@@ -97,6 +97,29 @@ class Handler(BaseHTTPRequestHandler):
         data = p.read_bytes()
         self._send_bytes(200, data, ctype, sha_of(data))
 
+    def _ctype(self, p: Path) -> str:
+        if p.suffix in {".html", ""}:
+            return "text/html; charset=utf-8"
+        if p.suffix == ".json":
+            return "application/json; charset=utf-8"
+        if p.suffix == ".js":
+            return "text/javascript; charset=utf-8"
+        if p.suffix == ".css":
+            return "text/css; charset=utf-8"
+        if p.suffix == ".svg":
+            return "image/svg+xml"
+        if p.suffix in {".png", ".jpg", ".jpeg", ".webp"}:
+            return f"image/{p.suffix.lstrip('.').replace('jpg', 'jpeg')}"
+        return "application/octet-stream"
+
+    def _web_file(self, rel: str) -> Path | None:
+        root = (self.data_dir / "web").resolve()
+        cand = (root / rel).resolve()
+        if str(cand).startswith(str(root) + os.sep) or cand == root:
+            if cand.is_file():
+                return cand
+        return None
+
     def do_HEAD(self) -> None:
         self.do_GET()
 
@@ -107,6 +130,11 @@ class Handler(BaseHTTPRequestHandler):
             self._send_bytes(200, body, "application/json; charset=utf-8")
             return
         if path in ("/", "/index.html", "/index.html/"):
+            web_index = self._file("web/index.html")
+            if web_index.is_file():
+                data = web_index.read_bytes()
+                self._send_bytes(200, data, "text/html; charset=utf-8", sha_of(data))
+                return
             self._read_file("ota/app.html", "text/html; charset=utf-8")
             return
         if path in ("/schedule.json", "/schedule.json/"):
@@ -121,18 +149,17 @@ class Handler(BaseHTTPRequestHandler):
         if path in ("/ota/app.html", "/ota/app.html/"):
             self._read_file("ota/app.html", "text/html; charset=utf-8")
             return
+        if path.startswith("/assets/") or path in ("/favicon.svg", "/favicon.svg/"):
+            rel = path.lstrip("/")
+            found = self._web_file(rel)
+            if found:
+                self._send_bytes(200, found.read_bytes(), self._ctype(found), sha_of(found.read_bytes()))
+                return
         if self.web_root:
             rel = path.lstrip("/") or "index.html"
             cand = (self.web_root / rel).resolve()
             if str(cand).startswith(str(self.web_root.resolve())) and cand.is_file():
-                ctype = "text/html; charset=utf-8" if cand.suffix in {".html", ""} else "application/octet-stream"
-                if cand.suffix == ".json":
-                    ctype = "application/json; charset=utf-8"
-                elif cand.suffix == ".js":
-                    ctype = "text/javascript; charset=utf-8"
-                elif cand.suffix == ".css":
-                    ctype = "text/css; charset=utf-8"
-                self._send_bytes(200, cand.read_bytes(), ctype)
+                self._send_bytes(200, cand.read_bytes(), self._ctype(cand))
                 return
         self._send_bytes(404, b"not found\n", "text/plain; charset=utf-8")
 
@@ -142,13 +169,20 @@ class Handler(BaseHTTPRequestHandler):
             "/ota/manifest.json": "ota/manifest.json",
             "/ota/app.html": "ota/app.html",
         }
-        if path in ota_map:
+        if path in ota_map or path.startswith("/web/"):
             if self._need_schedule_auth() and not self._auth_ok():
                 self._send_bytes(401, b"unauthorized\n", "text/plain; charset=utf-8")
                 return
             n = int(self.headers.get("Content-Length") or "0")
             body = self.rfile.read(n)
-            dest = self._file(ota_map[path])
+            if path.startswith("/web/"):
+                rel = path[len("/web/") :]
+                if ".." in rel.split("/"):
+                    self._send_bytes(400, b"bad path\n", "text/plain; charset=utf-8")
+                    return
+                dest = self._file("web/" + rel)
+            else:
+                dest = self._file(ota_map[path])
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_bytes(body)
             etag = sha_of(body)

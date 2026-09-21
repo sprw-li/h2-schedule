@@ -1103,12 +1103,14 @@ button {
 
 .panel.day-panel {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr);
   overflow: hidden;
 }
 
 .day-panel .day-chrome {
   min-width: 0;
+  position: relative;
+  z-index: 2;
   background: var(--paper);
 }
 
@@ -1120,7 +1122,8 @@ button {
   overflow-x: hidden;
   overflow-y: auto;
   overflow-anchor: none;
-  contain: paint;
+  isolation: isolate;
+  z-index: 0;
   margin-left: var(--day-nudge, 0px);
   padding-bottom: 8px;
 }
@@ -1592,6 +1595,25 @@ button {
   .layout.pane-weather,
   .layout.pane-refs {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* 月历滚动条走面板边，不要在「一二三…」日期格上开一条把事项顶穿 */
+  .calendar-panel {
+    overflow: hidden;
+  }
+
+  .calendar-panel .sheet-scroll {
+    overflow: auto;
+    scrollbar-gutter: stable;
+  }
+
+  .panel.day-panel {
+    overflow: hidden;
+  }
+
+  .day-panel .sheet-scroll {
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 }
 
