@@ -1964,8 +1964,109 @@ button {
   }
 
   .app-dock {
-    margin-top: 6px;
-    gap: 4px;
+    margin-top: 4px;
+    gap: 2px;
+  }
+
+  html,
+  body,
+  .app {
+    background: var(--paper);
+  }
+
+  .panel {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 4px 0 0;
+  }
+
+  .list {
+    gap: 0;
+  }
+
+  .item,
+  .item.deadline,
+  .item.holiday {
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    padding: 6px 0;
+  }
+
+  .item.deadline {
+    box-shadow: inset 3px 0 0 var(--deadline);
+    padding-left: 8px;
+  }
+
+  .item.holiday {
+    box-shadow: inset 3px 0 0 var(--holiday);
+    padding-left: 8px;
+  }
+
+  .mobile-tabs {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 6px;
+    gap: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mobile-tabs button {
+    border-radius: 0;
+    min-height: 36px;
+  }
+
+  .mobile-tabs button.on {
+    background: transparent;
+    color: var(--ink);
+    box-shadow: inset 0 -2px 0 var(--ink);
+  }
+
+  .source-pair {
+    border: 0;
+    background: var(--wash);
+    padding: 2px;
+  }
+
+  .top-actions > .ghost,
+  .top-actions .update-chip {
+    border: 0;
+    background: transparent;
+    padding: 6px 8px;
+  }
+
+  .day-footer {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+
+  .day-footer:not(:has(.undo-bar)),
+  .day-footer:not(:has(.composer-open)) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .day-footer .undo-bar {
+    width: auto;
+    min-height: 36px;
+    padding: 0 10px;
+    border: 0;
+    background: transparent;
+    color: var(--mute);
+    font-size: 13px;
+  }
+
+  .day-footer .undo-bar.armed {
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 10px;
   }
 
   .composer input[aria-label='事项标题'] {
