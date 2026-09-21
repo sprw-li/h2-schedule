@@ -147,4 +147,90 @@ assert(
   '应留下带老师/专题的那条',
 )
 
+const origItem = item({
+  id: 'orig-id',
+  date,
+  title: '被删的课',
+  start: '10:10',
+  end: '12:00',
+})
+const baselineOrig = normalizeSchedule([origItem])
+const localDupId = normalizeSchedule([{ ...origItem, id: 'dup-deadbeef' }])
+assert(flattenItems(localDupId)[0].id.startsWith('dup-'), '本机 id 应为 dup- 后缀')
+const droppedByRow = mergeByIdentity(normalizeSchedule([]), localDupId, false, baselineOrig)
+assert(flattenItems(droppedByRow).length === 0, 'id 改成 dup- 后云端删除仍应按 rowKey 丢掉')
+
+const remoteStillOrig = normalizeSchedule([origItem])
+const localDeletedRow = mergeByIdentity(remoteStillOrig, normalizeSchedule([]), true, localDupId)
+assert(flattenItems(localDeletedRow).length === 0, '本机删除应按 rowKey 对称丢掉远端同内容条目')
+
+const book = item({
+  id: 'book',
+  date,
+  title: '拿书',
+  start: '09:00',
+  end: '10:00',
+})
+const blood = item({
+  id: 'blood',
+  date,
+  title: '血检',
+  start: '09:00',
+  end: '10:00',
+})
+const lab = item({
+  id: 'lab',
+  date: '2026-09-21',
+  title: '上机',
+  start: '13:00',
+  end: '14:50',
+})
+const exercise = item({
+  id: 'ex',
+  date: '2026-09-21',
+  title: '习题课',
+  start: '13:00',
+  end: '14:50',
+})
+const sameSlotDiff = normalizeSchedule([book, blood, lab, exercise])
+assert(flattenItems(sameSlotDiff).length === 4, '同日同时刻标题不同的事项不得被 collapse 吃掉')
+const mergedSameSlot = mergeByIdentity(sameSlotDiff, sameSlotDiff, false, null)
+assert(flattenItems(mergedSameSlot).length === 4, 'merge 后同日同时刻不同事项仍是四条')
+assert(
+  titlesOn(sameSlotDiff, date).join() === '拿书@09:00-10:00,血检@09:00-10:00',
+  '9/16 拿书+血检都应保留',
+)
+assert(
+  titlesOn(sameSlotDiff, '2026-09-21').join() === '上机@13:00-14:50,习题课@13:00-14:50',
+  '9/21 上机+习题课都应保留',
+)
+
+const localOnlyC = normalizeSchedule([c])
+const csvSkipDeleted = mergeCsvIntoSchedule(localOnlyC, scheduleToCsv(twoPeriods), twoPeriods)
+assert(
+  titlesOn(csvSkipDeleted, date).join() === titlesOn(localOnlyC, date).join(),
+  'CSV 不得把用户已删的课当新行加回',
+)
+
+const brandNew = item({
+  id: 'hw-new',
+  date,
+  title: '全新作业',
+  start: '18:00',
+  end: '19:00',
+})
+const csvAddNew = mergeCsvIntoSchedule(
+  localOnlyC,
+  scheduleToCsv(normalizeSchedule([c, d, brandNew])),
+  twoPeriods,
+)
+assert(
+  flattenItems(csvAddNew).some((i) => i.title === '全新作业'),
+  'snap 与本机都没有的新作业仍可加入',
+)
+assert(
+  !flattenItems(csvAddNew).some((i) => i.id === 'chem-b' || (i.title === '普通化学' && i.start === '09:00')),
+  '已删的第二节不得随新作业 CSV 一起回来',
+)
+
 console.log('check-logic: ok')

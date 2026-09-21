@@ -177,7 +177,8 @@ export default function App() {
       const wantPending = localN > 0 && (dirtyRef.current || isPendingSync() || !!pendingRef.current)
       const { merged, remoteClean, needPush } = integrateSchedules(remote.map, local, {
         pending: wantPending,
-        baseline: wantPending ? prevBaseline : null,
+        // 始终用「本次拉到之前」的远端当 baseline；不能先 adopt 再拿 remoteRef
+        baseline: prevBaseline ?? loadRemoteSnap(),
       })
 
       adoptRemote(remoteClean, remote.sha || undefined)
@@ -341,13 +342,15 @@ export default function App() {
             const remote = await pullCloud()
             if (remote) {
               const latest = pendingRef.current ?? clean
+              const remoteClean = normalizeSchedule(remote.map)
               const aligned = normalizeSchedule(
-                mergeByIdentity(remote.map, latest, true, remoteRef.current),
+                mergeByIdentity(remoteClean, latest, true, remoteRef.current),
               )
               shaRef.current = remote.sha
               saveRemoteSha(remote.sha)
-              remoteRef.current = aligned
-              saveRemoteSnap(aligned)
+              // 快照必须是远端原件：把 merge 结果当 baseline 会把已删课救活
+              remoteRef.current = remoteClean
+              saveRemoteSnap(remoteClean)
               const sha = await pushCloud(aligned, remote.sha)
               shaRef.current = sha
               saveRemoteSha(sha)

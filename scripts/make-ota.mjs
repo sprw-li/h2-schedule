@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, unlinkSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -59,6 +59,10 @@ if (!existsSync(indexPath)) {
   console.error('missing phone/index.html — run build:phone first')
   process.exit(1)
 }
+
+// 手机构建产物不得带全量课表（Vite 会拷 public/schedule.json）。勿动 docs/schedule.json。
+const bundledSchedule = join(phoneDir, 'schedule.json')
+if (existsSync(bundledSchedule)) unlinkSync(bundledSchedule)
 
 const builtAt = new Date().toISOString()
 let raw = readFileSync(indexPath, 'utf8')

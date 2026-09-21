@@ -1,0 +1,15 @@
+---
+description: 本仓 OTA/git/日程发布踩坑；动手前读 skill h2-schedule-ops
+alwaysApply: true
+---
+
+# H2 发布与同步
+
+改界面、同步、真机、git、OTA、校服务器前，先读项目 skill **`h2-schedule-ops`**（`.cursor/skills/h2-schedule-ops/SKILL.md`）。案例在同目录 `failures.md`。
+
+**真机没变先查发布，不要先改样式。** 校园网常打不开 `github.io` / `api.github.com`。上线：`build:phone` + `build:pages`，推 `docs/ota/`，**不要**用 `vite --outDir docs` 盖掉 `docs/schedule.json`。
+
+- OTA 本机时间只认已装配包，禁止对壳时间取 max。
+- git 重置：代理 `127.0.0.1:7890` 或 GitHub MCP；不要假设 push 成功。
+- 勿提交未点名的 `schedule.json`；勿按课表规则自动改回用户的「改」/删除。
+- 壳配置才重装 APK；JS 走 OTA。未点头不代建云主机。

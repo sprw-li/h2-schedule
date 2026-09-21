@@ -21,6 +21,8 @@
 - **顶栏选 CLab**：读写校内。成功后尽量再写入 GitHub `docs/schedule.json`。
 - **顶栏选 GitHub**：读写仓库（API / raw / Pages）。成功后尽量再写入 CLab。电脑 github.io 默认这一路。
 
+课表只来自 CLab 或 GitHub `docs/schedule.json`。无网只用本机 localStorage，**不会**读 APK / `public/schedule.json` 当云端（那会把已删条目加回来）。
+
 推送前若本机条数不到云端快照的一半，会拒绝覆盖。
 
 App 点「更新」：有校地址只拉校内 OTA；否则 raw → Pages →（有口令）API。
@@ -35,7 +37,7 @@ npm run dev
 ```bash
 npm run build          # 网页
 npm run build:pages    # 写入 docs/（不覆盖 schedule.json）
-npm run build:phone    # 单文件 HTML + OTA manifest
+npm run build:phone    # 单文件 HTML + OTA；phone/ 不带全量课表
 npm run build:apk      # Capacitor debug APK
 npm run check:schedule # 检查日程 JSON
 ```

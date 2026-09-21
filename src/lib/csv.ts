@@ -2,6 +2,7 @@ import type { ItemKind, ScheduleItem, ScheduleMap } from '../types'
 import { flattenItems, replaceSchedule } from './backup'
 import { pad } from './dates'
 import { normalizeSchedule, rowKey, slotKey } from './schedule'
+import { loadRemoteSnap } from './sync'
 
 const KINDS = new Set<ItemKind>(['task', 'deadline', 'holiday'])
 
@@ -163,7 +164,11 @@ function cryptoRandomId() {
 }
 
 /** 导入：先同日同 id，再整行（含时刻）对齐；同课不同节次都保留 */
-export function mergeCsvIntoSchedule(map: ScheduleMap, csvText: string): ScheduleMap {
+export function mergeCsvIntoSchedule(
+  map: ScheduleMap,
+  csvText: string,
+  snap: ScheduleMap | null = loadRemoteSnap(),
+): ScheduleMap {
   const incoming = csvToItems(csvText)
   if (incoming.length === 0) {
     throw new Error('CSV 里没有有效行（日期需为 2026-09-21 或 2026/9/21）')
@@ -207,7 +212,21 @@ export function mergeCsvIntoSchedule(map: ScheduleMap, csvText: string): Schedul
     }
     extra.push({ ...it })
   }
-  return normalizeSchedule(replaceSchedule([...local, ...extra]))
+
+  const snapItems = snap ? flattenItems(snap) : []
+  const snapSlots = new Set(snapItems.map(slotKey))
+  const snapRows = new Set(snapItems.map(rowKey))
+  const localSlots = new Set(local.map(slotKey))
+  const localRows = new Set(local.map(rowKey))
+  const keptExtra = extra.filter((it) => {
+    const inSnap = snapSlots.has(slotKey(it)) || snapRows.has(rowKey(it))
+    const inLocal = localSlots.has(slotKey(it)) || localRows.has(rowKey(it))
+    // 云端快照有、本机没有：用户已删，不要当 CSV 新行加回
+    if (inSnap && !inLocal) return false
+    return true
+  })
+
+  return normalizeSchedule(replaceSchedule([...local, ...keptExtra]))
 }
 
 export async function readCsvText(file: File): Promise<string> {

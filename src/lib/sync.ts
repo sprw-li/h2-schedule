@@ -112,9 +112,13 @@ export function mergeByIdentity(
 ): ScheduleMap {
   const remoteItems = flattenItems(remote)
   const localItems = flattenItems(local)
+  const baselineItems = baseline ? flattenItems(baseline) : []
   const localSlots = new Set(localItems.map(slotKey))
   const remoteSlots = new Set(remoteItems.map(slotKey))
-  const baselineSlots = new Set(baseline ? flattenItems(baseline).map(slotKey) : [])
+  const baselineSlots = new Set(baselineItems.map(slotKey))
+  const localRows = new Set(localItems.map(rowKey))
+  const remoteRows = new Set(remoteItems.map(rowKey))
+  const baselineRows = new Set(baselineItems.map(rowKey))
 
   const usedR = new Set<number>()
   const usedL = new Set<number>()
@@ -161,15 +165,20 @@ export function mergeByIdentity(
     if (usedL.has(li)) return
     usedL.add(li)
     const k = slotKey(l)
+    const rk = rowKey(l)
     // 上一份云端有、这份没有：是删掉的，不要本机旧副本加回去
+    // id 被 normalize 成 dup-… 时 slotKey 对不上，仍认整行 rowKey
     if (baseline && baselineSlots.has(k) && !remoteSlots.has(k)) return
+    if (baseline && baselineRows.has(rk) && !remoteRows.has(rk)) return
     out.push({ ...l })
   })
 
   remoteItems.forEach((r, ri) => {
     if (usedR.has(ri)) return
     const k = slotKey(r)
+    const rk = rowKey(r)
     if (preferLocal && baseline && baselineSlots.has(k) && !localSlots.has(k)) return
+    if (preferLocal && baseline && baselineRows.has(rk) && !localRows.has(rk)) return
     usedR.add(ri)
     out.push({ ...r })
   })

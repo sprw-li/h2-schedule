@@ -8,7 +8,6 @@ import type { ScheduleMap } from '../types'
 const PATH = 'docs/schedule.json'
 const TOKEN_KEY = 'h2-schedule.write-token'
 const API = ghApiContents(PATH)
-const BUNDLED_JSON = `${import.meta.env.BASE_URL}schedule.json`
 
 export function getWriteToken() {
   try {
@@ -230,15 +229,9 @@ export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | n
     if (api) return rememberGithub(api)
   }
 
-  try {
-    const res = await fetch(`${BUNDLED_JSON}?ts=${Date.now()}`)
-    if (res.status === 404) return { map: {}, sha: '' }
-    if (!res.ok) throw new Error('读取日程失败')
-    const { items } = parseScheduleJsonText(await res.text())
-    return { map: normalizeSchedule(items), sha: '' }
-  } catch (e) {
-    throw new Error(netErr(e, '读取日程失败'))
-  }
+  // 禁止 fetch 包内 / APK 的 schedule.json：那不是云端。当成 remote 再 merge
+  // 会把已删条目（如化安）加回来。失败则返回 null，App 继续用 localStorage。
+  return null
 }
 
 export async function pushCloud(map: ScheduleMap, sha: string) {
