@@ -1826,7 +1826,14 @@ html[data-shell='web'] .panel.day-panel {
     padding-bottom: 28px;
   }
 
+  .panel.calendar-panel,
+  .panel.day-panel {
+    overflow: hidden;
+  }
+
   .day-panel .sheet-scroll {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding-bottom: 8px;
   }
 
@@ -1900,7 +1907,8 @@ html[data-shell='web'] .panel.day-panel {
 
   .item-main {
     grid-template-columns: 28px minmax(0, 1fr);
-    min-height: 48px;
+    min-height: 52px;
+    padding: 10px 8px 10px 10px;
   }
 
   .day-chrome {
@@ -2042,27 +2050,30 @@ html[data-shell='web'] .panel.day-panel {
   }
 
   .list {
-    gap: 0;
+    gap: 8px;
   }
 
-  .item,
-  .item.deadline,
-  .item.holiday {
-    border: 0;
-    border-bottom: 1px solid var(--line);
-    border-radius: 0;
-    background: transparent;
-    padding: 6px 0;
+  .item {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+    padding: 10px 12px;
   }
 
   .item.deadline {
     box-shadow: inset 3px 0 0 var(--deadline);
-    padding-left: 8px;
   }
 
   .item.holiday {
     box-shadow: inset 3px 0 0 var(--holiday);
-    padding-left: 8px;
+  }
+
+  .title {
+    font-size: 17px;
+  }
+
+  .time {
+    font-size: 14px;
   }
 
   .mobile-tabs {
