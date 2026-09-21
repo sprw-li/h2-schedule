@@ -75,6 +75,13 @@ assert(
 const withoutBaseline = mergeByIdentity(twoPeriods, localDeleted, true, null)
 assert(titlesOn(withoutBaseline, date).length === 2, '无 baseline 时远端多的节次仍应并入')
 
+const remoteDropped = normalizeSchedule([c])
+const droppedOnCloud = mergeByIdentity(remoteDropped, twoPeriods, false, twoPeriods)
+assert(
+  titlesOn(droppedOnCloud, date).join() === titlesOn(remoteDropped, date).join(),
+  '云端删掉的节次不得被本机旧副本加回',
+)
+
 const csv = scheduleToCsv(twoPeriods)
 const fromCsv = mergeCsvIntoSchedule({}, csv)
 assert(titlesOn(fromCsv, date).length === 2, 'CSV 往空表导入应保留两节')

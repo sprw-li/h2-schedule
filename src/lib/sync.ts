@@ -113,6 +113,7 @@ export function mergeByIdentity(
   const remoteItems = flattenItems(remote)
   const localItems = flattenItems(local)
   const localSlots = new Set(localItems.map(slotKey))
+  const remoteSlots = new Set(remoteItems.map(slotKey))
   const baselineSlots = new Set(baseline ? flattenItems(baseline).map(slotKey) : [])
 
   const usedR = new Set<number>()
@@ -159,6 +160,9 @@ export function mergeByIdentity(
   localItems.forEach((l, li) => {
     if (usedL.has(li)) return
     usedL.add(li)
+    const k = slotKey(l)
+    // 上一份云端有、这份没有：是删掉的，不要本机旧副本加回去
+    if (baseline && baselineSlots.has(k) && !remoteSlots.has(k)) return
     out.push({ ...l })
   })
 
@@ -195,13 +199,9 @@ export function integrateSchedules(
 ): { merged: ScheduleMap; remoteClean: ScheduleMap; needPush: boolean } {
   const remoteClean = normalizeSchedule(remote)
   const localClean = normalizeSchedule(local)
+  const baseline = opts.baseline ?? loadRemoteSnap()
   const merged = normalizeSchedule(
-    mergeByIdentity(
-      remoteClean,
-      localClean,
-      opts.pending,
-      opts.pending ? (opts.baseline ?? null) : null,
-    ),
+    mergeByIdentity(remoteClean, localClean, opts.pending, baseline),
   )
   const needPush = localDiffersFromRemote(remoteClean, merged)
   return { merged, remoteClean, needPush }
