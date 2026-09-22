@@ -788,6 +788,23 @@
       "end": "16:40"
     },
     {
+      "id": "d5734f83-ef01-4607-bbf7-196fae53b5d4",
+      "date": "2026-09-21",
+      "title": "报名泳协",
+      "done": false,
+      "kind": "task",
+      "start": "18:30"
+    },
+    {
+      "id": "7ffc3c3c-e806-489d-a304-b2a303196612",
+      "date": "2026-09-21",
+      "title": "讨论论文+数学作业",
+      "done": false,
+      "kind": "task",
+      "start": "18:40",
+      "end": "20:30"
+    },
+    {
       "id": "3ce92b71-5fe9-411d-a883-df85dd74ab0c",
       "date": "2026-09-21",
       "title": "军理登记",
@@ -802,6 +819,15 @@
       "kind": "task"
     },
     {
+      "id": "61b46cff-66a4-4d4f-beaf-4bb0da19aec7",
+      "date": "2026-09-22",
+      "title": "打药",
+      "done": false,
+      "kind": "task",
+      "start": "07:30",
+      "end": "11:00"
+    },
+    {
       "id": "c03c9027-35ad-4fd9-b8e2-c7a76369de7f",
       "date": "2026-09-22",
       "title": "高等数学(B)(一) · 理教202",
@@ -809,6 +835,15 @@
       "kind": "task",
       "start": "08:00",
       "end": "09:50"
+    },
+    {
+      "id": "15a2c805-cf11-4e9a-bb48-959e7f4235bf",
+      "date": "2026-09-22",
+      "title": "康复科门诊",
+      "done": false,
+      "kind": "task",
+      "start": "10:12",
+      "end": "10:24"
     },
     {
       "id": "fed6125e-d0d5-4179-b2fc-0b6289b4b750",
@@ -847,6 +882,13 @@
       "end": "20:30"
     },
     {
+      "id": "b7e9c777-0595-46b7-b813-b38ee64f8abf",
+      "date": "2026-09-22",
+      "title": "洗衣服",
+      "done": false,
+      "kind": "task"
+    },
+    {
       "id": "bad83a9b-3558-44ab-9a64-d09cccadfcc0",
       "date": "2026-09-23",
       "title": "普通化学 · 理教201",
@@ -854,6 +896,15 @@
       "kind": "task",
       "start": "08:00",
       "end": "09:50"
+    },
+    {
+      "id": "e6a9039f-4894-4b52-b829-a7417d3dcde2",
+      "date": "2026-09-23",
+      "title": "康复科（住院部）",
+      "done": false,
+      "kind": "task",
+      "start": "10:00",
+      "end": "10:20"
     },
     {
       "id": "c119fc34-bdcd-40ae-a96d-819b7a90451f",
@@ -890,6 +941,20 @@
       "kind": "task",
       "start": "18:40",
       "end": "20:30"
+    },
+    {
+      "id": "0e046731-bce3-4a67-bbfc-d1ddffa12bbb",
+      "date": "2026-09-23",
+      "title": "拿着历史腰部报告",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "945a19f5-4f8a-4541-bd73-b70abd6e807f",
+      "date": "2026-09-23",
+      "title": "数学作业",
+      "done": false,
+      "kind": "task"
     },
     {
       "id": "41c912b2-a44e-4bd3-a0bb-b9e11eb03f46",

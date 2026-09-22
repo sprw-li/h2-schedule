@@ -23,6 +23,10 @@ android/local.properties
 
 *.local
 
+# 本机/校内环境变量（口令在同名 .local 文件里，两者都不进 Git）
+.env
+.env.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
