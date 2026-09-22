@@ -8,7 +8,29 @@ const tmp = join(root, 'docs-build-tmp')
 const docs = join(root, 'docs')
 const keep = new Set(['schedule.json'])
 
+/**
+ * Pages 构建默认 mode=production，只会读 .env / .env.production，
+ * 而 CLab 根地址一直写在 .env.phone 里 —— 于是网页产物从来没带上校地址。
+ * 这里显式把 .env.phone 里的 VITE_CAMPUS_ORIGIN 透传给子进程。
+ * 只取这一个非秘密键；账密（VITE_CAMPUS_USER/PASS）永不读取、永不进产物。
+ */
+function campusOriginFromEnvFile() {
+  const fromProcess = (process.env.VITE_CAMPUS_ORIGIN ?? '').trim()
+  if (fromProcess) return fromProcess
+  const file = join(root, '.env.phone')
+  if (!existsSync(file)) return ''
+  for (const line of readFileSync(file, 'utf8').split(/\r?\n/)) {
+    const m = /^\s*VITE_CAMPUS_ORIGIN\s*=\s*(.*?)\s*$/.exec(line)
+    if (m) return m[1].replace(/^["']|["']$/g, '')
+  }
+  return ''
+}
+
 const env = { ...process.env, GITHUB_PAGES: 'true' }
+const campusOrigin = campusOriginFromEnvFile()
+if (campusOrigin) env.VITE_CAMPUS_ORIGIN = campusOrigin
+else console.warn('warn: VITE_CAMPUS_ORIGIN 未设置，网页产物不带 CLab 根地址')
+
 const r = spawnSync('npx', ['vite', 'build', '--outDir', 'docs-build-tmp'], {
   cwd: root,
   env,

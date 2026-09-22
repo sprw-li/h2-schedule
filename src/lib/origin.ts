@@ -28,24 +28,21 @@ export function getCampusOrigin() {
   return ''
 }
 
+/** 校内账密只来自本机输入（localStorage）。绝不读构建时环境变量，否则会随公开产物外泄。 */
 export function getCampusUser() {
   try {
-    const v = localStorage.getItem(LS_USER)
-    if (v) return v
+    return localStorage.getItem(LS_USER) ?? ''
   } catch {
-    /* ignore */
+    return ''
   }
-  return String(import.meta.env.VITE_CAMPUS_USER ?? '')
 }
 
 export function getCampusPass() {
   try {
-    const v = localStorage.getItem(LS_PASS)
-    if (v) return v
+    return localStorage.getItem(LS_PASS) ?? ''
   } catch {
-    /* ignore */
+    return ''
   }
-  return String(import.meta.env.VITE_CAMPUS_PASS ?? '')
 }
 
 export function getSyncSource(): SyncSource {
@@ -66,11 +63,8 @@ export function setSyncSource(next: SyncSource) {
   }
 }
 
-/** 把构建时打进 APK 的 CLab 登录写进本机，输入框直接显示。 */
+/** 只把构建时打进 APK 的 CLab 根地址（非秘密）写进本机；账密一律等用户在本机输入。 */
 export function seedCampusLogin() {
-  const u = getCampusUser()
-  const p = getCampusPass()
-  if (u && p) setCampusAccount(u, p)
   const o = getCampusOrigin()
   if (o) setCampusOrigin(o)
 }

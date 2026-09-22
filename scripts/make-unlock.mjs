@@ -20,7 +20,17 @@ function b64(bytes) {
 
 const salt = crypto.getRandomValues(new Uint8Array(16))
 const iv = crypto.getRandomValues(new Uint8Array(12))
-const phrase = (process.env.UNLOCK_PHRASE || 'REDACTED_OLD_PHRASE').trim().toUpperCase().replace(/\s+/g, '')
+const rawPhrase = process.env.UNLOCK_PHRASE
+if (!rawPhrase || !rawPhrase.trim()) {
+  console.error('缺少 UNLOCK_PHRASE 环境变量：口令必须显式提供，不能写死在仓库里。')
+  console.error('用法：$env:UNLOCK_PHRASE=\'<口令>\'; node scripts/make-unlock.mjs')
+  process.exit(1)
+}
+const phrase = rawPhrase.trim().toUpperCase().replace(/\s+/g, '')
+if (!phrase) {
+  console.error('UNLOCK_PHRASE 去掉空白后为空。')
+  process.exit(1)
+}
 
 const base = await crypto.subtle.importKey('raw', te.encode(phrase), 'PBKDF2', false, ['deriveKey'])
 const cryptoKey = await crypto.subtle.deriveKey(
@@ -43,4 +53,4 @@ const pack = {
   data: b64(new Uint8Array(buf)),
 }
 writeFileSync(join(root, 'public', 'unlock.json'), `${JSON.stringify(pack, null, 2)}\n`)
-console.log(`PHRASE=${phrase}`)
+console.log('unlock pack written to public/unlock.json')
