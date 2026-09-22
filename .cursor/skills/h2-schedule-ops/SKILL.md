@@ -29,7 +29,10 @@ npm run build:pages    # 写入 docs/，保留 schedule.json
 - 课表只来自 CLab 或 GitHub `docs/schedule.json`。`pullCloud` 禁止 fetch 包内 JSON。
 - `npm run check:schedule` 只查能解析、id 不撞。
 - 勿提交未点名的 `schedule.json`、Token、`unlock` 明文。stash 不要带用户日程。
-- 校园网 git 重置：代理 `127.0.0.1:7890` 或 GitHub MCP。禁止 force push `main`。
+- 校园网 git 重置：代理 `127.0.0.1:7890` 或 GitHub MCP。
+- `docs/schedule.json` 与 `public/schedule.json` 必须字节一致（同一份序列化结果），改数据时两边同时写。
+- 本机 ref 可能滞后：判断远端真值用 `git ls-remote` 或 raw URL，不要只信 `origin/main`。
+- **用户明确授权改写历史时**才可 `git push --force-with-lease=main:<刚 fetch 到的 sha> origin main`，先 fetch 再取 sha 再推，lease 失败就重 fetch 重试；禁止裸 `--force`。
 - 未点头不代建云主机。CLab：`scripts/campus_sync_server.py`，环境变量不进 Git。
 
 收工若学到新不变量：改 **个人情况 skill**，不要在此追加补丁段。
