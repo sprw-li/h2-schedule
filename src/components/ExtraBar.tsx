@@ -83,7 +83,7 @@ export function ExtraBar({
               onChange={(e) => setCampus(e.target.value)}
               onBlur={persistCampus}
             />
-            <label htmlFor="campus-user">CLab 用户名（与 SSH 同一组，已预填）</label>
+            <label htmlFor="campus-user">CLab 用户名（与 SSH 同一组，需手动填写）</label>
             <input
               id="campus-user"
               type="text"
@@ -95,7 +95,7 @@ export function ExtraBar({
               onChange={(e) => setCampusUser(e.target.value)}
               onBlur={persistCampus}
             />
-            <label htmlFor="campus-pass">CLab 密码（已预填）</label>
+            <label htmlFor="campus-pass">CLab 密码（需手动填写）</label>
             <input
               id="campus-pass"
               type="password"
