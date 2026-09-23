@@ -1,0 +1,17 @@
+---
+description: 改 H2 界面/布局时读 README 布局小节与个人 skill app-dev-ui
+globs: src/**/*.css,src/**/*.tsx,index.html
+alwaysApply: false
+---
+
+改 UI 前先读个人 skill **`app-dev-ui`** 与 **`h2ops`**，再读 **`README.md` 的「界面布局与叠层」小节**（滚动容器、叠层与排除区、布局契约、手机壳 vs 网页、自检清单都在那里）。
+
+动手前记住三条硬约束：
+
+1. **只有 `.sheet-scroll` 是滚动轴**；`.app` / `.layout` / `.panel` 保持 `overflow: hidden`，不要制造嵌套滚动。
+2. **列方向 flex 的列表子项要显式 `flex-shrink: 0`**（否则 `overflow: hidden` + `min-height: auto` 会把卡片压扁、`scrollHeight === clientHeight`，表现为「无法滑动 + 每项被遮挡」）。
+3. **撤销条 / toast 这类出现即消失的提示条不得改变内容流高度**，也不得挤压主按钮；footer 用固定的「弹性列 + 内容列」，不要用 `:has()` 切换列模板。
+
+手机壳与网页共用一套 CSS，只靠 `html[data-shell]` 分流；不要为某个源另抄一套布局，也不要靠加 `z-index` 掩盖遮挡。
+
+收工若学到新的布局不变量，写回个人 skill `app-dev-ui`（普适化），不要只往 `failures.md` 加个例。

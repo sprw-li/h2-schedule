@@ -44,6 +44,47 @@ npm run check:schedule # 检查日程 JSON
 
 改完界面：`npm run build:phone` 与 `npm run build:pages`，推 `main`。不要把构建产物盖掉 `docs/schedule.json`。
 
+### 界面布局与叠层（改 UI 前必读）
+
+详情与踩坑见 `.cursor/rules/h2-ui-layout.mdc` 指向的本文档小节。改 `src/**/*.css` / `src/**/*.tsx` 前先读个人 skill `app-dev-ui` 与 `h2ops`。
+
+**谁是滚动容器。** 当日清单的滚动容器是 `.day-panel .sheet-scroll.list`；月历是 `.calendar-panel .sheet-scroll`。只有它们带 `overflow-y: auto`。外层 `.app` / `.layout` / `.panel` 一律 `overflow: hidden`，只负责分配高度，**不要**再给它们开滚动轴（否则出现嵌套滚动，手指滑动会被里层吃掉）。
+
+**叠层结构与排除区。** 当日面板是三行 grid：
+
+| 行 | 元素 | 定位 | 说明 |
+| --- | --- | --- | --- |
+| `auto` | `.day-chrome` | 流内，`z-index: 4` | 日期头 + 时间轴。**在流内占位**，不是浮层，所以不需要给列表留排除区 |
+| `minmax(0,1fr)` | `.sheet-scroll.list` | 流内，`z-index: 0` | 唯一滚动轴 |
+| `auto` | `.day-footer` | 流内，`z-index: 4` | 撤销条 + 「新事项」 |
+
+三行都在文档流里，靠 grid 分配高度——**没有 `position: fixed/sticky` 的叠层压在列表上**，所以列表不需要 `padding-bottom` 之类的排除区。给 `z-index` 是为了在圆角裁剪（`overflow: clip` + `isolation: isolate`）下保证边缘不被内容穿出，**不是**用来遮丑的。
+
+`.toast` / `.app-dock` 在 `.layout` 之外的 `.app` 列方向流里，同样不覆盖列表。
+
+**布局契约（必须遵守）。**
+
+1. **列表项不得被压缩。** `.list` 是列方向 flex，其直接子项默认 `flex-shrink: 1`；事项卡又带 `overflow: hidden`，会让 `min-height: auto` 解析成 `0`。结果整列被压进容器高度、内容被裁掉，而且 `scrollHeight === clientHeight`，滚动条根本不出现。因此 `.day-panel .sheet-scroll.list > *` 固定 `flex-shrink: 0`。**新增列表类容器时同样要显式设 `flex-shrink: 0`**（或给子项 `min-height: max-content`），别依赖默认值。
+2. **出现/消失的提示条不得改变内容流高度。** `.day-footer` 固定为「单行两列」`grid-template-columns: minmax(0, 1fr) auto`：左列弹性放 `.undo-bar`（超长省略号截断），右列按内容宽放 `.composer-open`。撤销条出现/消失时 footer 高度、滚动容器高度、主按钮宽度都必须**不变**。不要用 `auto` 当第一列（长撤销文案会把主按钮压成窄缝），也不要用 `:has()` 切换列模板（两态跳变）。
+3. 要在 footer 里加第三个动作时，**先把列模板想清楚**，不要靠 `position: absolute` 堆在同一点。
+
+**手机壳 vs 网页。** 两套壳共用同一份 CSS，靠 `html[data-shell]` 分流：`main.tsx` 与 `index.html` 的内联脚本用 `isNativeApp()`（Capacitor `isNativeAppPlatform()`）把 `data-shell` 设成 `native` 或 `web`。约定：
+
+- `html[data-shell='web']` → 一律双栏完整 UI，`!important` 强制显示 `.desk-tabs`、隐藏 `.mobile-tabs`。**电脑浏览器（Pages / CLab）不要套窄屏规则。**
+- `@media (max-width: 860px)` + `html[data-shell='native']` → 单栏、`.mobile-tabs`、收窄内边距、`position: fixed` 锁视口。
+- 尺寸一律 `100%` + `env(safe-area-inset-*)`，**不用 `100vw`**（滚动条会把右侧顶出屏）。
+
+加分支时沿用这个机制，**不要**为「CLab 页 / GitHub 页」或「某个源」另抄一套 CSS。
+
+**改 UI 后的自检清单。**
+
+- [ ] 手机视口 `390x844` 与更矮的 `360x640` 都看过；当日清单能滚到底，最后一项完整可见（不被 footer 永久遮住）。
+- [ ] 新建/删除触发撤销条，**逐条对比**出现前后：滚动容器 `getBoundingClientRect().height`、主按钮宽度、列表项高度都不变。
+- [ ] `document.elementFromPoint()` 在列表项中心命中的是该项自身（不是 chrome / footer / toast）。
+- [ ] 桌面视口 `1280x800`（`data-shell='web'`）双栏未退化。
+- [ ] 手动确认 `.sheet-scroll` 的 `scrollHeight > clientHeight`（相等 = 内容被压扁，滚动条不会出现）。
+- [ ] `npm run check:schedule` 与 `npm run lint` 通过（lint 既有 warning 属正常，不要新增 error）。
+
 ## 校服务器（CLab，即时真相源）
 
 「其他功能」填根地址（存在本机）。换机只改这个 URL。
