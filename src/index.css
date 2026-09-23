@@ -1105,6 +1105,16 @@ button {
   gap: 8px;
 }
 
+/*
+ * 列方向 flex 子项默认 flex-shrink: 1；事项卡又带 overflow: hidden，
+ * 会让 min-height: auto 解析成 0，于是整列被压进容器高度、内容被裁掉，
+ * 且 scrollHeight === clientHeight 导致滚动条根本不出现（表现为「无法滑动 + 每项被遮挡」）。
+ * 卡片必须保持自身内容高度，装不下时交给容器滚动。
+ */
+.day-panel .sheet-scroll.list > * {
+  flex-shrink: 0;
+}
+
 .panel.calendar-panel,
 .panel.day-panel {
   overflow: clip;
@@ -1360,8 +1370,7 @@ button {
   flex-shrink: 0;
 }
 
-.composer-bar,
-.day-footer {
+.composer-bar {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1373,13 +1382,41 @@ button {
   z-index: 3;
 }
 
+/*
+ * 布局契约：撤销条出现/消失不得改变 footer 高度（否则上方滚动容器被挤压、
+ * 列表高度跳变），也不得把主按钮挤成细缝。
+ * footer 固定为「单行两列」：左列弹性放撤销条（超长省略号截断），
+ * 右列按内容宽放主按钮。两种状态下 footer 高度与主按钮宽度都一致。
+ * 不要用 auto 当第一列——长撤销文案会把主按钮压成窄缝（旧 bug）。
+ */
+.day-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+  z-index: 3;
+}
+
 .day-footer .undo-bar {
+  grid-column: 1;
   margin: 0;
-  width: 100%;
+  width: auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
 }
 
 .composer-open {
-  width: 100%;
+  grid-column: 2;
+  width: auto;
+  min-width: 104px;
   min-height: 44px;
 }
 
@@ -2111,22 +2148,13 @@ html[data-shell='web'] .panel.day-panel {
     padding: 6px 8px;
   }
 
+  /* 两列布局契约见基础 .day-footer 规则；这里只调手机尺寸，勿改列结构 */
   .day-footer {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: 8px;
     padding-top: 8px;
     border-top: 1px solid var(--line);
   }
 
-  .day-footer:not(:has(.undo-bar)),
-  .day-footer:not(:has(.composer-open)) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
   .day-footer .undo-bar {
-    width: auto;
     min-height: 36px;
     padding: 0 10px;
     border: 0;
