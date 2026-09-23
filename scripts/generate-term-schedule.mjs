@@ -122,7 +122,23 @@ const CHEM_TODAY_8 = [
   ['2026-11-11', '今日化学 · 分析化学（夏斌）', '核磁中心106'],
 ]
 
+/**
+ * 博雅理学讲堂 · 周三 10–11 节 · 哲学201
+ * 国庆后改双周，10/14 起；日期集合显式写死（不再按 week 奇偶推）
+ */
+const BOYA_SESSIONS = [
+  '2026-09-09',
+  '2026-09-23',
+  '2026-10-14',
+  '2026-10-28',
+  '2026-11-11',
+  '2026-11-25',
+  '2026-12-09',
+  '2026-12-23',
+]
+
 const THEO_BY_DATE = new Map(THEO_SESSIONS.map((row) => [row[0], row]))
+const BOYA_BY_DATE = new Set(BOYA_SESSIONS)
 
 const items = []
 
@@ -167,8 +183,8 @@ for (let dt = new Date(2026, 8, 7); dt <= new Date(2026, 11, 27); dt.setDate(dt.
       if (note) title = `${title} · ${note}`
       items.push(item(k, title, ...span(5, 6)))
     }
-    // 博雅理学讲堂 单周周三 10~11 · 哲学201
-    if (week % 2 === 1) {
+    // 博雅理学讲堂 周三 10~11 · 哲学201（国庆后双周，见 BOYA_SESSIONS）
+    if (BOYA_BY_DATE.has(k)) {
       items.push(item(k, titled('博雅理学讲堂', '哲学201'), ...span(10, 11)))
     }
   }
