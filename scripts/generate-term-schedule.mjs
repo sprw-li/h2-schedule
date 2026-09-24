@@ -265,5 +265,6 @@ items.sort((a, b) => {
 })
 
 const out = JSON.stringify({ items }, null, 2) + '\n'
-writeFileSync(join(root, 'public', 'schedule.json'), out)
+// docs/schedule.json 是权威（App 唯一读写路径）；public/ 是派生镜像，由 build:pages 同步。
+writeFileSync(join(root, 'docs', 'schedule.json'), out)
 console.log(`wrote ${items.length} items`)

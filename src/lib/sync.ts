@@ -17,6 +17,7 @@ export {
 const PENDING_KEY = 'h2-schedule.pending-sync'
 const REMOTE_SHA_KEY = 'h2-schedule.remote-sha'
 const REMOTE_SNAP_KEY = 'h2-schedule.remote-snap.v1'
+const GH_SHA_KEY = 'h2-schedule.github-sha'
 const LEGACY_OVERLAY_KEY = 'h2-schedule.overlay.v1'
 
 export function setPendingSync(on: boolean) {
@@ -68,6 +69,28 @@ export function loadRemoteSnap(): ScheduleMap | null {
     return normalizeSchedule(JSON.parse(raw) as ScheduleMap)
   } catch {
     return null
+  }
+}
+
+/**
+ * 本机上次成功写入 GitHub 时拿到的 blob sha。
+ * 镜像 GitHub 时只允许在 sha 与远端一致时写——拿不到或不匹配就放弃，
+ * 绝不「重取最新 sha 再硬盖」（那是最后写赢，会冲掉别处刚改的数据）。
+ */
+export function saveGithubSha(sha: string) {
+  try {
+    if (sha) localStorage.setItem(GH_SHA_KEY, sha)
+    else localStorage.removeItem(GH_SHA_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
+export function loadGithubSha() {
+  try {
+    return localStorage.getItem(GH_SHA_KEY) ?? ''
+  } catch {
+    return ''
   }
 }
 

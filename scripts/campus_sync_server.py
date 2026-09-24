@@ -11,12 +11,21 @@ import argparse
 import base64
 import hashlib
 import hmac
+import itertools
 import json
 import os
+import shutil
 import ssl
+import tempfile
+import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
+
+# 旧版本备份保留上限（超出按时间戳删最旧的）。可用 H2_BACKUP_KEEP 覆盖（测试用）。
+BACKUP_KEEP = int(os.environ.get("H2_BACKUP_KEEP", "") or "200")
+_backup_seq = itertools.count(1)
 
 
 def sha_of(data: bytes) -> str:
@@ -29,12 +38,47 @@ def _eq(a: str, b: str) -> bool:
     return hmac.compare_digest(a, b)
 
 
+def atomic_write(path: Path, data: bytes) -> None:
+    """写临时文件 → flush + fsync → os.replace，崩溃不留半个文件。"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=f".{path.name}.", suffix=".part")
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
+
+
+def prune_backups(backups_dir: Path, stem: str, keep: int = BACKUP_KEEP) -> None:
+    if not backups_dir.is_dir():
+        return
+    files = sorted(
+        p for p in backups_dir.iterdir() if p.name.startswith(stem + ".") and p.name.endswith(".bak")
+    )
+    if len(files) <= keep:
+        return
+    for old in files[: len(files) - keep]:
+        try:
+            old.unlink()
+        except OSError:
+            pass
+
+
 class Handler(BaseHTTPRequestHandler):
     data_dir: Path
     token: str
     user: str
     password: str
     web_root: Path | None
+    # 读 sha → 比较 → 写 的临界区锁（ThreadingHTTPServer 多线程共享）
+    _schedule_lock = threading.Lock()
 
     def log_message(self, fmt: str, *args) -> None:
         print("[%s] " % self.log_date_time_string() + (fmt % args))
@@ -183,8 +227,7 @@ class Handler(BaseHTTPRequestHandler):
                 dest = self._file("web/" + rel)
             else:
                 dest = self._file(ota_map[path])
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_bytes(body)
+            atomic_write(dest, body)
             etag = sha_of(body)
             self._send_bytes(200, json.dumps({"sha": etag}).encode("utf-8"), "application/json; charset=utf-8", etag)
             return
@@ -204,15 +247,38 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             self._send_bytes(400, b"invalid json\n", "text/plain; charset=utf-8")
             return
+        # 乐观锁：PUT 必须带 If-Match，缺失即拒绝（428），不匹配即 409。
+        # 不再放行 sig: 前缀——那会让客户端拿到「无 sha」时盲盖服务端。
+        # 首次创建用 If-Match: *（或空 sha）；已有文件必须带真实 sha。
+        match = (self.headers.get("If-Match") or "").strip().strip('"')
+        if not match:
+            self._send_bytes(428, b"If-Match required\n", "text/plain; charset=utf-8")
+            return
         dest = self._file("schedule.json")
         dest.parent.mkdir(parents=True, exist_ok=True)
-        if dest.is_file():
-            current = sha_of(dest.read_bytes())
-            match = (self.headers.get("If-Match") or "").strip().strip('"')
-            if match and match != current and not match.startswith("sig:"):
+        # 读 sha → 比较 → 备份 → 原子写 全在锁内，两个并发 PUT 只有一个能成功
+        with Handler._schedule_lock:
+            exists = dest.is_file()
+            current = sha_of(dest.read_bytes()) if exists else ""
+            wildcard = match == "*"
+            if wildcard:
+                if exists:
+                    conflict = True
+                else:
+                    conflict = False
+            else:
+                conflict = match != current
+            if conflict:
                 self._send_bytes(409, b"conflict\n", "text/plain; charset=utf-8")
                 return
-        dest.write_bytes(body)
+            if exists:
+                backups = dest.parent / "backups"
+                backups.mkdir(parents=True, exist_ok=True)
+                stamp = time.strftime("%Y%m%dT%H%M%S", time.gmtime())
+                rev = next(_backup_seq)
+                shutil.copyfile(dest, backups / f"schedule.{stamp}.{rev:05d}.{current[:12]}.bak")
+                prune_backups(backups, "schedule")
+            atomic_write(dest, body)
         etag = sha_of(body)
         self._send_bytes(200, json.dumps({"sha": etag}).encode("utf-8"), "application/json; charset=utf-8", etag)
 

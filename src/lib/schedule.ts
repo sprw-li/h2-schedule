@@ -50,7 +50,6 @@ function fnv1a(s: string) {
 function stableDupId(item: ScheduleItem, nth: number) {
   return `dup-${fnv1a(`${item.date}|${item.kind}|${item.title}|${item.start ?? ''}|${item.end ?? ''}|${nth}`)}`
 }
-
 /** 容忍误写入的字面量 \\n / BOM / 尾部垃圾 */
 export function parseScheduleJsonText(raw: string): { items: unknown[] } {
   let t = String(raw || '').replace(/^\uFEFF/, '').trim()
@@ -104,19 +103,22 @@ export function coerceItems(raw: unknown[]): ScheduleItem[] {
 /** 同一天同一 id 只能一条；跨天允许相同 id。撞了就给后来者稳定新 id。 */
 export function ensureUniqueIds(items: ScheduleItem[]): ScheduleItem[] {
   const seen = new Set<string>()
-  let nth = 0
+  // 每个「date|原 id」各自计数：无关条目增删不会推移别处的 dup- 后缀。
+  // 用全表共用计数器时，只要别处多/少一条重复项，后面所有 dup- id 都会跟着变（id 漂移）。
+  const nthBySlot = new Map<string, number>()
   return items.map((it) => {
     const slot = `${it.date}|${it.id}`
     if (it.id && !seen.has(slot)) {
       seen.add(slot)
       return it
     }
-    nth += 1
-    let id = stableDupId(it, nth)
-    while (seen.has(`${it.date}|${id}`)) {
+    let nth = nthBySlot.get(slot) ?? 0
+    let id: string
+    do {
       nth += 1
       id = stableDupId(it, nth)
-    }
+    } while (seen.has(`${it.date}|${id}`))
+    nthBySlot.set(slot, nth)
     seen.add(`${it.date}|${id}`)
     return { ...it, id }
   })
@@ -190,7 +192,10 @@ function coversTitle(specific: string, generic: string) {
 
 /**
  * 同一天同一时刻：骨架课名被更具体的一条盖住就丢掉。
- * 理计导 / 今化 / 普化实验 常见「简写 + 带老师教室」并存。
+ *
+ * **不在 normalize / 同步路径上**。同一时段两条不同事项是正常的（如「拿书」+「血检」），
+ * 静默删数据、且 done 取「或」会让取消勾选永远赢不了。保留此函数仅供导入时的
+ * 可选提示使用；任何调用都必须让用户可见地确认，不得静默删。
  */
 export function collapseCoveredDuplicates(map: ScheduleMap): ScheduleMap {
   const items = flattenItems(map).map((it) => ({ ...it }))
@@ -209,13 +214,13 @@ export function collapseCoveredDuplicates(map: ScheduleMap): ScheduleMap {
   return replaceSchedule(items.filter((_, idx) => !drop.has(idx)))
 }
 
-/** 入口：合法化字段 + 撞 id 处理。不做课表规则核验。 */
+/** 入口：合法化字段 + 撞 id 处理。不做课表规则核验，也不静默删同段不同事项。 */
 export function normalizeSchedule(input: ScheduleMap | ScheduleItem[] | unknown[]): ScheduleMap {
   const items = Array.isArray(input)
     ? coerceItems(input)
     : coerceItems(flattenItems(input as ScheduleMap) as unknown[])
   return replaceSchedule(
-    ensureUniqueIds(flattenItems(collapseCoveredDuplicates(dedupeByIdentity(replaceSchedule(items))))),
+    ensureUniqueIds(flattenItems(dedupeByIdentity(replaceSchedule(items)))),
   )
 }
 

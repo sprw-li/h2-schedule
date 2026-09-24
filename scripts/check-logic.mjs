@@ -140,11 +140,13 @@ const jinLong = item({
   start: '15:10',
   end: '17:00',
 })
-const collapsed = normalizeSchedule([skeleton, detailed, jinShort, jinLong])
-assert(flattenItems(collapsed).length === 2, '理计导/今化骨架不得与详条并存')
+// 同段不同事项是正常的：normalize 不得按标题前缀静默删（collapseCoveredDuplicates 已移出同步路径）
+const kept = normalizeSchedule([skeleton, detailed, jinShort, jinLong])
+assert(flattenItems(kept).length === 4, '同段「标题前缀关系」的不同事项不得被静默删除')
 assert(
-  flattenItems(collapsed).every((i) => i.title.includes('杨立江') || i.title.includes('刘允')),
-  '应留下带老师/专题的那条',
+  flattenItems(kept).some((i) => i.title.includes('杨立江')) &&
+    flattenItems(kept).some((i) => i.title === '理论与计算化学导论 · 理教410'),
+  '骨架条与详条都必须保留',
 )
 
 const origItem = item({

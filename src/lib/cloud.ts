@@ -2,7 +2,7 @@ import { flattenItems } from './backup'
 import { fetchTextNoThrow, ghApiContents, ghPages, ghRaw, netErr } from './net'
 import { campusAuthHeaders, campusUrl, getSyncSource } from './origin'
 import { normalizeSchedule, parseScheduleJsonText, serializeSchedule } from './schedule'
-import { loadRemoteSnap } from './sync'
+import { loadGithubSha, loadRemoteSnap, saveGithubSha } from './sync'
 import type { ScheduleMap } from '../types'
 
 const PATH = 'docs/schedule.json'
@@ -106,7 +106,10 @@ async function pullFromApi(): Promise<{ map: ScheduleMap; sha: string } | null> 
     const res = await fetch(`${API}?ts=${Date.now()}`, { headers })
     if (!res.ok) return null
     const body = (await res.json()) as { content?: string; sha?: string }
-    return parseContents(body)
+    const parsed = parseContents(body)
+    // 记住这次读到的 GitHub blob sha：镜像只在远端仍是这个 sha 时才写
+    if (parsed?.sha) saveGithubSha(parsed.sha)
+    return parsed
   } catch {
     return null
   }
@@ -126,10 +129,18 @@ function guardAgainstWipe(map: ScheduleMap) {
   return clean
 }
 
-/** 把当前日程写入 GitHub docs/schedule.json。CLab 入口成功读写后调用。 */
+/**
+ * 把当前日程写入 GitHub docs/schedule.json。CLab 入口成功读写后调用。
+ *
+ * 只在「已知 sha 且与远端当前 sha 一致」时写：拿不到 sha 或不匹配就放弃返回 false。
+ * 不再「409 后重取最新 sha 再盖」——那是最后写赢，会把别处刚提交的数据冲掉。
+ * 宁可这次不同步，也不要盲盖。
+ */
 export async function mirrorScheduleToGithub(map: ScheduleMap) {
   const token = getWriteToken()
   if (!token) return false
+  const known = loadGithubSha()
+  if (!known) return false
   const payload = serializeSchedule(normalizeSchedule(map))
   const headers = {
     Accept: 'application/vnd.github+json',
@@ -141,29 +152,26 @@ export async function mirrorScheduleToGithub(map: ScheduleMap) {
       const meta = await fetch(`${API}?ts=${Date.now()}`, {
         headers: { Accept: headers.Accept, Authorization: headers.Authorization },
       })
-      let useSha = ''
-      if (meta.ok) {
-        const body = (await meta.json()) as { sha?: string }
-        useSha = body.sha ?? ''
-      }
-      const putBody = (sha: string) =>
-        JSON.stringify({
+      if (!meta.ok) return false
+      const body = (await meta.json()) as { sha?: string }
+      // sha 不匹配：远端已被别处改过，放弃本次镜像
+      if (!body.sha || body.sha !== known) return false
+      const res = await fetch(API, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({
           message: 'Sync schedule to GitHub',
           content: encodeBase64(payload),
           branch: 'main',
-          ...(sha ? { sha } : {}),
-        })
-      let res = await fetch(API, { method: 'PUT', headers, body: putBody(useSha) })
-      if (res.status === 409 && useSha) {
-        const again = await fetch(`${API}?ts=${Date.now()}`, {
-          headers: { Accept: headers.Accept, Authorization: headers.Authorization },
-        })
-        if (again.ok) {
-          const body = (await again.json()) as { sha?: string }
-          res = await fetch(API, { method: 'PUT', headers, body: putBody(body.sha ?? '') })
-        }
+          sha: known,
+        }),
+      })
+      if (res.ok) {
+        const out = (await res.json()) as { content?: { sha?: string } }
+        if (out.content?.sha) saveGithubSha(out.content.sha)
+        return true
       }
-      if (res.ok) return true
+      if (res.status === 409) return false
     } catch {
       /* 校园网常打不开 GitHub，下一轮再试 */
     }
@@ -198,19 +206,19 @@ export async function mirrorScheduleToCampus(map: ScheduleMap) {
 }
 
 function rememberGithub(got: { map: ScheduleMap; sha: string }) {
-  void mirrorScheduleToCampus(got.map)
   return got
 }
 
 /**
  * 顶栏明确选入口：CLab 只读写校内；GitHub 只读写仓库。
- * 成功后再尽量把同一份日程推到另一边（不顶替当前入口）。
+ * 拉取只读，绝不作为副作用写入另一端——那会把 CDN 旧缓存（raw / Pages）
+ * 当成真相写进 CLab，是「课表被旧数据反复覆盖」最阴的污染源。
+ * 镜像只允许发生在「本机自己成功写入之后」（见 pushCloud）。
  */
 export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | null> {
   if (getSyncSource() === 'clab') {
     const campus = await pullFromCampus()
     if (!campus) throw new Error('CLab 连不上（未改用 GitHub，可改点顶栏 GitHub）')
-    void mirrorScheduleToGithub(campus.map)
     return campus
   }
 
@@ -293,8 +301,11 @@ export async function pushCloud(map: ScheduleMap, sha: string) {
     if (res.status === 401 || res.status === 403) throw new Error('口令无效或权限不足')
     if (!res.ok) throw new Error('同步失败')
     const body = (await res.json()) as { content?: { sha?: string } }
+    const nextSha = body.content?.sha ?? useSha
+    // 本机自己写成功后才更新 GitHub sha，并镜像到另一端（读取路径绝不写）
+    if (body.content?.sha) saveGithubSha(body.content.sha)
     void mirrorScheduleToCampus(clean)
-    return body.content?.sha ?? useSha
+    return nextSha
   } catch (e) {
     if (
       e instanceof Error &&
