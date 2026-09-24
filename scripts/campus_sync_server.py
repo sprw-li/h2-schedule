@@ -14,7 +14,6 @@ import hmac
 import itertools
 import json
 import os
-import shutil
 import ssl
 import tempfile
 import threading
@@ -258,14 +257,12 @@ class Handler(BaseHTTPRequestHandler):
         dest.parent.mkdir(parents=True, exist_ok=True)
         # 读 sha → 比较 → 备份 → 原子写 全在锁内，两个并发 PUT 只有一个能成功
         with Handler._schedule_lock:
-            exists = dest.is_file()
-            current = sha_of(dest.read_bytes()) if exists else ""
+            prev = dest.read_bytes() if dest.is_file() else b""
+            exists = bool(prev)
+            current = sha_of(prev) if exists else ""
             wildcard = match == "*"
             if wildcard:
-                if exists:
-                    conflict = True
-                else:
-                    conflict = False
+                conflict = exists
             else:
                 conflict = match != current
             if conflict:
@@ -276,7 +273,8 @@ class Handler(BaseHTTPRequestHandler):
                 backups.mkdir(parents=True, exist_ok=True)
                 stamp = time.strftime("%Y%m%dT%H%M%S", time.gmtime())
                 rev = next(_backup_seq)
-                shutil.copyfile(dest, backups / f"schedule.{stamp}.{rev:05d}.{current[:12]}.bak")
+                # 备份也原子写：崩溃不得留下半个 .bak 被误当成有效旧版本
+                atomic_write(backups / f"schedule.{stamp}.{rev:05d}.{current[:12]}.bak", prev)
                 prune_backups(backups, "schedule")
             atomic_write(dest, body)
         etag = sha_of(body)
