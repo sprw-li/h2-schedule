@@ -36,13 +36,15 @@ npm run dev
 
 ```bash
 npm run build          # 网页
-npm run build:pages    # 写入 docs/（不覆盖 schedule.json）
+npm run build:pages    # 写入 docs/，并把 public/schedule.json 同步到 docs/
 npm run build:phone    # 单文件 HTML + OTA；phone/ 不带全量课表
 npm run build:apk      # Capacitor debug APK
-npm run check:schedule # 检查日程 JSON
+npm run check:schedule # 检查日程 JSON，并断言 public/ 与 docs/ 一致
 ```
 
 改完界面：`npm run build:phone` 与 `npm run build:pages`，推 `main`。不要把构建产物盖掉 `docs/schedule.json`。
+
+**日程数据的不变量（改数据前必读）。** `docs/schedule.json` 是 App 的**唯一**读写路径（Pages 站点根 + Contents API 路径），**不要**改这个路径；`public/schedule.json` 是**唯一**编辑源。`npm run build:pages` 每次无条件把 `public/schedule.json` 逐字节同步到 `docs/schedule.json`，`npm run check:schedule` 断言两者 `items` 逐条一致。所以**改数据只改 `public/`**，然后跑 `npm run build:pages` 同步到 `docs/`，不要再手动维护两份。
 
 ### 界面布局与叠层（改 UI 前必读）
 

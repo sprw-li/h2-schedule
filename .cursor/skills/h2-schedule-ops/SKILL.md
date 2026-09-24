@@ -15,8 +15,8 @@ description: >-
 
 ```text
 npm run build:phone    # phone/ + docs/ota/manifest.json + docs/ota/app.html
-npm run build:pages    # 写入 docs/，保留 schedule.json
-# commit/push main（含 docs/ota；意外改到的 schedule.json 先还原）
+npm run build:pages    # 写入 docs/，并把 public/schedule.json 同步到 docs/
+# commit/push main（含 docs/ota）
 ```
 
 - 只用 `scripts/publish-docs.mjs`，禁止 `vite build --outDir docs --emptyOutDir`。
@@ -27,10 +27,10 @@ npm run build:pages    # 写入 docs/，保留 schedule.json
 ## 数据与口令
 
 - 课表只来自 CLab 或 GitHub `docs/schedule.json`。`pullCloud` 禁止 fetch 包内 JSON。
-- `npm run check:schedule` 只查能解析、id 不撞。
+- `npm run check:schedule` 查能解析、id 不撞，并断言 `public/` 与 `docs/` 的 items 一致。
 - 勿提交未点名的 `schedule.json`、Token、`unlock` 明文。stash 不要带用户日程。
 - 校园网 git 重置：代理 `127.0.0.1:7890` 或 GitHub MCP。
-- `docs/schedule.json` 与 `public/schedule.json` 必须字节一致（同一份序列化结果），改数据时两边同时写。
+- **不变量**：`docs/schedule.json` 是 App 唯一读写路径（Pages 站点根 + Contents API），`public/schedule.json` 是唯一编辑源；`build:pages` 无条件逐字节同步，`check:schedule` 守门。改数据只改 `public/` 再跑 `build:pages`，不要手改 `docs/`。两份 blob 应始终相同（`git hash-object`）。
 - 本机 ref 可能滞后：判断远端真值用 `git ls-remote` 或 raw URL，不要只信 `origin/main`。
 - **用户明确授权改写历史时**才可 `git push --force-with-lease=main:<刚 fetch 到的 sha> origin main`，先 fetch 再取 sha 再推，lease 失败就重 fetch 重试；禁止裸 `--force`。
 - 未点头不代建云主机。CLab：`scripts/campus_sync_server.py`，环境变量不进 Git。

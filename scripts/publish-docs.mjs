@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, rmSync, readFileSync, writeFileSync, readdirSync, copyFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, rmSync, readFileSync, readdirSync, copyFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
@@ -53,8 +53,13 @@ for (const name of ['index.html', 'assets', 'favicon.svg', 'unlock.json', 'sampl
   cpSync(from, to, { recursive: true })
 }
 
-if (!existsSync(join(docs, 'schedule.json')) && existsSync(join(root, 'public', 'schedule.json'))) {
-  writeFileSync(join(docs, 'schedule.json'), readFileSync(join(root, 'public', 'schedule.json')))
+// docs/schedule.json 是 App 唯一读写路径（Pages 站点根 + Contents API 路径），
+// public/schedule.json 是唯一编辑源。每次构建无条件逐字节同步，避免两份各自演化漂移。
+const publicSchedule = join(root, 'public', 'schedule.json')
+if (existsSync(publicSchedule)) {
+  copyFileSync(publicSchedule, join(docs, 'schedule.json'))
+} else {
+  console.warn('warn: public/schedule.json 缺失，docs/schedule.json 未同步')
 }
 
 // GitHub Pages 常缓存旧 index.html，仍会请求上一轮 hash。把本轮包再写一份旧文件名，缓存命中也能拿到新逻辑。
@@ -79,4 +84,4 @@ if (existsSync(assetsDir)) {
 
 void keep
 rmSync(tmp, { recursive: true, force: true })
-console.log('docs/ updated (schedule.json kept)')
+console.log('docs/ updated (schedule.json synced from public/)')
