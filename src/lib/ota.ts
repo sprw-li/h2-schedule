@@ -2,13 +2,18 @@
 
 import { getWriteToken } from './cloud'
 import { ghPages, ghRaw, netErr } from './net'
-import { campusAuthHeaders, campusUrl, getSyncSource } from './origin'
+import { campusAuthHeaders, campusUrl, getCampusOrigin } from './origin'
+
+/** OTA 包的来源。manifest 与 html 必须来自同一个源（否则 sha256 必然对不上）。 */
+export type OtaSource = 'clab' | 'raw' | 'pages' | 'api'
 
 export type OtaManifest = {
   builtAt: string
   sha256: string
   bytes: number
   path: string
+  /** 这份 manifest 实际来自哪个源。运行时附注，不写回远端、不参与校验。 */
+  source?: OtaSource
 }
 
 export type OtaBundle = {
@@ -238,47 +243,49 @@ async function readViaApi(path: string) {
   throw new Error('暂时查不到更新')
 }
 
-function parseMan(text: string): OtaManifest | null {
+function parseMan(text: string, source: OtaSource): OtaManifest | null {
   try {
     const man = JSON.parse(text) as OtaManifest
     if (!man.builtAt || !man.sha256 || !man.path) return null
-    return man
+    return { ...man, source }
   } catch {
     return null
   }
 }
 
-/** Pages 常有缓存；raw 较新；有口令再试 API，取较新的 manifest */
+type SourceReader = { source: OtaSource; read: (p: string) => Promise<string>; label: string }
+
+/**
+ * 全部可达来源，**与顶栏选的同步源无关**。
+ * 只配了校地址才试 CLab；有口令才试 API。CLab 失败不静默，记下原因给用户看。
+ */
+function otaSources(): SourceReader[] {
+  const list: SourceReader[] = []
+  if (getCampusOrigin()) list.push({ source: 'clab', read: readViaCampus, label: 'CLab' })
+  list.push({ source: 'raw', read: readViaRaw, label: 'GitHub raw' })
+  list.push({ source: 'pages', read: readViaPages, label: 'GitHub Pages' })
+  if (getWriteToken()) list.push({ source: 'api', read: readViaApi, label: 'GitHub API' })
+  return list
+}
+
+/**
+ * 取最新的 manifest：不挑源，逐个试（CLab 可用时先试），按 builtAt 取最新。
+ * 某源查不到或坏包只记原因，不影响其他源；全失败才抛错并列出每个源的原因。
+ */
 export async function fetchManifest(): Promise<OtaManifest> {
-  if (getSyncSource() === 'clab') {
-    try {
-      const p = parseMan(await readViaCampus(MANIFEST_PATH))
-      if (p) return p
-    } catch (e) {
-      throw new Error(netErr(e, 'CLab 查不到更新（未改用 GitHub）'))
-    }
-    throw new Error('CLab 查不到更新（未改用 GitHub）')
-  }
   const cands: OtaManifest[] = []
-  const readers = [readViaRaw, readViaPages]
-  for (const reader of readers) {
+  const errs: string[] = []
+  for (const { source, read, label } of otaSources()) {
     try {
-      const p = parseMan(await reader(MANIFEST_PATH))
+      const p = parseMan(await read(MANIFEST_PATH), source)
       if (p) cands.push(p)
-    } catch {
-      /* ignore */
-    }
-  }
-  if (getWriteToken()) {
-    try {
-      const a = parseMan(await readViaApi(MANIFEST_PATH))
-      if (a) cands.push(a)
-    } catch {
-      /* ignore */
+      else errs.push(`${label}：manifest 内容无效`)
+    } catch (e) {
+      errs.push(`${label}：${netErr(e, `${label} 查不到更新`)}`)
     }
   }
   if (cands.length === 0) {
-    throw new Error('查不到更新（可开代理或输入口令后重试）')
+    throw new Error(errs.join('；') || '查不到更新（可开代理或输入口令后重试）')
   }
   cands.sort((a, b) => Date.parse(b.builtAt) - Date.parse(a.builtAt))
   return cands[0]
@@ -294,47 +301,36 @@ export function isNewer(remoteBuiltAt: string, local: string) {
   return r - l > 2000
 }
 
+/**
+ * 下载整包 html：**必须与 manifest 同一个源**（否则 sha256 对不上）。
+ * 先试 manifest 的来源（命中率高、省流量），再依次试其他可达来源；
+ * 每源下载后立即校验 sha256，不匹配就换下一源，不要立刻放弃。
+ */
 export async function downloadAndVerify(man: OtaManifest): Promise<OtaBundle> {
-  const tryHtml = async (reader: (p: string) => Promise<string>) => {
-    const html = await reader(man.path)
+  const tryHtml = async (read: (p: string) => Promise<string>) => {
+    const html = await read(man.path)
     const digest = await sha256Hex(html)
     if (digest !== man.sha256) throw new Error('sha mismatch')
     if (html.length < 1000 || !html.includes('id="root"')) throw new Error('更新包无效，请稍后再试')
     return html
   }
 
+  const all = otaSources()
+  const preferred = all.filter((s) => s.source === man.source)
+  const rest = all.filter((s) => s.source !== man.source)
   let html = ''
   const errs: string[] = []
-  if (getSyncSource() === 'clab') {
+  for (const { read, label } of [...preferred, ...rest]) {
     try {
-      html = await tryHtml(readViaCampus)
+      html = await tryHtml(read)
+      if (html) break
     } catch (e) {
-      throw new Error(netErr(e, 'CLab 下载失败（未改用 GitHub）'))
-    }
-  }
-  if (!html && getWriteToken()) {
-    try {
-      html = await tryHtml(readViaApi)
-    } catch (e) {
-      errs.push(netErr(e, 'API 下载失败'))
+      errs.push(`${label}：${netErr(e, `${label} 下载失败`)}`)
     }
   }
   if (!html) {
-    try {
-      html = await tryHtml(readViaRaw)
-    } catch (e) {
-      errs.push(netErr(e, 'raw 下载失败'))
-    }
-  }
-  if (!html) {
-    try {
-      html = await tryHtml(readViaPages)
-    } catch (e) {
-      errs.push(netErr(e, 'Pages 下载失败'))
-    }
-  }
-  if (!html) {
-    throw new Error(errs.join('；') || '下载不完整，请再试一次')
+    const why = errs.some((e) => e.includes('sha mismatch')) ? '包已找到但校验不过' : '下载不到'
+    throw new Error(`${why}（${errs.join('；') || '请再试一次'}）`)
   }
 
   return {
