@@ -3,11 +3,27 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const mcp = JSON.parse(readFileSync(join(process.env.USERPROFILE || '', '.cursor', 'mcp.json'), 'utf8'))
-const token = mcp?.mcpServers?.github?.env?.GITHUB_PERSONAL_ACCESS_TOKEN
-if (!token || token === 'YOUR_GITHUB_PAT') {
-  throw new Error('missing github token in mcp.json')
+
+/** Prefer env / file so a data-only PAT is not confused with mcp.json's code-repo token. */
+function readToken() {
+  const fromEnv = (process.env.H2_DATA_PAT || process.env.GITHUB_TOKEN || '').trim()
+  if (fromEnv && fromEnv !== 'YOUR_GITHUB_PAT') return fromEnv
+  const patFile = (process.env.H2_DATA_PAT_FILE || '').trim()
+  if (patFile) {
+    const fromFile = readFileSync(patFile, 'utf8').trim()
+    if (fromFile && fromFile !== 'YOUR_GITHUB_PAT') return fromFile
+  }
+  const mcpPath = join(process.env.USERPROFILE || '', '.cursor', 'mcp.json')
+  try {
+    const mcp = JSON.parse(readFileSync(mcpPath, 'utf8'))
+    const fromMcp = mcp?.mcpServers?.github?.env?.GITHUB_PERSONAL_ACCESS_TOKEN
+    if (fromMcp && fromMcp !== 'YOUR_GITHUB_PAT') return fromMcp
+  } catch {
+    /* no mcp.json */
+  }
+  throw new Error('missing PAT: set H2_DATA_PAT / GITHUB_TOKEN / H2_DATA_PAT_FILE, or mcp.json github token')
 }
+const token = readToken()
 
 const te = new TextEncoder()
 function b64(bytes) {
