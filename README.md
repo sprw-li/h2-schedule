@@ -66,9 +66,10 @@ npm run check:schedule # 检查日程 JSON，并断言 docs/ 与 public/ 一致
 
 **布局契约（必须遵守）。**
 
-1. **列表项不得被压缩。** `.list` 是列方向 flex，其直接子项默认 `flex-shrink: 1`；事项卡又带 `overflow: hidden`，会让 `min-height: auto` 解析成 `0`。结果整列被压进容器高度、内容被裁掉，而且 `scrollHeight === clientHeight`，滚动条根本不出现。因此 `.day-panel .sheet-scroll.list > *` 固定 `flex-shrink: 0`。**新增列表类容器时同样要显式设 `flex-shrink: 0`**（或给子项 `min-height: max-content`），别依赖默认值。
-2. **出现/消失的提示条不得改变内容流高度。** `.day-footer` 固定为「单行两列」`grid-template-columns: minmax(0, 1fr) auto`：左列弹性放 `.undo-bar`（超长省略号截断），右列按内容宽放 `.composer-open`。撤销条出现/消失时 footer 高度、滚动容器高度、主按钮宽度都必须**不变**。不要用 `auto` 当第一列（长撤销文案会把主按钮压成窄缝），也不要用 `:has()` 切换列模板（两态跳变）。
-3. 要在 footer 里加第三个动作时，**先把列模板想清楚**，不要靠 `position: absolute` 堆在同一点。
+1. **列表项不得被压缩。** 锁视口 + 定高滚动口之后，**不要**再让滚动口用列 flex 排布带 `overflow: hidden` 的卡片（默认 `flex-shrink: 1` 会把 `min-height: auto` 收成 0，整列压扁且 `scrollHeight === clientHeight`）。当日清单：`.day-panel .sheet-scroll.list` 用**块级流**，间距用子项 `margin-bottom`。其它列表若必须 flex，子项写 `flex: 0 0 auto` / `min-height: max-content`；只贴 `flex-shrink: 0` 不够当根治（易被其它规则或 WebView 盖掉）。对照 initial（`dedbfbc`）：那时面板随内容长高、由外层滚，没有「定高 flex 口压扁子项」这条路径。
+2. **出现/消失的提示条不得改变内容流高度。** `.day-footer` 固定「单行两列」`minmax(0, 1fr) auto`，并**始终挂在 day-panel 第三行**（可无子按钮，`min-height` 守行高）。撤销条出现/消失时 footer 高度、滚动容器高度、主按钮宽度都必须**不变**。不要用 `auto` 当第一列，不要用 `:has()` 切换列模板，不要条件卸载整行 footer。
+3. **列表 DOM 稳定。** 滚动容器的 React `key` 只跟日期 / 编辑锁走；换日才把 `scrollTop` 归零。不要把条数、首条标题编进 key，也不要在同步签名变化时重置滚动。
+4. 要在 footer 里加第三个动作时，**先把列模板想清楚**，不要靠 `position: absolute` 堆在同一点。
 
 **手机壳 vs 网页。** 两套壳共用同一份 CSS，靠 `html[data-shell]` 分流：`main.tsx` 与 `index.html` 的内联脚本用 `isNativeApp()`（Capacitor `isNativeAppPlatform()`）把 `data-shell` 设成 `native` 或 `web`。约定：
 

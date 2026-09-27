@@ -376,8 +376,11 @@ export function DayPanel({
   if (!editorOpen) frozenItemsRef.current = items
   const viewItems = editorOpen ? frozenItemsRef.current : items
   const pending = viewItems.filter((i) => !i.done).length
-  const listSig = `${dateKey}:${viewItems.length}:${viewItems[0]?.title ?? ''}:${viewItems[0]?.start ?? ''}`
   const dayNudge = `${(Number(dateKey.replace(/-/g, '')) % 19) * 0.04}px`
+  // 列表 key 只跟日期 / 编辑锁走：勿把条数或首条标题编进 key，
+  // 否则轮询/同步一改动就整表重挂并把 scrollTop 打回 0（表现为「滑不动」）。
+  const listMountKey = editorOpen ? `list-lock-${dateKey}` : `list-${dateKey}`
+  const emptyMountKey = editorOpen ? `empty-lock-${dateKey}` : `empty-${dateKey}`
 
   // 只能依赖日期字符串：父组件每次渲染都会 new Date()，用 Date 对象当 deps 会误关编辑框
   useLayoutEffect(() => {
@@ -396,7 +399,7 @@ export function DayPanel({
     if (!el) return
     el.scrollTop = 0
     void el.offsetHeight
-  }, [dateKey, listSig])
+  }, [dateKey])
 
   useLayoutEffect(() => {
     onEditorOpenChangeRef.current?.(editorOpen)
@@ -485,12 +488,12 @@ export function DayPanel({
         <DayScale key={dateKey} date={date} items={viewItems} />
       </div>
       {viewItems.length === 0 ? (
-        <div key={editorOpen ? `empty-lock-${dateKey}` : `empty-${listSig}`} ref={listRef} className="sheet-scroll empty" data-day={dateKey}>
+        <div key={emptyMountKey} ref={listRef} className="sheet-scroll empty" data-day={dateKey}>
           这一天还没有事项。点下方「新事项」写入。
         </div>
       ) : (
         <div
-          key={editorOpen ? `list-lock-${dateKey}` : `list-${listSig}`}
+          key={listMountKey}
           ref={listRef}
           id={`day-list-${dateKey}`}
           className="sheet-scroll list"
@@ -552,31 +555,30 @@ export function DayPanel({
         </div>
       )}
 
-      {(undoLabel && onUndo) || (!editingKey && !composerOpen) ? (
-        <div className="day-footer">
-          {undoLabel && onUndo ? (
-            <button
-              type="button"
-              className={`undo-bar${undoArmed ? ' armed' : ''}`}
-              onClick={onUndo}
-            >
-              {undoArmed ? `确定撤销「${undoLabel}」` : `撤销「${undoLabel}」`}
-            </button>
-          ) : null}
-          {!editingKey && !composerOpen ? (
-            <button
-              type="button"
-              className="solid composer-open"
-              onClick={() => {
-                onEditorOpenChange?.(true)
-                setComposerOpen(true)
-              }}
-            >
-              新事项
-            </button>
-          ) : null}
-        </div>
-      ) : null}
+      {/* 第三行始终挂载：子按钮可缺席，勿整行卸载，否则 list 行高跳变 */}
+      <div className="day-footer">
+        {undoLabel && onUndo ? (
+          <button
+            type="button"
+            className={`undo-bar${undoArmed ? ' armed' : ''}`}
+            onClick={onUndo}
+          >
+            {undoArmed ? `确定撤销「${undoLabel}」` : `撤销「${undoLabel}」`}
+          </button>
+        ) : null}
+        {!editingKey && !composerOpen ? (
+          <button
+            type="button"
+            className="solid composer-open"
+            onClick={() => {
+              onEditorOpenChange?.(true)
+              setComposerOpen(true)
+            }}
+          >
+            新事项
+          </button>
+        ) : null}
+      </div>
 
       {editor}
     </section>

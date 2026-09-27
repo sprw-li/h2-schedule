@@ -1106,13 +1106,32 @@ button {
 }
 
 /*
- * 列方向 flex 子项默认 flex-shrink: 1；事项卡又带 overflow: hidden，
- * 会让 min-height: auto 解析成 0，于是整列被压进容器高度、内容被裁掉，
- * 且 scrollHeight === clientHeight 导致滚动条根本不出现（表现为「无法滑动 + 每项被遮挡」）。
- * 卡片必须保持自身内容高度，装不下时交给容器滚动。
+ * 当日清单滚动模型（对照 initial / dedbfbc）：
+ * 早期 .day-panel 是列 flex + min-height，.list { flex:1 }，面板随内容长高、
+ * 由外层滚动——子项不会被压进视口。后来锁死视口（html/app overflow:hidden）
+ * 并把 .sheet-scroll.list 做成「定高滚动口 + 列 flex」，子项默认 flex-shrink:1，
+ * 再叠加 .item { overflow:hidden } → min-height:auto 变成 0，整列被压扁且
+ * scrollHeight===clientHeight（无滑动）。只贴 flex-shrink:0 在部分 WebView
+ * 仍可能被别的 flex/高度规则盖掉。
+ *
+ * 根治：滚动口内改回块级流（与 initial 的「内容自然高度」一致），子项不再
+ * 参与 flex 收缩；间距用 margin 代替 gap。其它仍用 .list flex 的面板不受影响。
  */
-.day-panel .sheet-scroll.list > * {
-  flex-shrink: 0;
+.day-panel .sheet-scroll.list {
+  display: block;
+  align-self: stretch;
+  height: 100%;
+  max-height: 100%;
+}
+
+.day-panel .sheet-scroll.list > .item {
+  display: grid;
+  min-height: max-content;
+  margin-bottom: 8px;
+}
+
+.day-panel .sheet-scroll.list > .item:last-child {
+  margin-bottom: 0;
 }
 
 .panel.calendar-panel,
@@ -1125,9 +1144,15 @@ button {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   grid-template-columns: minmax(0, 1fr);
+  /* 第三行始终占位：footer 节点可空，但行高由 min-height 守住 */
+  grid-template-areas:
+    'chrome'
+    'list'
+    'footer';
 }
 
 .day-panel .day-chrome {
+  grid-area: chrome;
   min-width: 0;
   position: relative;
   z-index: 4;
@@ -1136,6 +1161,7 @@ button {
 
 .day-panel .sheet-scroll,
 .day-panel .sheet-scroll.list {
+  grid-area: list;
   -webkit-overflow-scrolling: touch;
   min-height: 0;
   min-width: 0;
@@ -1148,9 +1174,11 @@ button {
   margin-left: var(--day-nudge, 0px);
   padding-bottom: 8px;
   overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 .day-panel .day-footer {
+  grid-area: footer;
   z-index: 4;
   background: var(--paper);
 }
@@ -1388,6 +1416,8 @@ button {
  * footer 固定为「单行两列」：左列弹性放撤销条（超长省略号截断），
  * 右列按内容宽放主按钮。两种状态下 footer 高度与主按钮宽度都一致。
  * 不要用 auto 当第一列——长撤销文案会把主按钮压成窄缝（旧 bug）。
+ * DOM 上 .day-footer 必须始终挂在 day-panel 第三行（可无子按钮），用
+ * min-height 守住行高，禁止条件卸载整行导致 list 行突然变高/变矮。
  */
 .day-footer {
   display: grid;
@@ -1395,11 +1425,13 @@ button {
   align-items: center;
   gap: 8px;
   min-width: 0;
+  min-height: 54px;
   margin-top: 0;
   padding-top: 10px;
   border-top: 1px solid var(--line);
   background: var(--paper);
   z-index: 3;
+  box-sizing: border-box;
 }
 
 .day-footer .undo-bar {
