@@ -1684,16 +1684,18 @@ html[data-shell='web'] .panel.day-panel {
 }
 
 @media (max-width: 860px) {
-  /* native 窄屏：保留壳样式，但禁止 position:fixed / overflow:hidden 锁视口 */
-  html[data-shell='native'] {
-  &,
-  body,
-  #root,
-  .app {
+  /*
+   * 窄屏规则必须挂在 @media 下，不要嵌进 html[data-shell=native]{}。
+   * 嵌套会使整段手机布局只在 native 生效；检测失败时退回桌面样式，观感错乱。
+   * native 仅收「铺满 / 取消 max-width」；禁止 position:fixed / overflow:hidden 锁视口。
+   */
+  html[data-shell='native'],
+  html[data-shell='native'] body,
+  html[data-shell='native'] #root,
+  html[data-shell='native'] .app {
     width: auto;
     max-width: none;
     min-height: 100dvh;
-    /* 刻意不写 position:fixed / overflow:hidden —— 外层文档滚 */
   }
 
   .app {
@@ -2065,9 +2067,9 @@ html[data-shell='web'] .panel.day-panel {
     gap: 2px;
   }
 
-  &,
-  body,
-  .app {
+  html[data-shell='native'],
+  html[data-shell='native'] body,
+  html[data-shell='native'] .app {
     background: var(--paper);
   }
 
@@ -2163,7 +2165,6 @@ html[data-shell='web'] .panel.day-panel {
 
   .composer input[aria-label='事项标题'] {
     grid-column: 1 / -1;
-  }
   }
 }
 

@@ -10,7 +10,8 @@ const indexPath = join(phoneDir, 'index.html')
 const PLACEHOLDER = '__H2_BUILT_AT_PLACEHOLDER__'
 
 // 只丢掉坏包/全屏遮罩包；不要用壳时间戳清掉已装配的更新（否则本机永远停在 APK 打包点）
-const BOOT_TEMPLATE = `<script data-h2-ota-boot="1">(function(){try{var k="h2.ota.bundle.v2";try{localStorage.removeItem("h2.ota.bundle.v1")}catch(e){}var raw=localStorage.getItem(k);if(!raw)return;var p=JSON.parse(raw);if(!p||p.verified!==true||!p.html||!p.sha256||!p.builtAt){localStorage.removeItem(k);return}if(p.html.indexOf("update-scrim")>=0){localStorage.removeItem(k);return}if(window.__H2_OTA_APPLIED__)return;window.__H2_OTA_APPLIED__=true;document.open();document.write(p.html);document.close()}catch(e){console.warn("h2-ota-boot",e)}})();</script>`
+// 无包时清掉 APPLIED/META 孤儿，避免「时间戳已新、壳仍旧」。write 失败也清包，下次可再更。
+const BOOT_TEMPLATE = `<script data-h2-ota-boot="1">(function(){try{var k="h2.ota.bundle.v2",m="h2.ota.meta.v2",a="h2.ota.applied-built-at";try{localStorage.removeItem("h2.ota.bundle.v1")}catch(e){}var raw=localStorage.getItem(k);if(!raw){try{localStorage.removeItem(a);localStorage.removeItem(m)}catch(e){}return}var p=JSON.parse(raw);if(!p||p.verified!==true||!p.html||!p.sha256||!p.builtAt){try{localStorage.removeItem(k);localStorage.removeItem(a);localStorage.removeItem(m)}catch(e){}return}if(p.html.indexOf("update-scrim")>=0){try{localStorage.removeItem(k);localStorage.removeItem(a);localStorage.removeItem(m)}catch(e){}return}if(window.__H2_OTA_APPLIED__)return;window.__H2_OTA_APPLIED__=true;try{document.open();document.write(p.html);document.close()}catch(w){try{localStorage.removeItem(k);localStorage.removeItem(a);localStorage.removeItem(m)}catch(e){}throw w}}catch(e){console.warn("h2-ota-boot",e)}})();</script>`
 
 function inlineRefs(html) {
   let out = html

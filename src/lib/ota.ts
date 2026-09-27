@@ -107,18 +107,35 @@ function validIso(s: string | undefined | null) {
 }
 
 /**
- * 本机时间戳：只认「已装配的 OTA」，不要对壳/页面/缓存取 max。
+ * 本机时间戳：只认「磁盘上真有可装配 HTML 的 OTA」，不要对壳/页面/缓存取 max。
  * 以前取最新会导致再查一次时又跳回 APK 打包点或无效占位符。
+ *
+ * 硬约束：APPLIED / META 若没有对应的 bundle HTML，一律当孤儿丢掉。
+ * 否则会出现「更新面板时间戳已是新版，WebView 仍跑 APK 旧壳」——用户看到压扁 UI
+ * 却被告知「已是最新」。
  */
 export function localBuiltAt() {
-  return (
-    validIso(readAppliedBuiltAt()) ||
-    validIso(readStoredMeta()?.builtAt) ||
-    validIso(loadLocalBundle()?.builtAt) ||
-    validIso(metaBuiltAt()) ||
-    validIso(bundledBuiltAt()) ||
-    '本机打包'
-  )
+  const bundle = loadLocalBundle()
+  if (bundle) {
+    return (
+      validIso(readAppliedBuiltAt()) ||
+      validIso(readStoredMeta()?.builtAt) ||
+      validIso(bundle.builtAt) ||
+      validIso(metaBuiltAt()) ||
+      validIso(bundledBuiltAt()) ||
+      '本机打包'
+    )
+  }
+  // 无包：清掉会骗「已更新」的孤儿标记，回落到 APK/页面自身时间
+  try {
+    if (readAppliedBuiltAt() || readStoredMeta()) {
+      localStorage.removeItem(APPLIED_KEY)
+      localStorage.removeItem(META_KEY)
+    }
+  } catch {
+    /* ignore */
+  }
+  return validIso(metaBuiltAt()) || validIso(bundledBuiltAt()) || '本机打包'
 }
 
 export function clearLocalBundle() {
@@ -343,31 +360,51 @@ export async function downloadAndVerify(man: OtaManifest): Promise<OtaBundle> {
 }
 
 export function saveBundle(bundle: OtaBundle) {
-  localStorage.setItem(APPLIED_KEY, bundle.builtAt)
-  localStorage.setItem(
-    META_KEY,
-    JSON.stringify({ builtAt: bundle.builtAt, sha256: bundle.sha256, appliedAt: bundle.appliedAt }),
-  )
+  // 先写 HTML，成功后再标 APPLIED/META。顺序反了会在 QuotaExceeded 后留下
+  // 「已应用新版」标记，壳却仍跑旧 APK，更新面板永远显示已是最新。
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(bundle))
   } catch (e) {
     console.warn('ota html save failed', e)
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch {
+      /* ignore */
+    }
+    throw new Error('本机空间不够，请清理后重试')
+  }
+  try {
+    localStorage.setItem(APPLIED_KEY, bundle.builtAt)
+    localStorage.setItem(
+      META_KEY,
+      JSON.stringify({ builtAt: bundle.builtAt, sha256: bundle.sha256, appliedAt: bundle.appliedAt }),
+    )
+  } catch (e) {
+    console.warn('ota meta save failed', e)
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(APPLIED_KEY)
+      localStorage.removeItem(META_KEY)
+    } catch {
+      /* ignore */
+    }
     throw new Error('本机空间不够，请清理后重试')
   }
 }
 
 export async function checkForUpdate() {
   const man = await fetchManifest()
-  // 已装过同版本但缺 applied 标记时补上，避免「再查一次」跳回壳时间
+  // localBuiltAt 会清孤儿 APPLIED；有真包且缺 applied 时再补标记
+  let local = localBuiltAt()
   const bundle = loadLocalBundle()
   if (bundle?.builtAt === man.builtAt && !validIso(readAppliedBuiltAt())) {
     try {
       localStorage.setItem(APPLIED_KEY, man.builtAt)
+      local = localBuiltAt()
     } catch {
       /* ignore */
     }
   }
-  const local = localBuiltAt()
   return {
     manifest: man,
     localBuiltAt: local,

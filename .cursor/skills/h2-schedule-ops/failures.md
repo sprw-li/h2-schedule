@@ -10,6 +10,7 @@
 | 已经 push 源码 | 没 `build:phone` 或没推 `docs/ota/`。 |
 | GitHub OTA 已是新包，手机「最新」仍是旧日 | CLab `/ota/manifest.json` 未同步；选 CLab 的旧壳/校园网只看得到 CLab。应用 `push:ota:campus` 回读校验。 |
 | 点更新显示已是最新 | 本机时间对壳/页面/缓存取了 max；`PLACEHOLDER` 没当成旧。 |
+| 更新面板 `builtAt` 已新，真机仍压扁重叠 | `applied`/`meta` 先于 HTML 写入；QuotaExceeded 后留下孤儿时间戳，boot 不 `document.write`，壳仍跑旧 APK。修：先写 HTML 再标 applied；无包清孤儿；不可靠时重装 APK。 |
 | 卸掉重装就能好 | 壳才要重装；乱重装丢掉未同步本机改动。 |
 | 网页也天天「有更新」 | OTA 只该给原生壳；浏览器已是当前页。 |
 
