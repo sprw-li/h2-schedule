@@ -3,32 +3,35 @@ import { CalendarPanel } from './components/CalendarPanel'
 import { DayPanel } from './components/DayPanel'
 import { RefsPanel } from './components/RefsPanel'
 import { WeatherPanel } from './components/WeatherPanel'
-import { getWriteToken, pullCloud, pushCloud, setWriteToken } from './lib/cloud'
+import { getWriteToken, pullCloud, setWriteToken } from './lib/cloud'
 import { downloadCsv, downloadTextFile, mergeCsvIntoSchedule, readCsvText, scheduleToCsv } from './lib/csv'
 import { scheduleToIcs } from './lib/ics'
 import { ExtraBar } from './components/ExtraBar'
 import { SourceBar } from './components/SourceBar'
 import { UpdateBar } from './components/UpdateBar'
 import { isNativeApp } from './lib/ota'
-import { campusAuthHeaders, campusIsLive, getCampusOrigin, getSyncSource, seedCampusLogin, type SyncSource } from './lib/origin'
+import { campusIsLive, getSyncSource, seedCampusLogin, type SyncSource } from './lib/origin'
 import { addDays, addMonths, isAllDay, parseDateKey, timeSortKey, toDateKey, todayKey } from './lib/dates'
-import { flattenItems } from './lib/backup'
 import { loadSchedule, saveSchedule, uid } from './lib/storage'
-import {
-  clearLegacyOverlay,
-  integrateSchedules,
-  isPendingSync,
-  slotKey,
-  loadRemoteSha,
-  loadRemoteSnap,
-  mergeByIdentity,
-  normalizeSchedule,
-  saveRemoteSha,
-  saveRemoteSnap,
-  scheduleContentSig,
-  setPendingSync,
-} from './lib/sync'
+import { clearLegacyOverlay, slotKey } from './lib/sync'
+import { coerceSchedule } from './lib/schedule'
 import { unlockFromPublic } from './lib/unlock'
+import { diffById } from './lib/ops/diff'
+import { project } from './lib/ops/fold'
+import { HlcClock } from './lib/ops/hlc'
+import {
+  enqueueOps,
+  getOrCreateDeviceId,
+  itemCount,
+  loadQueue,
+  loadSnapshotMap,
+  makeDiffMeta,
+  queueByteSize,
+  saveQueue,
+  saveSnapshotMap,
+  syncClockFromQueue,
+} from './lib/ops/queue'
+import { flushOps, pullSnapshot } from './lib/ops/cloud'
 import type { ScheduleMap } from './types'
 
 type SyncPhase = 'off' | 'pull' | 'push' | 'ok' | 'err'
@@ -36,7 +39,13 @@ type SyncPhase = 'off' | 'pull' | 'push' | 'ok' | 'err'
 export default function App() {
   const [cursor, setCursor] = useState(() => new Date())
   const [selectedKey, setSelectedKey] = useState(todayKey)
-  const [schedule, setSchedule] = useState<ScheduleMap>(() => normalizeSchedule(loadSchedule()))
+  const [schedule, setSchedule] = useState<ScheduleMap>(() => {
+    const snap = loadSnapshotMap()
+    const q = loadQueue()
+    if (snap && q.queue.length > 0) return project(snap, q.queue)
+    if (snap && itemCount(snap) > 0) return coerceSchedule(snap)
+    return coerceSchedule(loadSchedule())
+  })
   const [message, setMessage] = useState('正在加载…')
   const [pane, setPane] = useState<'calendar' | 'day' | 'weather' | 'refs'>('calendar')
   const [phrase, setPhrase] = useState('')
@@ -44,24 +53,28 @@ export default function App() {
   const [unlocking, setUnlocking] = useState(false)
   const [unlockError, setUnlockError] = useState('')
   const [phase, setPhase] = useState<SyncPhase>('pull')
-  const shaRef = useRef(loadRemoteSha())
   const pushTimer = useRef(0)
-  const dirtyRef = useRef(isPendingSync())
+  const flushBackoff = useRef(1000)
   const pendingRef = useRef<ScheduleMap | null>(null)
-  const remoteRef = useRef<ScheduleMap>(loadRemoteSnap() ?? {})
+  const snapshotRef = useRef<ScheduleMap>(loadSnapshotMap() ?? {})
   const syncingRef = useRef(false)
   const editingRef = useRef(false)
+  const deviceId = useRef(getOrCreateDeviceId())
+  const clockRef = useRef(new HlcClock(deviceId.current))
   const csvInputRef = useRef<HTMLInputElement>(null)
   const csvTextRef = useRef('')
   const [csvSheet, setCsvSheet] = useState<{ title: string; text: string; mode: 'export' | 'import' } | null>(null)
   const [undo, setUndo] = useState<{ label: string; before: ScheduleMap } | null>(null)
   const [undoArmed, setUndoArmed] = useState(false)
   const [source, setSource] = useState<SyncSource>(() => getSyncSource())
-  const pendingRemoteRef = useRef<{ map: ScheduleMap; sha: string } | null>(null)
-  const applyRemoteRef = useRef<
-    ((remote: { map: ScheduleMap; sha: string }, reason: 'hydrate' | 'poll') => boolean) | undefined
-  >(undefined)
+  const pendingRemoteRef = useRef<ScheduleMap | null>(null)
+  const applySnapshotRef = useRef<((map: ScheduleMap, rev?: number) => void) | undefined>(undefined)
+  const focusPullAt = useRef(0)
   const today = useMemo(() => new Date(), [])
+
+  useMemo(() => {
+    syncClockFromQueue(clockRef.current, loadQueue())
+  }, [])
 
   function clipTitle(title: string) {
     const t = title.trim()
@@ -145,110 +158,58 @@ export default function App() {
   useEffect(() => {
     let stop = false
 
-    function adoptRemote(map: ScheduleMap, sha?: string) {
-      remoteRef.current = map
-      saveRemoteSnap(map)
-      if (sha) {
-        shaRef.current = sha
-        saveRemoteSha(sha)
-      }
-    }
-
-    /**
-     * 拉/轮询统一入口。
-     * 致命坑：绝不能先把 remoteRef 设成「本次新远端」再当 baseline——
-     * pending 时会把远端条目全当成「本机已删」丢掉，再 flush 冲垮云端。
-     */
-    function applyRemote(remote: { map: ScheduleMap; sha: string }, reason: 'hydrate' | 'poll') {
+    function applySnapshot(map: ScheduleMap, rev?: number) {
       if (editingRef.current) {
-        pendingRemoteRef.current = remote
-        return false
+        pendingRemoteRef.current = map
+        return
       }
-      const local = normalizeSchedule(pendingRef.current ?? loadSchedule())
-      const incomingSig = scheduleContentSig(normalizeSchedule(remote.map))
-      if (reason === 'poll' && incomingSig === scheduleContentSig(local) && !dirtyRef.current && !pendingRef.current) {
-        if (remote.sha) {
-          shaRef.current = remote.sha
-          saveRemoteSha(remote.sha)
-        }
-        return false
+      snapshotRef.current = map
+      saveSnapshotMap(map, rev)
+      const q = loadQueue()
+      const view = q.queue.length > 0 ? project(map, q.queue) : coerceSchedule(map)
+      pendingRef.current = view
+      if (!editingRef.current) {
+        setSchedule(view)
+        saveSchedule(view)
       }
-      const prevBaseline = remoteRef.current
-      const localN = flattenItems(local).length
-      const wantPending = localN > 0 && (dirtyRef.current || isPendingSync() || !!pendingRef.current)
-      const { merged, remoteClean, needPush } = integrateSchedules(remote.map, local, {
-        pending: wantPending,
-        // 始终用「本次拉到之前」的远端当 baseline；不能先 adopt 再拿 remoteRef
-        baseline: prevBaseline ?? loadRemoteSnap(),
-      })
-
-      adoptRemote(remoteClean, remote.sha || undefined)
-      setSchedule(merged)
-      saveSchedule(merged)
-
-      if (needPush && localN > 0) {
-        pendingRef.current = merged
-        dirtyRef.current = true
-        setPendingSync(true)
-        if (getWriteToken()) {
-          if (reason === 'hydrate') setMessage('正在对齐本机与云端…')
-          flush(merged)
-        } else if (reason === 'hydrate') {
-          setAskPhrase(true)
-          setPhase('ok')
-          setMessage('日程已加载；输入口令可把本机改动同步上去')
-        }
-        return true
-      }
-
-      // 已与云端内容一致：清掉假 pending，否则轮询永远停、越积越脏
-      dirtyRef.current = false
-      pendingRef.current = null
-      setPendingSync(false)
-      return false
     }
 
-    async function hydrate() {
-      seedCampusLogin()
+    async function pullAndAlign() {
+      if (stop || editingRef.current || syncingRef.current) return
       setPhase('pull')
       try {
-        // 只 normalize，不要对空远端做 integrate（会把全部本机标成 pending）
-        const boot = normalizeSchedule(pendingRef.current ?? loadSchedule())
-        if (!editingRef.current) {
-          saveSchedule(boot)
-          if (flattenItems(boot).length > 0) setSchedule(boot)
-        }
-
-        const remote = await pullCloud()
-        if (stop) return
-        if (!remote) {
-          setMessage(flattenItems(boot).length > 0 ? '已用本机日程' : '还没有日程')
-          setPhase('ok')
-          return
-        }
-
-        const pending = applyRemote(remote, 'hydrate')
-        if (!pending) {
-          const n = flattenItems(normalizeSchedule(pendingRef.current ?? loadSchedule())).length
-          setMessage(n > 0 ? '加载完毕' : '还没有日程')
-          setPhase('ok')
-        }
-      } catch (err) {
-        const local = normalizeSchedule(pendingRef.current ?? loadSchedule())
-        const text = err instanceof Error ? err.message : ''
-        if (flattenItems(local).length > 0) {
-          if (!editingRef.current) {
-            setSchedule(local)
-            saveSchedule(local)
-          }
-          setPhase('ok')
-          if (text.includes('CLab 登录') || text.includes('账密') || text.includes('账号密码')) {
-            setMessage(text)
+        if (getWriteToken()) {
+          const snap = await pullSnapshot()
+          if (stop) return
+          if (snap) {
+            applySnapshot(snap.map, snap.rev)
+            setPhase('ok')
+            setMessage(itemCount(snap.map) > 0 ? '已对齐数据仓' : '还没有日程')
             return
           }
+        }
+        // 无令牌或私有仓不可读：退回公开快照（只读）
+        const remote = await pullCloud()
+        if (stop) return
+        if (remote) {
+          applySnapshot(remote.map)
+          setPhase('ok')
           setMessage(
-            campusIsLive() ? 'CLab 暂不通，先用本机（未改用 GitHub）' : 'GitHub 暂不通，先用本机（未丢）',
+            getWriteToken()
+              ? '数据仓暂不可读，已用公开快照'
+              : '已加载公开快照；输入口令可读写数据仓',
           )
+          if (!getWriteToken()) setAskPhrase(true)
+          return
+        }
+        const boot = coerceSchedule(pendingRef.current ?? loadSchedule())
+        setPhase('ok')
+        setMessage(itemCount(boot) > 0 ? '已用本机日程' : '还没有日程')
+      } catch (err) {
+        const local = coerceSchedule(pendingRef.current ?? loadSchedule())
+        if (itemCount(local) > 0) {
+          setPhase('ok')
+          setMessage(campusIsLive() ? '暂不通，先用本机（未丢）' : '网络暂不通，先用本机（未丢）')
           return
         }
         setPhase('err')
@@ -256,155 +217,161 @@ export default function App() {
       }
     }
 
-    applyRemoteRef.current = applyRemote
-
-    void hydrate()
-
-    const tick = window.setInterval(() => {
-      // 编辑中/待推送/正在同步：不拉，避免重渲染冲掉编辑框或抢写
-      if (document.hidden || dirtyRef.current || isPendingSync() || syncingRef.current || editingRef.current || pendingRef.current) return
-      void pullCloud()
-        .then((remote) => {
-          if (!remote || dirtyRef.current || isPendingSync() || editingRef.current || pendingRef.current || stop) return
-          // 无 sha = 多半是 Pages 缓存；已有 API sha 时不要用旧 Pages 盖掉刚改的标题
-          if (!remote.sha && shaRef.current) return
-          if (remote.sha && remote.sha === shaRef.current) return
-          applyRemote(remote, 'poll')
-        })
-        .catch(() => {})
-    }, 25000)
-
-    return () => {
-      stop = true
-      window.clearInterval(tick)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount once
-  }, [])
-
-  function flush(map: ScheduleMap) {
-    if (editingRef.current) {
-      window.clearTimeout(pushTimer.current)
-      pushTimer.current = window.setTimeout(() => flush(pendingRef.current ?? map), 800)
-      return
-    }
-    const clean = normalizeSchedule(map)
-    dirtyRef.current = true
-    setPendingSync(true)
-    pendingRef.current = clean
-    saveSchedule(clean)
-
-    if (!getWriteToken() && !campusAuthHeaders().Authorization) {
-      setAskPhrase(true)
-      setPhase('ok')
-      setMessage('改动已记下，输入口令或校服务器账密后即可同步')
-      return
-    }
-    if (syncingRef.current) return
-    syncingRef.current = true
-    setPhase('push')
-    void pushCloud(clean, shaRef.current)
-      .then((sha) => {
-        shaRef.current = sha
-        saveRemoteSha(sha)
-        remoteRef.current = clean
-        saveRemoteSnap(clean)
+    async function flushQueue() {
+      if (stop || editingRef.current) return
+      const q = loadQueue()
+      if (q.queue.length === 0) return
+      if (!getWriteToken()) {
+        setAskPhrase(true)
+        setPhase('ok')
+        setMessage('改动已记下，输入口令后即可同步到数据仓')
+        return
+      }
+      if (syncingRef.current) return
+      syncingRef.current = true
+      setPhase('push')
+      try {
+        await flushOps()
+        flushBackoff.current = 1000
         setAskPhrase(false)
         setPhase('ok')
-        setMessage(
-          campusIsLive()
-            ? '已写入 CLab（并尽量同步到 GitHub）'
-            : getCampusOrigin()
-              ? '已同步到 GitHub（并尽量同步到 CLab）'
-              : '已同步到 GitHub',
-        )
-        // 推送期间又改过：不要用旧包盖掉新改动
-        const later = pendingRef.current
-        if (later && scheduleContentSig(later) !== scheduleContentSig(clean)) {
-          if (!editingRef.current) setSchedule(later)
-          saveSchedule(later)
-          return
-        }
-        dirtyRef.current = false
-        pendingRef.current = null
-        setPendingSync(false)
-        if (!editingRef.current) setSchedule(clean)
-        saveSchedule(clean)
-      })
-      .catch(async (err) => {
+        setMessage('已写入数据仓（op）')
+        // 写完拉一次快照（reducer 可能尚未跑完，本地 project 仍正确）
+        await pullAndAlign()
+      } catch (err) {
         const text = err instanceof Error ? err.message : '同步失败'
-        if (text.includes('令牌') || text.includes('口令') || text.includes('账密') || text.includes('CLab 登录')) {
+        if (text.includes('口令') || text.includes('权限') || text.includes('令牌')) {
           setAskPhrase(true)
           setPhase('ok')
           setMessage('需要口令才能同步（本机改动已保留）')
           return
         }
-        if (text === '冲突') {
-          try {
-            const remote = await pullCloud()
-            if (remote) {
-              const latest = pendingRef.current ?? clean
-              const remoteClean = normalizeSchedule(remote.map)
-              const aligned = normalizeSchedule(
-                mergeByIdentity(remoteClean, latest, true, remoteRef.current),
-              )
-              shaRef.current = remote.sha
-              saveRemoteSha(remote.sha)
-              // 快照必须是远端原件：把 merge 结果当 baseline 会把已删课救活
-              remoteRef.current = remoteClean
-              saveRemoteSnap(remoteClean)
-              const sha = await pushCloud(aligned, remote.sha)
-              shaRef.current = sha
-              saveRemoteSha(sha)
-              remoteRef.current = aligned
-              saveRemoteSnap(aligned)
-              const later = pendingRef.current
-              if (later && scheduleContentSig(later) !== scheduleContentSig(aligned)) {
-                if (!editingRef.current) setSchedule(later)
-                saveSchedule(later)
-                setPhase('ok')
-                setMessage('已同步，还有本地改动…')
-                return
-              }
-              dirtyRef.current = false
-              pendingRef.current = null
-              setPendingSync(false)
-              if (!editingRef.current) setSchedule(aligned)
-              saveSchedule(aligned)
-              setPhase('ok')
-              setMessage('已同步')
-              return
+        setPhase('ok')
+        setMessage(`${text}（本机改动已保留）`)
+        const delay = flushBackoff.current
+        flushBackoff.current = Math.min(delay * 2, 60_000)
+        window.setTimeout(() => {
+          if (!stop && loadQueue().queue.length > 0) void flushQueue()
+        }, delay)
+      } finally {
+        syncingRef.current = false
+      }
+    }
+
+    applySnapshotRef.current = applySnapshot
+
+    async function hydrate() {
+      seedCampusLogin()
+      const boot = coerceSchedule(pendingRef.current ?? loadSchedule())
+      if (!editingRef.current && itemCount(boot) > 0) {
+        setSchedule(boot)
+        saveSchedule(boot)
+      }
+      await pullAndAlign()
+      await flushQueue()
+    }
+
+    void hydrate()
+
+    function onVisibility() {
+      if (document.visibilityState !== 'visible' || stop) return
+      void flushQueue().then(() => pullAndAlign())
+    }
+    function onOnline() {
+      if (stop) return
+      void flushQueue()
+    }
+    function onFocus() {
+      if (stop) return
+      const now = Date.now()
+      if (now - focusPullAt.current < 5000) return
+      focusPullAt.current = now
+      void pullAndAlign()
+    }
+
+    document.addEventListener('visibilitychange', onVisibility)
+    window.addEventListener('online', onOnline)
+    window.addEventListener('focus', onFocus)
+
+    return () => {
+      stop = true
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('online', onOnline)
+      window.removeEventListener('focus', onFocus)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount once
+  }, [])
+
+  function flush() {
+    if (editingRef.current) {
+      window.clearTimeout(pushTimer.current)
+      pushTimer.current = window.setTimeout(() => flush(), 800)
+      return
+    }
+    const q = loadQueue()
+    if (q.queue.length === 0) return
+    if (!getWriteToken()) {
+      setAskPhrase(true)
+      setPhase('ok')
+      setMessage('改动已记下，输入口令后即可同步到数据仓')
+      return
+    }
+    if (syncingRef.current) return
+    syncingRef.current = true
+    setPhase('push')
+    void flushOps()
+      .then(async () => {
+        flushBackoff.current = 1000
+        setAskPhrase(false)
+        setPhase('ok')
+        setMessage('已写入数据仓（op）')
+        try {
+          const snap = await pullSnapshot()
+          if (snap) {
+            snapshotRef.current = snap.map
+            saveSnapshotMap(snap.map, snap.rev)
+            const view = project(snap.map, loadQueue().queue)
+            pendingRef.current = view
+            if (!editingRef.current) {
+              setSchedule(view)
+              saveSchedule(view)
             }
-          } catch {
-            /* fall through */
           }
+        } catch {
+          /* keep local projection */
+        }
+      })
+      .catch((err: unknown) => {
+        const text = err instanceof Error ? err.message : '同步失败'
+        if (text.includes('口令') || text.includes('权限') || text.includes('令牌')) {
+          setAskPhrase(true)
+          setPhase('ok')
+          setMessage('需要口令才能同步（本机改动已保留）')
+          return
         }
         setPhase('ok')
-        setMessage(`${text}（本机改动已保留，稍后再试）`)
+        setMessage(`${text}（本机改动已保留）`)
       })
       .finally(() => {
         syncingRef.current = false
-        const later = pendingRef.current
-        // 仅当推送成功后仍有「更新的本机」才续推；失败立刻重试会把拒绝覆盖打成死循环
-        if (
-          dirtyRef.current &&
-          later &&
-          getWriteToken() &&
-          scheduleContentSig(later) !== scheduleContentSig(clean)
-        ) {
-          window.setTimeout(() => {
-            if (dirtyRef.current && pendingRef.current && !syncingRef.current) {
-              flush(pendingRef.current)
-            }
-          }, 50)
-        }
       })
   }
 
   function commit(next: ScheduleMap, label?: string, silent = false) {
     const prev = cloneSchedule(pendingRef.current ?? schedule)
-    const clean = normalizeSchedule(next)
-    dirtyRef.current = true
-    setPendingSync(true)
+    const clean = coerceSchedule(next)
+    const qState = loadQueue()
+    const meta = makeDiffMeta(clockRef.current, qState)
+    const ops = diffById(prev, clean, meta)
+    if (ops.length > 0) {
+      if (qState.queue.length + ops.length > 500 || queueByteSize(qState) > 2_000_000) {
+        setPhase('err')
+        setMessage('离线改动过多，请先联网同步再继续编辑')
+        return
+      }
+      saveQueue(qState) // persist nextSeq / clock side effects from meta
+      enqueueOps(ops)
+    }
     pendingRef.current = clean
     setSchedule(clean)
     saveSchedule(clean)
@@ -418,7 +385,7 @@ export default function App() {
         pushTimer.current = window.setTimeout(later, 800)
         return
       }
-      flush(pendingRef.current ?? clean)
+      flush()
     }
     pushTimer.current = window.setTimeout(later, 400)
   }
@@ -620,7 +587,7 @@ export default function App() {
                     window.setTimeout(() => {
                       if (editingRef.current) return
                       pendingRemoteRef.current = null
-                      applyRemoteRef.current?.(q, 'poll')
+                      applySnapshotRef.current?.(q)
                     }, 400)
                   }
                 }
@@ -759,7 +726,7 @@ export default function App() {
                     setUnlocking(false)
                     setUnlockError('')
                     setMessage('口令正确，正在同步…')
-                    flush(pendingRef.current ?? schedule)
+                    flush()
                   })
                   .catch((err: unknown) => {
                     setUnlocking(false)

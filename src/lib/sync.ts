@@ -127,6 +127,10 @@ function pickMerged(
  * 用下标标记已配对，避免 Map 把同课不同节次挤成一条、或同 slot 第二条被当成已处理而丢掉。
  * 不用科目族猜测「这还是那节课」——取消/调课会被猜回去。
  */
+/**
+ * @deprecated P1：整表对称 merge 已退役。正本在 h2-data op 日志 + reducer fold。
+ * 保留供 check:logic 回归与旧路径对照；App 不再调用。
+ */
 export function mergeByIdentity(
   remote: ScheduleMap,
   local: ScheduleMap,
@@ -223,7 +227,7 @@ export type IntegrateOpts = {
   baseline?: ScheduleMap | null
 }
 
-/** 拉云/轮询统一入口：两端 normalize → merge → 再 normalize */
+/** @deprecated P1：改用 applySnapshot + project(snapshot, queue) */
 export function integrateSchedules(
   remote: ScheduleMap,
   local: ScheduleMap,

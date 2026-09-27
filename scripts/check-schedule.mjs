@@ -1,14 +1,17 @@
 /**
- * 结构检查：能解析、id 不撞。不再用课表业务规则（周次/抽血/考查）改数据。
- * 另断言 docs/schedule.json（权威）与 public/schedule.json（派生镜像）的 items 逐条一致。
+ * 结构检查：能解析、同日 id 不撞。
+ * P1：docs/schedule.json 是 reducer 物化快照的公开面（只读派生）；
+ * public/schedule.json 仍可作为人工编辑种子。二者不再强制逐条一致——
+ * 若存在 sibling h2-data/snapshot/schedule.json，则断言 docs ≡ snapshot。
  */
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const docsPath = join(root, 'docs', 'schedule.json')
 const publicPath = join(root, 'public', 'schedule.json')
+const dataSnap = join(root, '..', 'h2-data', 'snapshot', 'schedule.json')
 
 function load(path) {
   const data = JSON.parse(readFileSync(path, 'utf8'))
@@ -16,14 +19,16 @@ function load(path) {
   return data
 }
 
+function keyOf(it) {
+  return `${it.id}|${it.date}|${it.start ?? ''}|${it.end ?? ''}|${it.title}|${it.kind}|${it.done ? 1 : 0}|${it.allDay ? 1 : 0}`
+}
+
 const data = load(docsPath)
 const ids = new Set()
 const slots = new Set()
-let dups = 0
 let slotDups = 0
 for (const it of data.items) {
   if (!it?.id || !it?.date || !it?.title) throw new Error('条目缺 id/date/title')
-  if (ids.has(it.id)) dups += 1
   ids.add(it.id)
   const slot = `${it.date}|${it.id}`
   if (slots.has(slot)) slotDups += 1
@@ -31,39 +36,29 @@ for (const it of data.items) {
 }
 if (slotDups) throw new Error(`同一天重复 id ${slotDups} 处（删改会对错行）`)
 
-// docs/ 是权威（App 唯一读写路径），public/ 是派生镜像。两者 items 必须逐条相同。
-const pub = load(publicPath)
-const keyOf = (it) => `${it.date}|${it.start ?? ''}|${it.end ?? ''}|${it.title}`
-const tally = (arr) => {
-  const m = new Map()
-  for (const it of arr) {
-    const k = keyOf(it)
-    m.set(k, (m.get(k) ?? 0) + 1)
-  }
-  return m
-}
-const pubMap = tally(pub.items)
-const docsMap = tally(data.items)
-const missing = [] // 只在 docs 有 → public 缺（派生镜像落后）
-const extra = [] // 只在 public 有 → public 多
-for (const [k, n] of docsMap) {
-  const p = pubMap.get(k) ?? 0
-  for (let i = 0; i < n - p; i += 1) missing.push(k)
-}
-for (const [k, n] of pubMap) {
-  const d = docsMap.get(k) ?? 0
-  for (let i = 0; i < n - d; i += 1) extra.push(k)
-}
-if (missing.length || extra.length) {
-  console.error(
-    `check-schedule: FAIL — docs/schedule.json (${data.items.length} items, 权威) 与 public/schedule.json (${pub.items.length} items, 派生) 的 items 不一致`,
-  )
-  if (missing.length) console.error(`  public 缺少 ${missing.length} 条（只在 docs 有）:\n    ${missing.join('\n    ')}`)
-  if (extra.length) console.error(`  public 多出 ${extra.length} 条（只在 public 有）:\n    ${extra.join('\n    ')}`)
-  console.error('  修复：docs/schedule.json 是权威；跑 npm run build:pages 由 docs/ 单向同步到 public/')
-  process.exit(1)
-}
+// public 仍须可解析（种子/构建源）
+load(publicPath)
 
-console.log(
-  `check-schedule: ok (${data.items.length} items, docs authoritative + public mirror in sync${dups ? `, ${dups} cross-day duplicate ids tolerated` : ''})`,
-)
+if (existsSync(dataSnap)) {
+  const snap = load(dataSnap)
+  const docsKeys = new Set(data.items.map(keyOf))
+  const snapKeys = new Set(snap.items.map(keyOf))
+  const missing = [...snapKeys].filter((k) => !docsKeys.has(k))
+  const extra = [...docsKeys].filter((k) => !snapKeys.has(k))
+  if (missing.length || extra.length || data.items.length !== snap.items.length) {
+    console.error(
+      `check-schedule: FAIL — docs (${data.items.length}) 与 h2-data snapshot (${snap.items.length}) 不一致`,
+    )
+    if (missing.length) console.error(`  docs 缺少 ${missing.length} 条`)
+    if (extra.length) console.error(`  docs 多出 ${extra.length} 条`)
+    console.error('  修复：等 h2-data reduce Action 推公开快照，或本地 node h2-data/scripts/reduce.mjs 后同步 docs')
+    process.exit(1)
+  }
+  console.log(
+    `check-schedule: ok (${data.items.length} items, docs ≡ h2-data snapshot, public seed present)`,
+  )
+} else {
+  console.log(
+    `check-schedule: ok (${data.items.length} items, format ok; no local h2-data snapshot to compare)`,
+  )
+}

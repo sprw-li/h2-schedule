@@ -1,8 +1,7 @@
-import { flattenItems } from './backup'
-import { fetchTextNoThrow, ghApiContents, ghPages, ghRaw, netErr } from './net'
+import { fetchTextNoThrow, ghApiContents, ghPages, ghRaw } from './net'
 import { campusAuthHeaders, campusUrl, getSyncSource } from './origin'
 import { normalizeSchedule, parseScheduleJsonText, serializeSchedule } from './schedule'
-import { loadGithubSha, loadRemoteSnap, saveGithubSha } from './sync'
+import { loadGithubSha, saveGithubSha } from './sync'
 import type { ScheduleMap } from '../types'
 
 const PATH = 'docs/schedule.json'
@@ -79,25 +78,6 @@ function campusWriteHeaders() {
   } as Record<string, string>
 }
 
-async function pushCampus(map: ScheduleMap, sha: string) {
-  const url = campusUrl('schedule.json')
-  if (!url) throw new Error('未配置校服务器')
-  const headers = campusWriteHeaders()
-  if (!headers) throw new Error('需要校服务器账密或口令才能同步')
-  const payload = serializeSchedule(normalizeSchedule(map))
-  if (sha && !sha.startsWith('sig:')) headers['If-Match'] = `"${sha}"`
-  const res = await fetch(url, { method: 'PUT', headers, body: payload })
-  if (res.status === 401 || res.status === 403) throw new Error('校服务器账密不对')
-  if (res.status === 409) throw new Error('冲突')
-  if (!res.ok) throw new Error('同步失败')
-  try {
-    const body = (await res.json()) as { sha?: string }
-    return body.sha || headerSha(res) || sha
-  } catch {
-    return headerSha(res) || sha
-  }
-}
-
 async function pullFromApi(): Promise<{ map: ScheduleMap; sha: string } | null> {
   const token = getWriteToken()
   const headers: Record<string, string> = { Accept: 'application/vnd.github+json' }
@@ -113,20 +93,6 @@ async function pullFromApi(): Promise<{ map: ScheduleMap; sha: string } | null> 
   } catch {
     return null
   }
-}
-
-function guardAgainstWipe(map: ScheduleMap) {
-  const clean = normalizeSchedule(map)
-  const localCount = flattenItems(clean).length
-  const snap = loadRemoteSnap()
-  const snapCount = snap ? flattenItems(snap).length : 0
-  if (snapCount >= 80 && localCount === 0) {
-    throw new Error('本机日程是空的，拒绝覆盖云端')
-  }
-  if (snapCount >= 40 && localCount > 0 && localCount * 2 < snapCount) {
-    throw new Error('本机条数不到云端一半，拒绝覆盖云端')
-  }
-  return clean
 }
 
 /**
@@ -242,82 +208,18 @@ export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | n
   return null
 }
 
-export async function pushCloud(map: ScheduleMap, sha: string) {
-  const token = getWriteToken()
-  const campusAuth = campusAuthHeaders()
-  if (!token && !campusAuth.Authorization) throw new Error('需要口令或校服务器账密才能同步')
-  const clean = guardAgainstWipe(map)
+/**
+ * P1：整表推 docs/schedule.json / CLab 已退役。
+ * 正本在 h2-data op 日志；公开快照由 reducer Action 覆盖。
+ * 保留函数签名以免旧调用崩——一律拒绝，引导走 flushOps。
+ */
+export async function pushCloud(_map: ScheduleMap, _sha: string): Promise<string> {
+  throw new Error('已改用 op 同步（h2-data）；请升级客户端，勿整表覆盖 docs/schedule.json')
+}
 
-  if (getSyncSource() === 'clab') {
-    const campusSha = await pushCampus(clean, sha)
-    void mirrorScheduleToGithub(clean)
-    return campusSha
-  }
-
-  const headers = {
-    Accept: 'application/vnd.github+json',
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
-  }
-  const payload = serializeSchedule(clean)
-
-  async function put(useSha: string) {
-    return fetch(API, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({
-        message: 'Update public schedule',
-        content: encodeBase64(payload),
-        branch: 'main',
-        ...(useSha ? { sha: useSha } : {}),
-      }),
-    })
-  }
-
-  try {
-    let useSha = sha
-    if (!useSha || useSha.startsWith('sig:')) {
-      const meta = await fetch(`${API}?ts=${Date.now()}`, {
-        headers: { Accept: headers.Accept, Authorization: headers.Authorization },
-      })
-      if (meta.ok) {
-        const body = (await meta.json()) as { sha?: string }
-        useSha = body.sha ?? ''
-      } else {
-        useSha = ''
-      }
-    }
-
-    let res = await put(useSha)
-    if (res.status === 409) {
-      const meta = await fetch(`${API}?ts=${Date.now()}`, {
-        headers: { Accept: headers.Accept, Authorization: headers.Authorization },
-      })
-      if (!meta.ok) throw new Error('冲突')
-      const body = (await meta.json()) as { sha?: string }
-      res = await put(body.sha ?? '')
-      if (res.status === 409) throw new Error('冲突')
-    }
-    if (res.status === 401 || res.status === 403) throw new Error('口令无效或权限不足')
-    if (!res.ok) throw new Error('同步失败')
-    const body = (await res.json()) as { content?: { sha?: string } }
-    const nextSha = body.content?.sha ?? useSha
-    // 本机自己写成功后才更新 GitHub sha，并镜像到另一端（读取路径绝不写）
-    if (body.content?.sha) saveGithubSha(body.content.sha)
-    void mirrorScheduleToCampus(clean)
-    return nextSha
-  } catch (e) {
-    if (
-      e instanceof Error &&
-      (e.message === '冲突' ||
-        e.message.includes('口令') ||
-        e.message === '同步失败' ||
-        e.message.includes('拒绝覆盖云端'))
-    ) {
-      throw e
-    }
-    throw new Error(netErr(e, '同步失败'))
-  }
+/** @deprecated P1 退役：客户端不再镜像整表到代码仓 */
+export async function mirrorScheduleToGithubRetired() {
+  return false
 }
 
 function encodeBase64(text: string) {

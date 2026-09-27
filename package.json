@@ -14,6 +14,7 @@
     "test:campus": "node scripts/test-campus-sync.mjs",
     "check:schedule": "node scripts/check-schedule.mjs",
     "check:logic": "node --experimental-strip-types --import ./scripts/register-ts.mjs scripts/check-logic.mjs",
+    "check:ops": "node --experimental-strip-types --import ./scripts/register-ts.mjs scripts/check-ops.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },

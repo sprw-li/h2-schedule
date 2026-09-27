@@ -1,5 +1,5 @@
 import type { ScheduleItem, ScheduleMap } from '../types'
-import { normalizeSchedule } from './schedule'
+import { coerceSchedule } from './schedule'
 
 const KEY = 'h2-schedule.v1'
 
@@ -24,14 +24,14 @@ export function loadSchedule(): ScheduleMap {
     if (!raw) return {}
     const parsed = JSON.parse(raw) as ScheduleMap
     if (!parsed || typeof parsed !== 'object') return {}
-    return normalizeSchedule(parsed)
+    return coerceSchedule(parsed)
   } catch {
     return {}
   }
 }
 
 export function saveSchedule(map: ScheduleMap) {
-  localStorage.setItem(KEY, JSON.stringify(normalizeSchedule(map)))
+  localStorage.setItem(KEY, JSON.stringify(coerceSchedule(map)))
 }
 
 export function resetSchedule() {
@@ -57,7 +57,7 @@ export function mergeItems(map: ScheduleMap, incoming: ScheduleItem[]): Schedule
     if (!dup) list.push(item)
     next[item.date] = list
   }
-  return normalizeSchedule(next)
+  return coerceSchedule(next)
 }
 
 export { uid }

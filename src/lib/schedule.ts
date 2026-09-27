@@ -214,6 +214,17 @@ export function collapseCoveredDuplicates(map: ScheduleMap): ScheduleMap {
   return replaceSchedule(items.filter((_, idx) => !drop.has(idx)))
 }
 
+/**
+ * 持久化路径只用 coerce（合法化字段），不做去重/折叠/改 id。
+ * 去重与折叠仅在导入 CSV/JSON 时报告（见 app-dev-sync / P1 §10）。
+ */
+export function coerceSchedule(input: ScheduleMap | ScheduleItem[] | unknown[]): ScheduleMap {
+  const items = Array.isArray(input)
+    ? coerceItems(input)
+    : coerceItems(flattenItems(input as ScheduleMap) as unknown[])
+  return replaceSchedule(items)
+}
+
 /** 入口：合法化字段 + 撞 id 处理。不做课表规则核验，也不静默删同段不同事项。 */
 export function normalizeSchedule(input: ScheduleMap | ScheduleItem[] | unknown[]): ScheduleMap {
   const items = Array.isArray(input)
