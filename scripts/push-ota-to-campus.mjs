@@ -14,6 +14,9 @@
  *   npm run push:ota:campus            上传并回读校验
  *   npm run push:ota:campus -- --dry-run   只做本地自检，不联网
  *   npm run push:ota:campus -- --no-auth   服务器未配口令时才用（不带 Authorization）
+ *   npm run push:ota:campus -- --if-reachable
+ *     给 build:phone 挂尾用：CLab 不可达 → 警告后 exit 0（校外不阻断构建）；
+ *     可达且已是本机包 → 跳过；可达但陈旧或缺凭据 → 按普通模式推/失败。
  */
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
@@ -28,37 +31,58 @@ const TIMEOUT_MS = 15000
 const argv = process.argv.slice(2)
 const dryRun = argv.includes('--dry-run')
 const noAuth = argv.includes('--no-auth')
+const ifReachable = argv.includes('--if-reachable')
 
 function fail(msg) {
   console.error(`push:ota:campus: FAIL — ${msg}`)
   process.exit(1)
 }
 
+function warnSoft(msg) {
+  console.warn(`push:ota:campus: WARN — ${msg}`)
+  process.exit(0)
+}
+
 function sha256(buf) {
   return createHash('sha256').update(buf).digest('hex')
 }
 
-function originFromEnvFile() {
-  const fromProcess = (process.env.VITE_CAMPUS_ORIGIN ?? '').trim()
-  if (fromProcess) return fromProcess
-  if (!existsSync(join(root, '.env.phone'))) return ''
-  for (const line of readFileSync(join(root, '.env.phone'), 'utf8').split(/\r?\n/)) {
-    const m = /^\s*VITE_CAMPUS_ORIGIN\s*=\s*(.*?)\s*$/.exec(line)
-    if (m) return m[1].replace(/^["']|["']$/g, '').trim()
+/** 读 .env.phone / .env.phone.local 的键；process.env 优先。绝不打印值。 */
+function envVal(keys) {
+  for (const k of keys) {
+    const fromProcess = (process.env[k] ?? '').trim()
+    if (fromProcess) return fromProcess
+  }
+  for (const file of ['.env.phone', '.env.phone.local']) {
+    const p = join(root, file)
+    if (!existsSync(p)) continue
+    for (const line of readFileSync(p, 'utf8').split(/\r?\n/)) {
+      const m = /^\s*([A-Za-z0-9_]+)\s*=\s*(.*?)\s*$/.exec(line)
+      if (!m) continue
+      if (!keys.includes(m[1])) continue
+      const v = m[2].replace(/^["']|["']$/g, '').trim()
+      if (v) return v
+    }
   }
   return ''
 }
 
-function credentials() {
-  const user = (process.env.VITE_CAMPUS_USER ?? process.env.H2_USER ?? '').trim()
-  const pass = (process.env.VITE_CAMPUS_PASS ?? process.env.H2_PASS ?? '').trim()
-  return { user, pass }
+function originFromEnvFile() {
+  return envVal(['VITE_CAMPUS_ORIGIN'])
 }
 
-async function request(url, init = {}) {
+function credentials() {
+  return {
+    user: envVal(['VITE_CAMPUS_USER', 'H2_USER']),
+    pass: envVal(['VITE_CAMPUS_PASS', 'H2_PASS']),
+  }
+}
+
+async function request(url, init = {}, softUnreachable = false) {
   try {
     return await fetch(url, { ...init, signal: AbortSignal.timeout(TIMEOUT_MS) })
   } catch {
+    if (softUnreachable) return null
     fail('CLab 不可达（需在校内网）')
   }
 }
@@ -66,6 +90,7 @@ async function request(url, init = {}) {
 async function main() {
   const origin = originFromEnvFile().replace(/\/$/, '')
   if (!origin) {
+    if (ifReachable) warnSoft('未配置 VITE_CAMPUS_ORIGIN，跳过 CLab OTA 同步')
     fail('未配置校服务器根地址：请在 .env.phone 写 VITE_CAMPUS_ORIGIN=<http://10.x.x.x:port>')
   }
 
@@ -96,6 +121,31 @@ async function main() {
     return
   }
 
+  if (ifReachable) {
+    const probe = await request(`${origin}/ota/manifest.json`, {}, true)
+    if (!probe) {
+      warnSoft(
+        'CLab 不可达，未同步 OTA。校内选 CLab 的旧壳只会问 CLab；回校后务必再跑 npm run push:ota:campus',
+      )
+    }
+    if (probe.ok) {
+      try {
+        const remote = JSON.parse(await probe.text())
+        if (remote?.sha256 === manifest.sha256 && remote?.builtAt === manifest.builtAt) {
+          console.log('push:ota:campus: CLab 已是本机包，跳过上传')
+          return
+        }
+        console.log(
+          `CLab 现有 builtAt=${remote?.builtAt ?? '?'}，将覆盖为本机 ${manifest.builtAt}`,
+        )
+      } catch {
+        console.log('CLab manifest 无法解析，将覆盖上传')
+      }
+    } else {
+      console.log(`CLab GET manifest HTTP ${probe.status}，将尝试上传`)
+    }
+  }
+
   let authHeader = ''
   if (!noAuth) {
     const { user, pass } = credentials()
@@ -119,6 +169,7 @@ async function main() {
       headers: { ...headers, 'Content-Type': t.ctype },
       body: t.body,
     })
+    if (!res) fail('CLab 不可达（需在校内网）')
     if (res.status === 401 || res.status === 403) fail(`CLab 拒绝上传（${res.status}）：账密不对或权限不足`)
     if (!res.ok) fail(`PUT ${t.url} 失败：HTTP ${res.status}`)
   }

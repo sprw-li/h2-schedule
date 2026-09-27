@@ -94,7 +94,7 @@ export function UpdateBar() {
     setErr('')
     setNote('正在下载…')
     try {
-      // 有校地址时走校内 OTA；否则 Pages / API
+      // 与顶栏同步源无关：试全部可达源，按 builtAt 取最新
       const bundle = await applyUpdate()
       setLocal(bundle.builtAt)
       setHasUpdate(false)

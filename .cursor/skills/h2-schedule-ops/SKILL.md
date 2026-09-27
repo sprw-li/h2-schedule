@@ -14,7 +14,8 @@ description: >-
 ## 上线
 
 ```text
-npm run build:phone    # phone/ + docs/ota/manifest.json + docs/ota/app.html
+npm run build:phone    # phone/ + docs/ota/ + 校内可达时自动 push:ota:campus --if-reachable
+npm run push:ota:campus  # 强制把本机 docs/ota 推到 CLab 并回读校验（校内）
 npm run build:pages    # 写入 docs/，并把 docs/schedule.json 单向同步到 public/
 # commit/push main（含 docs/ota）
 ```
@@ -23,6 +24,7 @@ npm run build:pages    # 写入 docs/，并把 docs/schedule.json 单向同步�
 - 构建后立刻 `git diff --stat docs/schedule.json docs/refs/`。
 - `phone/` gitignore，不提交。手机构建须去掉全量 `phone/schedule.json`。
 - 壳改动才重装 APK；JS/CSS 走 OTA。网页/localhost 不要用 OTA 条当「有更新」。
+- **只推 GitHub ≠ 真机一定能更新。** 顶栏选 CLab 的旧壳只会问 CLab；校园网也常打不开 github.io。`build:phone` 在 CLab 可达时会同步 OTA；校外构建后回校必须再跑 `push:ota:campus`，并回读 `/ota/manifest.json` 的 `builtAt`。
 
 ## 数据与口令
 

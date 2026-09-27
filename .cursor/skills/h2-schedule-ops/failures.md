@@ -8,6 +8,7 @@
 | --- | --- |
 | CSS 对比度不够 | 校园网拉不到 `github.io`，WebView 旧缓存。后改为 APK 本地包 + OTA。 |
 | 已经 push 源码 | 没 `build:phone` 或没推 `docs/ota/`。 |
+| GitHub OTA 已是新包，手机「最新」仍是旧日 | CLab `/ota/manifest.json` 未同步；选 CLab 的旧壳/校园网只看得到 CLab。应用 `push:ota:campus` 回读校验。 |
 | 点更新显示已是最新 | 本机时间对壳/页面/缓存取了 max；`PLACEHOLDER` 没当成旧。 |
 | 卸掉重装就能好 | 壳才要重装；乱重装丢掉未同步本机改动。 |
 | 网页也天天「有更新」 | OTA 只该给原生壳；浏览器已是当前页。 |
