@@ -63,10 +63,10 @@ textarea,
 html,
 body,
 #root {
-  height: 100%;
-  height: 100dvh;
+  /* 回退到 initial（dedbfbc）模型：随内容长高，由文档滚动；禁止锁死 100dvh */
+  min-height: 100%;
+  min-height: 100dvh;
   max-width: 100%;
-  overflow: hidden;
 }
 
 html {
@@ -94,9 +94,7 @@ button {
 .app {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  height: 100dvh;
-  max-height: 100dvh;
+  min-height: 100dvh;
   max-width: 1180px;
   margin: 0 auto;
   padding: 28px 24px 16px;
@@ -104,8 +102,6 @@ button {
   padding-right: max(24px, env(safe-area-inset-right));
   position: relative;
   min-width: 0;
-  min-height: 0;
-  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -407,16 +403,15 @@ button {
 }
 
 .layout {
-  flex: 1;
-  min-height: 0;
+  flex: 1 0 auto;
   min-width: 0;
   width: 100%;
   max-width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: auto;
   gap: 16px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .desk-tabs {
@@ -810,11 +805,10 @@ button {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  min-height: 0;
-  height: 100%;
+  height: auto;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1106,53 +1100,26 @@ button {
 }
 
 /*
- * 当日清单滚动模型（对照 initial / dedbfbc）：
- * 早期 .day-panel 是列 flex + min-height，.list { flex:1 }，面板随内容长高、
- * 由外层滚动——子项不会被压进视口。后来锁死视口（html/app overflow:hidden）
- * 并把 .sheet-scroll.list 做成「定高滚动口 + 列 flex」，子项默认 flex-shrink:1，
- * 再叠加 .item { overflow:hidden } → min-height:auto 变成 0，整列被压扁且
- * scrollHeight===clientHeight（无滑动）。只贴 flex-shrink:0 在部分 WebView
- * 仍可能被别的 flex/高度规则盖掉。
- *
- * 根治：滚动口内改回块级流（与 initial 的「内容自然高度」一致），子项不再
- * 参与 flex 收缩；间距用 margin 代替 gap。其它仍用 .list flex 的面板不受影响。
+ * 当日清单滚动模型（回退基准：dedbfbc / 锁视口之前）：
+ * 面板随内容长高，由文档（外层）滚动。禁止「锁死视口 + 定高滚动口 + 列 flex
+ * 压子项」。不要再发明第三套（块级流补丁、flex-shrink 补丁等）。
  */
-.day-panel .sheet-scroll.list {
-  display: block;
-  align-self: stretch;
-  height: 100%;
-  max-height: 100%;
-}
-
-.day-panel .sheet-scroll.list > .item {
-  display: grid;
-  min-height: max-content;
-  margin-bottom: 8px;
-}
-
-.day-panel .sheet-scroll.list > .item:last-child {
-  margin-bottom: 0;
-}
-
-.panel.calendar-panel,
-.panel.day-panel {
+.panel.calendar-panel {
   overflow: clip;
   isolation: isolate;
 }
 
 .panel.day-panel {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  grid-template-columns: minmax(0, 1fr);
-  /* 第三行始终占位：footer 节点可空，但行高由 min-height 守住 */
-  grid-template-areas:
-    'chrome'
-    'list'
-    'footer';
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: calc(100dvh - 180px);
+  overflow: visible;
+  isolation: isolate;
 }
 
 .day-panel .day-chrome {
-  grid-area: chrome;
+  flex-shrink: 0;
   min-width: 0;
   position: relative;
   z-index: 4;
@@ -1161,24 +1128,22 @@ button {
 
 .day-panel .sheet-scroll,
 .day-panel .sheet-scroll.list {
-  grid-area: list;
-  -webkit-overflow-scrolling: touch;
-  min-height: 0;
+  flex: 0 0 auto;
   min-width: 0;
+  height: auto;
   max-height: none;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overflow-anchor: none;
-  isolation: isolate;
+  overflow: visible;
   z-index: 0;
   margin-left: var(--day-nudge, 0px);
   padding-bottom: 8px;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
+}
+
+.day-panel .sheet-scroll.list > .item {
+  flex-shrink: 0;
 }
 
 .day-panel .day-footer {
-  grid-area: footer;
+  flex-shrink: 0;
   z-index: 4;
   background: var(--paper);
 }
@@ -1411,13 +1376,8 @@ button {
 }
 
 /*
- * 布局契约：撤销条出现/消失不得改变 footer 高度（否则上方滚动容器被挤压、
- * 列表高度跳变），也不得把主按钮挤成细缝。
- * footer 固定为「单行两列」：左列弹性放撤销条（超长省略号截断），
- * 右列按内容宽放主按钮。两种状态下 footer 高度与主按钮宽度都一致。
- * 不要用 auto 当第一列——长撤销文案会把主按钮压成窄缝（旧 bug）。
- * DOM 上 .day-footer 必须始终挂在 day-panel 第三行（可无子按钮），用
- * min-height 守住行高，禁止条件卸载整行导致 list 行突然变高/变矮。
+ * footer：单行两列 minmax(0,1fr)+auto；撤销条省略号，主按钮内容宽。
+ * 节点始终挂载（可无子按钮），min-height 守行高；禁止 :has() 切列模板。
  */
 .day-footer {
   display: grid;
@@ -1694,12 +1654,11 @@ button {
   }
 
   .panel.day-panel {
-    overflow: clip;
+    overflow: visible;
   }
 
   .day-panel .sheet-scroll {
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: visible;
   }
 }
 
@@ -1718,24 +1677,23 @@ html[data-shell='web'] .layout.pane-day {
 }
 
 html[data-shell='web'] .panel.day-panel {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: calc(100dvh - 160px);
 }
 
 @media (max-width: 860px) {
+  /* native 窄屏：保留壳样式，但禁止 position:fixed / overflow:hidden 锁视口 */
   html[data-shell='native'] {
   &,
   body,
   #root,
   .app {
-    position: fixed;
-    inset: 0;
     width: auto;
     max-width: none;
-    height: auto;
-    min-height: 0;
-    overflow: hidden;
-    overscroll-behavior: none;
+    min-height: 100dvh;
+    /* 刻意不写 position:fixed / overflow:hidden —— 外层文档滚 */
   }
 
   .app {
@@ -1877,13 +1835,12 @@ html[data-shell='web'] .panel.day-panel {
   .layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-    flex: 1;
-    min-height: 0;
+    grid-template-rows: auto;
+    flex: 1 0 auto;
     min-width: 0;
-    overflow: hidden;
+    overflow: visible;
     gap: 0;
-    align-items: stretch;
+    align-items: start;
   }
 
   .layout.pane-calendar .day-panel,
@@ -1895,14 +1852,18 @@ html[data-shell='web'] .panel.day-panel {
     padding-bottom: 28px;
   }
 
-  .panel.calendar-panel,
+  .panel.calendar-panel {
+    overflow: clip;
+  }
+
   .panel.day-panel {
-    overflow: hidden;
+    overflow: visible;
+    min-height: calc(100dvh - 180px);
+    height: auto;
   }
 
   .day-panel .sheet-scroll {
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow: visible;
     padding-bottom: 8px;
   }
 
@@ -1918,8 +1879,7 @@ html[data-shell='web'] .panel.day-panel {
   }
 
   .panel {
-    min-height: 0;
-    height: 100%;
+    height: auto;
     width: 100%;
     max-width: 100%;
     padding: 14px 14px 10px;

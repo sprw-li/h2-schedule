@@ -4,14 +4,16 @@ globs: src/**/*.css,src/**/*.tsx,index.html
 alwaysApply: false
 ---
 
-改 UI 前先读个人 skill **`app-dev-ui`** 与 **`h2ops`**，再读 **`README.md` 的「界面布局与叠层」小节**（滚动容器、叠层与排除区、布局契约、手机壳 vs 网页、自检清单都在那里）。
+改 UI 前先读个人 skill **`app-dev-ui`** 与 **`h2ops`**，再读 **`README.md` 的「界面布局与叠层」小节**。
 
-动手前记住四条硬约束：
+## 硬约束（回退后）
 
-1. **只有 `.sheet-scroll` 是滚动轴**；`.app` / `.layout` / `.panel` 保持 `overflow: hidden`，不要制造嵌套滚动。
-2. **定高滚动口里不要用列 flex 排会裁剪的卡片。** 锁视口之后，若滚动口本身是 `flex-direction: column`，子项默认 `flex-shrink: 1` + 自身 `overflow: hidden` 会把 `min-height: auto` 收成 0，整列压扁且 `scrollHeight === clientHeight`（「无法滑动 + 每项被遮挡」）。当日清单用**块级流**（`display: block` + margin 间距）；其它列表若必须 flex，子项写 `flex: 0 0 auto` / `min-height: max-content`，不要只贴一个 `flex-shrink: 0` 当根治。
-3. **撤销条 / toast 不得改变内容流高度**，也不得挤压主按钮；footer 用固定「弹性列 + 内容列」，不要用 `:has()` 切换列模板。**`.day-footer` 节点始终挂在 grid 第三行**（可无子按钮，靠 `min-height` 守行高），禁止条件卸载整行。
-4. **不要把「条数 / 首条标题」编进列表 DOM `key`**，也不要在数据签名变化时 `scrollTop = 0`；只在换日（或编辑锁）时重置，否则轮询一来就像「滑不动」。
+**以可滚的历史模型为准（基准：`dedbfbc` / 锁视口之前）：面板随内容长高，由文档外层滚动。**
+
+1. **禁止再锁死视口 + 列 flex 压子项。** 不要把 `html` / `body` / `#root` / `.app` 锁成 `height: 100dvh` + `overflow: hidden` + `position: fixed`，再给 `.day-panel` 上 `grid-template-rows: auto minmax(0,1fr) auto` 定高滚动口。那条路径会让 `.item`（`overflow: hidden`）在列 flex 里被压扁且 `scrollHeight === clientHeight`。
+2. **不要再发明第三套布局**（块级流「根治」、只贴 `flex-shrink: 0` 等补丁）。坏了就回到上述历史模型，不要在锁视口模型上继续打补丁。
+3. **撤销条 / toast 不得挤扁主按钮**；`.day-footer` 用固定「弹性列 + 内容列」，节点始终挂载（可无子按钮，`min-height` 守行高），不要用 `:has()` 切换列模板。
+4. **不要把「条数 / 首条标题」编进列表 DOM `key`**，也不要在数据签名变化时强制 `scrollTop = 0`；只在换日（或编辑锁）时重置。
 
 手机壳与网页共用一套 CSS，只靠 `html[data-shell]` 分流；不要为某个源另抄一套布局，也不要靠加 `z-index` 掩盖遮挡。
 

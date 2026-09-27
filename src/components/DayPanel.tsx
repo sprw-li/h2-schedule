@@ -395,10 +395,12 @@ export function DayPanel({
 
   useLayoutEffect(() => {
     if (editorOpenRef.current) return
+    // 回退后滚动轴在文档/外层，不只在 .sheet-scroll
     const el = listRef.current
-    if (!el) return
-    el.scrollTop = 0
-    void el.offsetHeight
+    if (el) el.scrollTop = 0
+    const app = document.querySelector('.app')
+    if (app instanceof HTMLElement) app.scrollTop = 0
+    window.scrollTo(0, 0)
   }, [dateKey])
 
   useLayoutEffect(() => {
