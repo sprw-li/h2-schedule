@@ -3,7 +3,7 @@ import { CalendarPanel } from './components/CalendarPanel'
 import { DayPanel } from './components/DayPanel'
 import { RefsPanel } from './components/RefsPanel'
 import { WeatherPanel } from './components/WeatherPanel'
-import { getWriteToken, pullCloud, setWriteToken } from './lib/cloud'
+import { getWriteToken, pullCloud, pullLegacyPublicMaps, setWriteToken } from './lib/cloud'
 import { downloadCsv, downloadTextFile, mergeCsvIntoSchedule, readCsvText, scheduleToCsv } from './lib/csv'
 import { scheduleToIcs } from './lib/ics'
 import { ExtraBar } from './components/ExtraBar'
@@ -32,6 +32,14 @@ import {
   syncClockFromQueue,
 } from './lib/ops/queue'
 import { flushOps, pullSnapshot } from './lib/ops/cloud'
+import {
+  createOpsFromPublicAhead,
+  loadCatchupSeen,
+  pendingCreateOrRestoreIds,
+  pruneCatchupSeen,
+  rememberCatchupSeen,
+  unionSchedules,
+} from './lib/ops/importPublic'
 import type { ScheduleMap } from './types'
 
 type SyncPhase = 'off' | 'pull' | 'push' | 'ok' | 'err'
@@ -174,6 +182,34 @@ export default function App() {
       }
     }
 
+    /**
+     * 公开面（CLab/docs）若有 snapshot 没有的 id，记成 create op 并入本机队列。
+     * 不写别人的 op 文件；flush 仍只 append 本机 deviceId 分片。
+     */
+    async function catchUpPublicAhead(authority: ScheduleMap): Promise<number> {
+      if (!getWriteToken()) return 0
+      pruneCatchupSeen(authority)
+      let faces: ScheduleMap[] = []
+      try {
+        faces = await pullLegacyPublicMaps()
+      } catch {
+        return 0
+      }
+      if (faces.length === 0) return 0
+      const publicUnion = unionSchedules(faces)
+      const q = loadQueue()
+      const skip = new Set([...pendingCreateOrRestoreIds(q.queue), ...loadCatchupSeen()])
+      const meta = makeDiffMeta(clockRef.current, q)
+      const ops = createOpsFromPublicAhead(authority, publicUnion, meta, skip)
+      if (ops.length === 0) return 0
+      saveQueue(q)
+      enqueueOps(ops)
+      rememberCatchupSeen(
+        ops.map((op) => (op.payload as { id?: string }).id).filter((id): id is string => !!id),
+      )
+      return ops.length
+    }
+
     async function pullAndAlign() {
       if (stop || editingRef.current || syncingRef.current) return
       setPhase('pull')
@@ -183,6 +219,14 @@ export default function App() {
           if (stop) return
           if (snap) {
             applySnapshot(snap.map, snap.rev)
+            const imported = await catchUpPublicAhead(snap.map)
+            if (stop) return
+            if (imported > 0) {
+              applySnapshot(snap.map, snap.rev)
+              setPhase('ok')
+              setMessage(`公开面多出 ${imported} 条，已记入同步队列`)
+              return
+            }
             setPhase('ok')
             setMessage(itemCount(snap.map) > 0 ? '已对齐数据仓' : '还没有日程')
             return

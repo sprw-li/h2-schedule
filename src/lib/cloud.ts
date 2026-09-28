@@ -209,6 +209,36 @@ export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | n
 }
 
 /**
+ * 只读收集「旧客户端可能整表写过」的公开面，供 catch-up 桥对比 h2-data snapshot。
+ * 读路径不写任何源。校内可达时优先收 CLab；再收 GitHub docs（API → raw → Pages）。
+ */
+export async function pullLegacyPublicMaps(): Promise<ScheduleMap[]> {
+  const maps: ScheduleMap[] = []
+
+  try {
+    const campus = await pullFromCampus()
+    if (campus?.map) maps.push(campus.map)
+  } catch {
+    /* campus auth/network — skip this face */
+  }
+
+  const token = getWriteToken()
+  if (token) {
+    const api = await pullFromApi()
+    if (api?.map) maps.push(api.map)
+  }
+  const [raw, pages] = await Promise.all([pullJsonUrl(ghRaw(PATH)), pullJsonUrl(ghPages(PATH))])
+  if (raw?.map) maps.push(raw.map)
+  if (pages?.map) maps.push(pages.map)
+  if (!token) {
+    const api = await pullFromApi()
+    if (api?.map) maps.push(api.map)
+  }
+
+  return maps
+}
+
+/**
  * P1：整表推 docs/schedule.json / CLab 已退役。
  * 正本在 h2-data op 日志；公开快照由 reducer Action 覆盖。
  * 保留函数签名以免旧调用崩——一律拒绝，引导走 flushOps。

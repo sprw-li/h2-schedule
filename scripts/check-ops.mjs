@@ -8,6 +8,11 @@ import { replaceSchedule } from '../src/lib/backup.ts'
 import { diffById } from '../src/lib/ops/diff.ts'
 import { fold, project } from '../src/lib/ops/fold.ts'
 import { HlcClock } from '../src/lib/ops/hlc.ts'
+import {
+  createOpsFromPublicAhead,
+  publicAheadCount,
+  unionSchedules,
+} from '../src/lib/ops/importPublic.ts'
 import { coerceSchedule } from '../src/lib/schedule.ts'
 
 function assert(cond, msg) {
@@ -20,6 +25,7 @@ assert(!/setInterval\s*\(\s*\(\s*\)\s*=>\s*\{[^}]*pullCloud/s.test(appSrc), 'App
 assert(!/setInterval\([^)]*25000/.test(appSrc), 'App must not use 25s setInterval')
 assert(/visibilitychange/.test(appSrc), 'App must listen visibilitychange')
 assert(/flushOps/.test(appSrc), 'App must call flushOps')
+assert(/catchUpPublicAhead|pullLegacyPublicMaps/.test(appSrc), 'App must bridge public→ops catch-up')
 
 const device = 'dev-test'
 const clock = new HlcClock(device)
@@ -109,5 +115,28 @@ const snap = coerceSchedule(replaceSchedule([a]))
 const qOps = diffById(snap, replaceSchedule([{ ...a, done: true }]), meta)
 const projected = project(snap, qOps)
 assert(projected['2026-09-27']?.[0]?.done === true, 'project applies queue')
+
+// Public catch-up bridge: ids only on public → create; never delete from public absence
+const extra = {
+  id: 'id-extra',
+  date: '2026-09-28',
+  title: '旧包多写的一条',
+  done: false,
+  kind: 'task',
+  start: '10:00',
+  end: '11:00',
+}
+const authority = replaceSchedule([a])
+const publicFace = replaceSchedule([a, extra])
+assert(publicAheadCount(authority, publicFace) === 1, 'one id ahead on public')
+const catchOps = createOpsFromPublicAhead(authority, publicFace, meta)
+assert(catchOps.length === 1 && catchOps[0].type === 'create', 'ahead → one create')
+assert(catchOps[0].payload.id === 'id-extra', 'create keeps public id')
+const noDelete = createOpsFromPublicAhead(publicFace, authority, meta)
+assert(noDelete.length === 0, 'snapshot-only ids must not become deletes')
+const skip = new Set(['id-extra'])
+assert(createOpsFromPublicAhead(authority, publicFace, meta, skip).length === 0, 'skip pending/seen ids')
+const united = unionSchedules([authority, replaceSchedule([extra])])
+assert(publicAheadCount(authority, united) === 1, 'union preserves ahead id')
 
 console.log('check-ops: ok')
