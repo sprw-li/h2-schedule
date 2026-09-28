@@ -1264,6 +1264,15 @@
       "kind": "holiday"
     },
     {
+      "id": "ecd75abc-d439-4c8b-b980-258bcb528e7e",
+      "date": "2026-10-11",
+      "title": "心理咨询",
+      "done": false,
+      "kind": "task",
+      "start": "17:00",
+      "end": "18:00"
+    },
+    {
       "id": "c8d89ccc-6535-49fd-be47-3b6b7e04860a",
       "date": "2026-10-11",
       "title": "续借《货币金融学》截止",
