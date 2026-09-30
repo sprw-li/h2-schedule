@@ -39,4 +39,8 @@
 
 日期头滑动条穿模；双源页面布局分叉；底栏按钮互压。应统一布局 + 视口排除区，而不是只给一个源加补丁。
 
+## 勾选弹回（`app-dev-sync`）
+
+以为点不动 / checkbox 坏了；实际是 flush 清空队列后立刻拉未 fold 的同 rev 快照，把 `done` 盖回。修：absorb flushed ops 进本机 baseline，同/旧 rev 拉取忽略。
+
 相关对话：[时间轴与 OTA](75bca2ec-7436-43a4-bee1-cc2104d31481)、[日程修复发布](e595cfc7-21a1-45f3-b43d-9628c1ed1b23)、[化安第六周回家](726d1b2b-9acb-4ce5-b952-b8426d61ab8e)。

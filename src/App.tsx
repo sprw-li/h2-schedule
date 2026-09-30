@@ -40,6 +40,8 @@ import {
   rememberCatchupSeen,
   unionSchedules,
 } from './lib/ops/importPublic'
+import { absorbFlushedOps, shouldApplyRemoteSnapshot } from './lib/ops/localBaseline'
+import type { Op } from './lib/ops/types'
 import type { ScheduleMap } from './types'
 
 type SyncPhase = 'off' | 'pull' | 'push' | 'ok' | 'err'
@@ -78,11 +80,27 @@ export default function App() {
   const pendingRemoteRef = useRef<ScheduleMap | null>(null)
   const applySnapshotRef = useRef<((map: ScheduleMap, rev?: number) => void) | undefined>(undefined)
   const focusPullAt = useRef(0)
+  /** Hold local baseline until reducer rev advances past this value. */
+  const optimisticUntilRevRef = useRef<number | null>(null)
   const today = useMemo(() => new Date(), [])
 
   useMemo(() => {
     syncClockFromQueue(clockRef.current, loadQueue())
   }, [])
+
+  function absorbFlushedBaseline(flushed: Op[]) {
+    if (flushed.length === 0) return
+    const priorRev = loadQueue().snapshotRev ?? 0
+    const advanced = absorbFlushedOps(snapshotRef.current, flushed)
+    snapshotRef.current = advanced
+    saveSnapshotMap(advanced)
+    optimisticUntilRevRef.current = priorRev
+    pendingRef.current = advanced
+    if (!editingRef.current) {
+      setSchedule(advanced)
+      saveSchedule(advanced)
+    }
+  }
 
   function clipTitle(title: string) {
     const t = title.trim()
@@ -170,6 +188,25 @@ export default function App() {
       if (editingRef.current) {
         pendingRemoteRef.current = map
         return
+      }
+      const decision = shouldApplyRemoteSnapshot({
+        remoteRev: rev,
+        optimisticUntilRev: optimisticUntilRevRef.current,
+      })
+      if (decision === 'keep-local') {
+        // Reducer hasn't folded our flush yet — keep absorbed baseline + any new queue ops.
+        const q = loadQueue()
+        const view =
+          q.queue.length > 0 ? project(snapshotRef.current, q.queue) : coerceSchedule(snapshotRef.current)
+        pendingRef.current = view
+        if (!editingRef.current) {
+          setSchedule(view)
+          saveSchedule(view)
+        }
+        return
+      }
+      if (optimisticUntilRevRef.current != null && rev != null && rev > optimisticUntilRevRef.current) {
+        optimisticUntilRevRef.current = null
       }
       snapshotRef.current = map
       saveSnapshotMap(map, rev)
@@ -268,26 +305,30 @@ export default function App() {
       if (!getWriteToken()) {
         setAskPhrase(true)
         setPhase('ok')
-        setMessage('改动已记下，输入口令后即可同步到数据仓')
+        setMessage('改动已留在本机；输入口令后才会同步到数据仓')
         return
       }
       if (syncingRef.current) return
       syncingRef.current = true
       setPhase('push')
+      const pending = [...q.queue]
       try {
         await flushOps()
+        absorbFlushedBaseline(pending)
         flushBackoff.current = 1000
         setAskPhrase(false)
         setPhase('ok')
-        setMessage('已写入数据仓（op）')
-        // 写完拉一次快照（reducer 可能尚未跑完，本地 project 仍正确）
-        await pullAndAlign()
+        setMessage('已写入数据仓（本机勾选已保留）')
+        // Delay pull: reducer may not have folded yet; same-rev snapshot would be stale.
+        window.setTimeout(() => {
+          if (!stop) void pullAndAlign()
+        }, 6000)
       } catch (err) {
         const text = err instanceof Error ? err.message : '同步失败'
         if (text.includes('口令') || text.includes('权限') || text.includes('令牌')) {
           setAskPhrase(true)
           setPhase('ok')
-          setMessage('需要口令才能同步（本机改动已保留）')
+          setMessage('需要口令才能同步（本机改动已保留，可继续勾选）')
           return
         }
         setPhase('ok')
@@ -357,40 +398,60 @@ export default function App() {
     if (!getWriteToken()) {
       setAskPhrase(true)
       setPhase('ok')
-      setMessage('改动已记下，输入口令后即可同步到数据仓')
+      setMessage('改动已留在本机；输入口令后才会同步到数据仓')
       return
     }
     if (syncingRef.current) return
     syncingRef.current = true
     setPhase('push')
+    const pending = [...q.queue]
     void flushOps()
       .then(async () => {
+        // Capture ops before flushOps cleared them; absorb into baseline.
+        absorbFlushedBaseline(pending)
         flushBackoff.current = 1000
         setAskPhrase(false)
         setPhase('ok')
-        setMessage('已写入数据仓（op）')
-        try {
-          const snap = await pullSnapshot()
-          if (snap) {
-            snapshotRef.current = snap.map
-            saveSnapshotMap(snap.map, snap.rev)
-            const view = project(snap.map, loadQueue().queue)
-            pendingRef.current = view
-            if (!editingRef.current) {
-              setSchedule(view)
-              saveSchedule(view)
-            }
-          }
-        } catch {
-          /* keep local projection */
-        }
+        setMessage('已写入数据仓（本机勾选已保留）')
+        // Do not pull immediately — stale same-rev snapshot would undo ticks.
+        window.setTimeout(() => {
+          void pullSnapshot()
+            .then((snap) => {
+              if (!snap) return
+              if (
+                shouldApplyRemoteSnapshot({
+                  remoteRev: snap.rev,
+                  optimisticUntilRev: optimisticUntilRevRef.current,
+                }) === 'keep-local'
+              ) {
+                return
+              }
+              if (
+                optimisticUntilRevRef.current != null &&
+                snap.rev > optimisticUntilRevRef.current
+              ) {
+                optimisticUntilRevRef.current = null
+              }
+              snapshotRef.current = snap.map
+              saveSnapshotMap(snap.map, snap.rev)
+              const view = project(snap.map, loadQueue().queue)
+              pendingRef.current = view
+              if (!editingRef.current) {
+                setSchedule(view)
+                saveSchedule(view)
+              }
+            })
+            .catch(() => {
+              /* keep local baseline */
+            })
+        }, 6000)
       })
       .catch((err: unknown) => {
         const text = err instanceof Error ? err.message : '同步失败'
         if (text.includes('口令') || text.includes('权限') || text.includes('令牌')) {
           setAskPhrase(true)
           setPhase('ok')
-          setMessage('需要口令才能同步（本机改动已保留）')
+          setMessage('需要口令才能同步（本机改动已保留，可继续勾选）')
           return
         }
         setPhase('ok')
@@ -422,6 +483,10 @@ export default function App() {
     if (!silent && label) {
       setUndo({ label, before: prev })
       setUndoArmed(false)
+    }
+    if (ops.length > 0 && !getWriteToken()) {
+      setPhase('ok')
+      setMessage('已勾选/已改（本机）；解锁口令后才会同步')
     }
     window.clearTimeout(pushTimer.current)
     const later = () => {
@@ -782,7 +847,7 @@ export default function App() {
             }}
           >
             <h2>同步口令</h2>
-            <p>手机和电脑用同一句口令。确认后稍等片刻即可。</p>
+            <p>勾选与修改会先留在本机。同一句口令解锁后才会写入数据仓；也可先点「先留在本机」继续改。</p>
             <label htmlFor="sync-phrase">口令</label>
             <input
               id="sync-phrase"

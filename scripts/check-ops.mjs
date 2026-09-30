@@ -13,6 +13,7 @@ import {
   publicAheadCount,
   unionSchedules,
 } from '../src/lib/ops/importPublic.ts'
+import { absorbFlushedOps, shouldApplyRemoteSnapshot } from '../src/lib/ops/localBaseline.ts'
 import { coerceSchedule } from '../src/lib/schedule.ts'
 
 function assert(cond, msg) {
@@ -24,6 +25,7 @@ const appSrc = readFileSync(join(root, 'src', 'App.tsx'), 'utf8')
 assert(!/setInterval\s*\(\s*\(\s*\)\s*=>\s*\{[^}]*pullCloud/s.test(appSrc), 'App must not poll pullCloud on an interval')
 assert(!/setInterval\([^)]*25000/.test(appSrc), 'App must not use 25s setInterval')
 assert(/visibilitychange/.test(appSrc), 'App must listen visibilitychange')
+assert(/absorbFlushedOps|localBaseline/.test(appSrc), 'App must absorb flushed ops into local baseline')
 assert(/flushOps/.test(appSrc), 'App must call flushOps')
 assert(/catchUpPublicAhead|pullLegacyPublicMaps/.test(appSrc), 'App must bridge public→ops catch-up')
 
@@ -138,5 +140,17 @@ const skip = new Set(['id-extra'])
 assert(createOpsFromPublicAhead(authority, publicFace, meta, skip).length === 0, 'skip pending/seen ids')
 const united = unionSchedules([authority, replaceSchedule([extra])])
 assert(publicAheadCount(authority, united) === 1, 'union preserves ahead id')
+
+// Flush must absorb ops into baseline; same-rev stale pull must not undo ticks
+const flushed = diffById(snap, replaceSchedule([{ ...a, done: true }]), meta)
+const absorbed = absorbFlushedOps(snap, flushed)
+assert(absorbed['2026-09-27']?.[0]?.done === true, 'absorb keeps done after flush')
+assert(shouldApplyRemoteSnapshot({ remoteRev: 3, optimisticUntilRev: 3 }) === 'keep-local', 'same rev → keep local')
+assert(shouldApplyRemoteSnapshot({ remoteRev: 2, optimisticUntilRev: 3 }) === 'keep-local', 'older rev → keep local')
+assert(shouldApplyRemoteSnapshot({ remoteRev: 4, optimisticUntilRev: 3 }) === 'apply', 'newer rev → apply')
+assert(shouldApplyRemoteSnapshot({ optimisticUntilRev: null }) === 'apply', 'no optimistic → apply')
+const stalePull = project(snap, []) // reducer lag: still done=false
+assert(stalePull['2026-09-27']?.[0]?.done === false, 'stale snapshot lacks tick')
+assert(absorbed['2026-09-27']?.[0]?.done === true, 'absorbed baseline still ticked')
 
 console.log('check-ops: ok')
