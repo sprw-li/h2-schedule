@@ -1107,7 +1107,7 @@
       "id": "2a09a6e2-31c0-449b-a0bb-75291b3aca0e",
       "date": "2026-09-30",
       "title": "普通化学 · 理教201",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "08:00",
       "end": "09:50"
@@ -1116,7 +1116,7 @@
       "id": "162dc54e-01e3-4fa0-aee7-d69f87449dfe",
       "date": "2026-09-30",
       "title": "理论与计算化学导论（李霄） · 理教410",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "13:00",
       "end": "14:50"
@@ -1125,7 +1125,7 @@
       "id": "60e183bb-96e6-4a53-b249-fbbb3f5c394b",
       "date": "2026-09-30",
       "title": "今日化学 · 理论与计算化学（刘剑） · 化学楼CB121",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "15:10",
       "end": "17:00"
@@ -1136,6 +1136,24 @@
       "title": "国庆放假",
       "done": false,
       "kind": "holiday"
+    },
+    {
+      "id": "dda17268-3be4-4394-9ce4-fbd6c4b27ae2",
+      "date": "2026-10-01",
+      "title": "圆明园参观",
+      "done": false,
+      "kind": "task",
+      "start": "07:00",
+      "end": "07:30"
+    },
+    {
+      "id": "e2225e6a-1550-4c69-b11b-bf3fa5ca1543",
+      "date": "2026-10-01",
+      "title": "北京南-淮南东 G2563 · 检票11A/11B",
+      "done": false,
+      "kind": "task",
+      "start": "17:09",
+      "end": "21:05"
     },
     {
       "id": "5654c33b-a8c5-41a1-a794-557fdeb35c95",
@@ -1262,6 +1280,24 @@
       "kind": "task",
       "start": "15:00",
       "end": "16:30"
+    },
+    {
+      "id": "d0655b2c-775c-4ef9-bc19-1694ed095364",
+      "date": "2026-10-09",
+      "title": "《新时代实践教育》课程介绍和129动员会 · CB101肖伦报告厅",
+      "done": false,
+      "kind": "task",
+      "start": "16:40",
+      "end": "17:10"
+    },
+    {
+      "id": "3d4c15ba-13f6-4d7e-8f50-b84a34795d21",
+      "date": "2026-10-09",
+      "title": "129大合唱试音分声部 · CB101肖伦报告厅",
+      "done": false,
+      "kind": "task",
+      "start": "17:10",
+      "end": "18:10"
     },
     {
       "id": "17b7a3a6-8ee1-4b31-a01c-b8640d01e04e",
