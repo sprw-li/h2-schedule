@@ -63,13 +63,13 @@ function metaBuiltAt() {
   }
 }
 
-function readStoredMeta(): { builtAt: string; sha256: string } | null {
+function readStoredMeta(): { builtAt: string; sha256: string; appliedAt?: string } | null {
   try {
     const raw = localStorage.getItem(META_KEY)
     if (!raw) return null
-    const m = JSON.parse(raw) as { builtAt?: string; sha256?: string }
+    const m = JSON.parse(raw) as { builtAt?: string; sha256?: string; appliedAt?: string }
     if (!m.builtAt || !m.sha256) return null
-    return { builtAt: m.builtAt, sha256: m.sha256 }
+    return { builtAt: m.builtAt, sha256: m.sha256, appliedAt: m.appliedAt }
   } catch {
     return null
   }
@@ -106,27 +106,31 @@ function validIso(s: string | undefined | null) {
   return Number.isNaN(t) ? '' : s
 }
 
-/**
- * 本机时间戳：只认「磁盘上真有可装配 HTML 的 OTA」，不要对壳/页面/缓存取 max。
- * 以前取最新会导致再查一次时又跳回 APK 打包点或无效占位符。
- *
- * 硬约束：APPLIED / META 若没有对应的 bundle HTML，一律当孤儿丢掉。
- * 否则会出现「更新面板时间戳已是新版，WebView 仍跑 APK 旧壳」——用户看到压扁 UI
- * 却被告知「已是最新」。
- */
-export function localBuiltAt() {
-  const bundle = loadLocalBundle()
-  if (bundle) {
-    return (
-      validIso(readAppliedBuiltAt()) ||
-      validIso(readStoredMeta()?.builtAt) ||
-      validIso(bundle.builtAt) ||
-      validIso(metaBuiltAt()) ||
-      validIso(bundledBuiltAt()) ||
-      '本机打包'
-    )
+/** 把 APPLIED/META 对齐到可装配包；漂移时以 bundle 为准回写。 */
+function reconcileMarksToBundle(bundle: OtaBundle) {
+  const stamp = validIso(bundle.builtAt)
+  if (!stamp) return
+  try {
+    if (readAppliedBuiltAt() !== stamp) {
+      localStorage.setItem(APPLIED_KEY, stamp)
+    }
+    const meta = readStoredMeta()
+    if (!meta || meta.builtAt !== stamp || meta.sha256 !== bundle.sha256) {
+      localStorage.setItem(
+        META_KEY,
+        JSON.stringify({
+          builtAt: stamp,
+          sha256: bundle.sha256,
+          appliedAt: validIso(bundle.appliedAt) || new Date().toISOString(),
+        }),
+      )
+    }
+  } catch {
+    /* 对齐失败不阻断读 stamp；下次 save / check 再试 */
   }
-  // 无包：清掉会骗「已更新」的孤儿标记，回落到 APK/页面自身时间
+}
+
+function clearOrphanMarks() {
   try {
     if (readAppliedBuiltAt() || readStoredMeta()) {
       localStorage.removeItem(APPLIED_KEY)
@@ -135,6 +139,26 @@ export function localBuiltAt() {
   } catch {
     /* ignore */
   }
+}
+
+/**
+ * 本机时间戳：只认「磁盘上真有可装配 HTML 的 OTA」，不要对壳/页面/缓存取 max。
+ *
+ * 硬约束：
+ * 1. 有可装配 bundle 时，**只认 bundle.builtAt**（APPLIED/META 只是派生缓存，不得盖过包）。
+ *    旧逻辑优先读 APPLIED，会在「HTML 已换新 / APPLIED 仍旧」或「APPLIED 被写新、HTML 仍旧」时骗面板。
+ * 2. APPLIED / META 若没有对应的 bundle HTML，一律当孤儿丢掉。
+ */
+export function localBuiltAt() {
+  const bundle = loadLocalBundle()
+  if (bundle) {
+    const stamp = validIso(bundle.builtAt)
+    if (stamp) {
+      reconcileMarksToBundle(bundle)
+      return stamp
+    }
+  }
+  clearOrphanMarks()
   return validIso(metaBuiltAt()) || validIso(bundledBuiltAt()) || '本机打包'
 }
 
@@ -146,6 +170,95 @@ export function clearLocalBundle() {
     for (const k of LEGACY_KEYS) localStorage.removeItem(k)
   } catch {
     /* ignore */
+  }
+}
+
+function restorePrev(
+  prevBundle: string | null,
+  prevApplied: string | null,
+  prevMeta: string | null,
+) {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+    localStorage.removeItem(APPLIED_KEY)
+    localStorage.removeItem(META_KEY)
+    if (prevBundle != null) localStorage.setItem(STORAGE_KEY, prevBundle)
+    if (prevApplied != null) localStorage.setItem(APPLIED_KEY, prevApplied)
+    if (prevMeta != null) localStorage.setItem(META_KEY, prevMeta)
+  } catch {
+    /* 尽力恢复；再失败则三键都清掉，避免孤儿「已是最新」 */
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(APPLIED_KEY)
+      localStorage.removeItem(META_KEY)
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+/**
+ * 先释放旧包配额 → 写 HTML → **read-after-write** → 再标 APPLIED/META。
+ * Android WebView 配额紧时，直接 setItem 覆盖大 key 常需近 2× 空间，失败或静默截断后
+ * 会出现「面板时间戳不动 / 已是最新假象」。
+ */
+export function saveBundle(bundle: OtaBundle) {
+  if (!bundle?.verified || !bundle.html || !bundle.sha256 || !validIso(bundle.builtAt)) {
+    throw new Error('更新包无效')
+  }
+  const json = JSON.stringify(bundle)
+  let prevBundle: string | null = null
+  let prevApplied: string | null = null
+  let prevMeta: string | null = null
+  try {
+    prevBundle = localStorage.getItem(STORAGE_KEY)
+    prevApplied = localStorage.getItem(APPLIED_KEY)
+    prevMeta = localStorage.getItem(META_KEY)
+  } catch {
+    /* ignore */
+  }
+
+  try {
+    // 先删旧包腾出配额，再写入新包（失败则整组回滚到快照）
+    localStorage.removeItem(STORAGE_KEY)
+    localStorage.setItem(STORAGE_KEY, json)
+    const roundtrip = localStorage.getItem(STORAGE_KEY)
+    if (!roundtrip || roundtrip !== json) {
+      throw new Error('ota html roundtrip mismatch')
+    }
+    const parsed = JSON.parse(roundtrip) as Partial<OtaBundle>
+    if (
+      parsed.builtAt !== bundle.builtAt ||
+      parsed.sha256 !== bundle.sha256 ||
+      parsed.html !== bundle.html ||
+      parsed.verified !== true
+    ) {
+      throw new Error('ota html roundtrip content mismatch')
+    }
+  } catch (e) {
+    console.warn('ota html save failed', e)
+    restorePrev(prevBundle, prevApplied, prevMeta)
+    throw new Error('本机空间不够，请清理后重试')
+  }
+
+  try {
+    localStorage.setItem(APPLIED_KEY, bundle.builtAt)
+    localStorage.setItem(
+      META_KEY,
+      JSON.stringify({ builtAt: bundle.builtAt, sha256: bundle.sha256, appliedAt: bundle.appliedAt }),
+    )
+    if (localStorage.getItem(APPLIED_KEY) !== bundle.builtAt) {
+      throw new Error('applied roundtrip mismatch')
+    }
+    const metaRaw = localStorage.getItem(META_KEY)
+    const meta = metaRaw ? (JSON.parse(metaRaw) as { builtAt?: string; sha256?: string }) : null
+    if (!meta || meta.builtAt !== bundle.builtAt || meta.sha256 !== bundle.sha256) {
+      throw new Error('meta roundtrip mismatch')
+    }
+  } catch (e) {
+    console.warn('ota meta save failed', e)
+    restorePrev(prevBundle, prevApplied, prevMeta)
+    throw new Error('本机空间不够，请清理后重试')
   }
 }
 
@@ -359,52 +472,10 @@ export async function downloadAndVerify(man: OtaManifest): Promise<OtaBundle> {
   }
 }
 
-export function saveBundle(bundle: OtaBundle) {
-  // 先写 HTML，成功后再标 APPLIED/META。顺序反了会在 QuotaExceeded 后留下
-  // 「已应用新版」标记，壳却仍跑旧 APK，更新面板永远显示已是最新。
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(bundle))
-  } catch (e) {
-    console.warn('ota html save failed', e)
-    try {
-      localStorage.removeItem(STORAGE_KEY)
-    } catch {
-      /* ignore */
-    }
-    throw new Error('本机空间不够，请清理后重试')
-  }
-  try {
-    localStorage.setItem(APPLIED_KEY, bundle.builtAt)
-    localStorage.setItem(
-      META_KEY,
-      JSON.stringify({ builtAt: bundle.builtAt, sha256: bundle.sha256, appliedAt: bundle.appliedAt }),
-    )
-  } catch (e) {
-    console.warn('ota meta save failed', e)
-    try {
-      localStorage.removeItem(STORAGE_KEY)
-      localStorage.removeItem(APPLIED_KEY)
-      localStorage.removeItem(META_KEY)
-    } catch {
-      /* ignore */
-    }
-    throw new Error('本机空间不够，请清理后重试')
-  }
-}
-
 export async function checkForUpdate() {
   const man = await fetchManifest()
-  // localBuiltAt 会清孤儿 APPLIED；有真包且缺 applied 时再补标记
-  let local = localBuiltAt()
-  const bundle = loadLocalBundle()
-  if (bundle?.builtAt === man.builtAt && !validIso(readAppliedBuiltAt())) {
-    try {
-      localStorage.setItem(APPLIED_KEY, man.builtAt)
-      local = localBuiltAt()
-    } catch {
-      /* ignore */
-    }
-  }
+  // localBuiltAt：有包则对齐并返回 bundle.builtAt；无包清孤儿
+  const local = localBuiltAt()
   return {
     manifest: man,
     localBuiltAt: local,
@@ -416,5 +487,11 @@ export async function applyUpdate() {
   const man = await fetchManifest()
   const bundle = await downloadAndVerify(man)
   saveBundle(bundle)
+  // 强制走读路径，确保 UI「本机」与磁盘一致
+  const local = localBuiltAt()
+  if (local !== bundle.builtAt) {
+    clearLocalBundle()
+    throw new Error('更新写入后本机时间戳未对齐，已回滚，请重试')
+  }
   return bundle
 }

@@ -75,7 +75,8 @@ export function UpdateBar() {
       if (action === 'apply') {
         setNote('正在下载…')
         const bundle = await applyUpdate()
-        setLocal(bundle.builtAt)
+        // 以 localBuiltAt() 为准（读磁盘对齐后的值），不要只信内存里的 bundle
+        setLocal(localBuiltAt() || bundle.builtAt)
         setHasUpdate(false)
         setNote('下载完成，即将刷新')
         window.setTimeout(() => window.location.reload(), 400)
@@ -96,7 +97,7 @@ export function UpdateBar() {
     try {
       // 与顶栏同步源无关：试全部可达源，按 builtAt 取最新
       const bundle = await applyUpdate()
-      setLocal(bundle.builtAt)
+      setLocal(localBuiltAt() || bundle.builtAt)
       setHasUpdate(false)
       setNote('下载完成，即将刷新')
       window.setTimeout(() => window.location.reload(), 400)

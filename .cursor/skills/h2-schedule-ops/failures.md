@@ -11,6 +11,7 @@
 | GitHub OTA 已是新包，手机「最新」仍是旧日 | CLab `/ota/manifest.json` 未同步；选 CLab 的旧壳/校园网只看得到 CLab。应用 `push:ota:campus` 回读校验。 |
 | 点更新显示已是最新 | 本机时间对壳/页面/缓存取了 max；`PLACEHOLDER` 没当成旧。 |
 | 更新面板 `builtAt` 已新，真机仍压扁重叠 | `applied`/`meta` 先于 HTML 写入；QuotaExceeded 后留下孤儿时间戳，boot 不 `document.write`，壳仍跑旧 APK。修：先写 HTML 再标 applied；无包清孤儿；不可靠时重装 APK。 |
+| 点更新成功后「本机」时间仍停在旧值 | 读路径优先 `applied`（可与 bundle 漂移）；覆盖大包时 WebView 配额/静默截断未 roundtrip。修：`localBuiltAt` 只认 `bundle.builtAt` 并回写对齐；`saveBundle` 先释放旧包 + read-after-write + 失败整组回滚。 |
 | 卸掉重装就能好 | 壳才要重装；乱重装丢掉未同步本机改动。 |
 | 网页也天天「有更新」 | OTA 只该给原生壳；浏览器已是当前页。 |
 

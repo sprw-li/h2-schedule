@@ -15,6 +15,7 @@
     "check:schedule": "node scripts/check-schedule.mjs",
     "check:logic": "node --experimental-strip-types --import ./scripts/register-ts.mjs scripts/check-logic.mjs",
     "check:ops": "node --experimental-strip-types --import ./scripts/register-ts.mjs scripts/check-ops.mjs",
+    "check:ota": "node --experimental-strip-types --import ./scripts/register-ts.mjs scripts/check-ota.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },
