@@ -1,7 +1,12 @@
-/** 浏览器 TypeError「Failed to fetch」→ 中文；校园网未开代理时很常见 */
-export function netErr(err: unknown, fallback = '网络不通，稍后再试') {
+/** 失败面不同：校内 HTTP 不靠代理；GitHub 在校园网常要系统代理。 */
+export type NetHint = 'campus' | 'github' | 'generic'
+
+/** 浏览器 TypeError「Failed to fetch」→ 中文；按入口给不同可执行提示 */
+export function netErr(err: unknown, fallback = '网络不通，稍后再试', hint: NetHint = 'generic') {
   const raw = err instanceof Error ? err.message : String(err || '')
   if (/failed to fetch|networkerror|load failed|network request failed/i.test(raw)) {
+    if (hint === 'campus') return '连不上校内地址（请连可进 10.x 的校园网，勿用访客网/流量；本机 CLab 若正常则是手机网段问题）'
+    if (hint === 'github') return '连不上 GitHub（校园网可开系统代理后再试）'
     return '连不上服务器（校园网可开系统代理后再试）'
   }
   if (raw && raw !== 'Failed to fetch') return raw

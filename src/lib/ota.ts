@@ -411,11 +411,12 @@ export async function fetchManifest(): Promise<OtaManifest> {
       if (p) cands.push(p)
       else errs.push(`${label}：manifest 内容无效`)
     } catch (e) {
-      errs.push(`${label}：${netErr(e, `${label} 查不到更新`)}`)
+      const hint = source === 'clab' ? 'campus' : 'github'
+      errs.push(`${label}：${netErr(e, `${label} 查不到更新`, hint)}`)
     }
   }
   if (cands.length === 0) {
-    throw new Error(errs.join('；') || '查不到更新（可开代理或输入口令后重试）')
+    throw new Error(errs.join('；') || '查不到更新（CLab 需校园网 10.x；GitHub 可开系统代理）')
   }
   cands.sort((a, b) => Date.parse(b.builtAt) - Date.parse(a.builtAt))
   return cands[0]
@@ -450,12 +451,13 @@ export async function downloadAndVerify(man: OtaManifest): Promise<OtaBundle> {
   const rest = all.filter((s) => s.source !== man.source)
   let html = ''
   const errs: string[] = []
-  for (const { read, label } of [...preferred, ...rest]) {
+  for (const { source, read, label } of [...preferred, ...rest]) {
     try {
       html = await tryHtml(read)
       if (html) break
     } catch (e) {
-      errs.push(`${label}：${netErr(e, `${label} 下载失败`)}`)
+      const hint = source === 'clab' ? 'campus' : 'github'
+      errs.push(`${label}：${netErr(e, `${label} 下载失败`, hint)}`)
     }
   }
   if (!html) {
