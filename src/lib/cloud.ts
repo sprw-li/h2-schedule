@@ -184,7 +184,11 @@ function rememberGithub(got: { map: ScheduleMap; sha: string }) {
 export async function pullCloud(): Promise<{ map: ScheduleMap; sha: string } | null> {
   if (getSyncSource() === 'clab') {
     const campus = await pullFromCampus()
-    if (!campus) throw new Error('CLab 连不上（未改用 GitHub，可改点顶栏 GitHub）')
+    if (!campus) {
+      throw new Error(
+        'CLab 连不上（可改点顶栏 GitHub；本机开发请 npm run campus:local 并用 127.0.0.1:8765）',
+      )
+    }
     return campus
   }
 

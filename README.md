@@ -62,12 +62,29 @@ npm run check:schedule # 检查日程 JSON，并断言 docs/ 与 public/ 一致
 
 「其他功能」填根地址（存在本机）。换机只改这个 URL。
 
+### 离开 PKU：本机自环模拟（推荐日常开发）
+
+不依赖 `10.129.*`。数据在仓库内 `tmp-campus-data/`（gitignore），种子来自 `docs/schedule.json` + `docs/ota/`。
+
+```bash
+npm run campus:local          # 种子 + 监听 127.0.0.1:8765
+# 另开终端
+cp .env.example .env.development.local   # 已含 VITE_CAMPUS_ORIGIN=http://127.0.0.1:8765
+npm run dev
+```
+
+App「其他功能」填地址 `http://127.0.0.1:8765`，账密 `local` / `local`（与脚本打印一致）。  
+`npm run test:campus` 仍是临时目录 + 独立端口的协议回归，不碰真实 CLab、也不占用 8765。
+
+真机同 WiFi：`npm run campus:local -- --lan`，再填电脑局域网 IP；Android 模拟器用 `http://10.0.2.2:8765`。
+
+### 真实 CLab（仅校园网）
+
 ```bash
 export H2_USER='…'
 export H2_PASS='…'          # 只放虚拟机环境变量，不进 Git
 python scripts/campus_sync_server.py --data-dir ~/h2-data --port 8765
 # 拷 docs/ota/* 与 docs/schedule.json 到 data-dir
-npm run test:campus         # 本机探活，不碰真实 CLab
 ```
 
-协议：`GET /` 日程页；`GET /health` 公开；`GET/PUT /schedule.json` 要 Basic 或 Bearer；OTA GET 公开。If-Match 防冲突。未点头不要代建云主机。APK 用 `.env.phone` 的 `VITE_CAMPUS_ORIGIN`。
+协议：`GET /` 日程页；`GET /health` 公开；`GET/PUT /schedule.json` 要 Basic 或 Bearer；OTA GET 公开。If-Match 防冲突。未点头不要代建云主机。APK 用 `.env.phone` / `.env.phone.local` 的 `VITE_CAMPUS_ORIGIN`（模板见 `.env.example`）。

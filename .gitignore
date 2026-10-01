@@ -11,6 +11,8 @@ node_modules
 dist
 docs-build-tmp
 campus-data
+tmp-campus-data
+_scratch
 phone
 android/.gradle
 android/app/build
@@ -26,6 +28,7 @@ android/local.properties
 # 本机/校内环境变量（口令在同名 .local 文件里，两者都不进 Git）
 .env
 .env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*

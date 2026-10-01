@@ -2,7 +2,7 @@
 name: h2-schedule-ops
 description: >-
   H2 Schedule 本仓命令与路径。改界面/同步/OTA/git/校服务器时先读个人 skill h2ops 与对应情况 skill，
-  再用本文件跑构建。真机仍旧、误盖 schedule.json、校园网 push 失败时使用。
+  再用本文件跑构建。真机仍旧、误盖 schedule.json、校园网 push 失败时使用。离开 PKU 时用本地模拟，不要死等 CLab。
 ---
 
 # H2 Schedule 本仓
@@ -10,6 +10,22 @@ description: >-
 经验原则在个人 skill **`h2ops`**（常更新、普适化）及 `app-dev-code` / `ui` / `network` / `release` / `sync`。这里只放**本仓命令与路径**。个例对照 [failures.md](failures.md)。
 
 仓库：`D:\AI_Tools\Cursor\Cursor_Project\h2-schedule`。网页 GitHub Pages；Android Capacitor，`webDir: phone`；壳内「更新」走 OTA。即时日程与 OTA 以校内为准（用户选了 CLab 时）；GitHub 备份。换机只改根地址。
+
+## 离开 PKU / CLab 断线 → 本机模拟
+
+**不要死等真实 CLab（`10.129.*`）。** 开发同步 / OTA / 勾选逻辑时用自环：
+
+```text
+npm run campus:local     # 或 npm run dev:campus；种子 docs → tmp-campus-data/，127.0.0.1:8765
+# 另开终端：.env.development.local 写 VITE_CAMPUS_ORIGIN=http://127.0.0.1:8765（见 .env.example）
+npm run dev
+npm run test:campus      # 协议回归（临时目录，不碰 8765 / 真 CLab）
+```
+
+- 数据目录 `tmp-campus-data/`（gitignore）；已有 `schedule.json` **不覆盖**（保护本机改过的模拟数据）。
+- 默认账密 `local`/`local`（或 Bearer `h2-local-dev`），只在 App「其他功能」填。
+- 真机同 WiFi：`npm run campus:local -- --lan` + 电脑局域网 IP；Android 模拟器：`http://10.0.2.2:8765`。
+- 失败文案：CLab 不可达 ≠「开代理」；本机开发指向 `campus:local`。
 
 ## 上线
 

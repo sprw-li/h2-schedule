@@ -10,6 +10,8 @@
     "build:apk": "npm run build:phone && npx cap sync android && cd android && gradlew.bat assembleDebug",
     "build:pages": "node scripts/publish-docs.mjs",
     "campus": "python scripts/campus_sync_server.py",
+    "campus:local": "node scripts/campus-local.mjs",
+    "dev:campus": "node scripts/campus-local.mjs",
     "push:ota:campus": "node scripts/push-ota-to-campus.mjs",
     "test:campus": "node scripts/test-campus-sync.mjs",
     "check:schedule": "node scripts/check-schedule.mjs",

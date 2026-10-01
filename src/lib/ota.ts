@@ -416,7 +416,10 @@ export async function fetchManifest(): Promise<OtaManifest> {
     }
   }
   if (cands.length === 0) {
-    throw new Error(errs.join('；') || '查不到更新（CLab 需校园网 10.x；GitHub 可开系统代理）')
+    throw new Error(
+      errs.join('；') ||
+        '查不到更新（CLab 需校园网 10.x，或本机 npm run campus:local；GitHub 可开系统代理）',
+    )
   }
   cands.sort((a, b) => Date.parse(b.builtAt) - Date.parse(a.builtAt))
   return cands[0]
