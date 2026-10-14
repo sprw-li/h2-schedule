@@ -1241,9 +1241,9 @@
     {
       "id": "7f27a863-6691-4593-897b-f9b92e5e34ef",
       "date": "2026-10-08",
-      "title": "计算概论(B)上机 · 计算中心三层1/4/5室",
+      "title": "计算概论(B)上机 考试· 计算中心三层1/4/5室",
       "done": false,
-      "kind": "task",
+      "kind": "deadline",
       "start": "15:10",
       "end": "17:00"
     },
@@ -1325,10 +1325,28 @@
       "kind": "holiday"
     },
     {
+      "id": "0c037384-7384-4675-8e9e-5b9db9a8b102",
+      "date": "2026-10-10",
+      "title": "声乐",
+      "done": false,
+      "kind": "task",
+      "start": "17:00",
+      "end": "18:00"
+    },
+    {
+      "id": "0353f009-225d-4f7e-a095-b824e72aef22",
+      "date": "2026-10-10",
+      "title": "游泳",
+      "done": false,
+      "kind": "task",
+      "start": "20:00",
+      "end": "21:00"
+    },
+    {
       "id": "c8d89ccc-6535-49fd-be47-3b6b7e04860a",
       "date": "2026-10-11",
       "title": "续借《货币金融学》截止",
-      "done": false,
+      "done": true,
       "kind": "deadline"
     },
     {
@@ -1526,6 +1544,20 @@
       "end": "21:30"
     },
     {
+      "id": "e309e4c7-e2ab-4f4c-90e9-b09bdce7adab",
+      "date": "2026-10-16",
+      "title": "审稿",
+      "done": false,
+      "kind": "deadline"
+    },
+    {
+      "id": "d1f63dd6-94a9-44cb-9cdf-3ede5dd1dd8d",
+      "date": "2026-10-16",
+      "title": "审稿和排版",
+      "done": true,
+      "kind": "deadline"
+    },
+    {
       "id": "20de9b03-aa94-4a6c-b617-e0762c4b48ec",
       "date": "2026-10-16",
       "title": "高等数学(B)(一) · 理教202",
@@ -1533,6 +1565,15 @@
       "kind": "task",
       "start": "10:10",
       "end": "12:00"
+    },
+    {
+      "id": "57838fd8-e9df-484b-ae58-3bcb780df3ff",
+      "date": "2026-10-16",
+      "title": "化博",
+      "done": false,
+      "kind": "task",
+      "start": "14:00",
+      "end": "15:30"
     },
     {
       "id": "77c4543b-06d4-4fd9-9a0a-005523494576",
@@ -1553,10 +1594,28 @@
       "end": "17:00"
     },
     {
+      "id": "db020e0b-d2ba-4982-8593-0069e4cbe556",
+      "date": "2026-10-18",
+      "title": "科协例会",
+      "done": false,
+      "kind": "task",
+      "start": "10:00",
+      "end": "11:00"
+    },
+    {
+      "id": "cccaf7b9-1db1-4fa7-87b4-ae0ea61d7f59",
+      "date": "2026-10-18",
+      "title": "采访张洁",
+      "done": false,
+      "kind": "task",
+      "start": "15:00",
+      "end": "15:40"
+    },
+    {
       "id": "effca0f4-20bb-453c-a3a5-bf4d66131a15",
       "date": "2026-10-18",
       "title": "心理咨询 · 新太阳2楼（连续5周 第2周）",
-      "done": false,
+      "done": true,
       "kind": "task",
       "start": "16:00",
       "end": "17:00"
@@ -1575,7 +1634,7 @@
       "date": "2026-10-19",
       "title": "普通化学习题课 · 理教201",
       "done": false,
-      "kind": "task",
+      "kind": "deadline",
       "start": "15:10",
       "end": "17:00"
     },
@@ -1743,7 +1802,7 @@
     {
       "id": "2993d022-b610-4412-a502-7b06b0ab1554",
       "date": "2026-10-25",
-      "title": "心理咨询 · 新太阳2楼（连续5周 第3周）",
+      "title": "心理咨询 · 新太阳2楼（连续5周 第2周）",
       "done": false,
       "kind": "task",
       "start": "16:00",
@@ -1949,7 +2008,7 @@
     {
       "id": "8b85bc7e-092a-4e38-b15d-c167c30f5646",
       "date": "2026-11-01",
-      "title": "心理咨询 · 新太阳2楼（连续5周 第4周）",
+      "title": "心理咨询 · 新太阳2楼（连续5周 第3周）",
       "done": false,
       "kind": "task",
       "start": "16:00",
@@ -2143,7 +2202,7 @@
     {
       "id": "1a86eba8-59d9-4bf2-8464-00f9c377cde2",
       "date": "2026-11-08",
-      "title": "心理咨询 · 新太阳2楼（连续5周 第5周）",
+      "title": "心理咨询 · 新太阳2楼（连续5周 第4周）",
       "done": false,
       "kind": "task",
       "start": "16:00",
@@ -2345,6 +2404,22 @@
       "kind": "task",
       "start": "18:40",
       "end": "20:30"
+    },
+    {
+      "id": "5c716ade-287b-483b-99c4-86ff72110937",
+      "date": "2026-11-15",
+      "title": "心理咨询 · 新太阳2楼（连续5周 第5周）",
+      "done": false,
+      "kind": "task"
+    },
+    {
+      "id": "a6fca418-0f80-48ee-969f-e753743ea9ec",
+      "date": "2026-11-15",
+      "title": "心理咨询 · 新太阳2楼（连续5周 第5周）",
+      "done": false,
+      "kind": "task",
+      "start": "16:00",
+      "end": "16:50"
     },
     {
       "id": "b649a8fa-6689-43c3-8458-95cac1eb4ee0",
@@ -3326,9 +3401,9 @@
     {
       "id": "0e614f48-507d-43c4-814f-5fc76651655f",
       "date": "2026-12-25",
-      "title": "大学生思想文化素养 · 理教313",
+      "title": "大学生思想文化素养 · 理教313展示",
       "done": false,
-      "kind": "task",
+      "kind": "deadline",
       "start": "18:40",
       "end": "20:30"
     },

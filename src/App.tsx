@@ -40,7 +40,7 @@ import {
   rememberCatchupSeen,
   unionSchedules,
 } from './lib/ops/importPublic'
-import { absorbFlushedOps, shouldApplyRemoteSnapshot } from './lib/ops/localBaseline'
+import { absorbFlushedOps, shouldApplyRemoteSnapshot, shouldReplaceWithRevlessPublic } from './lib/ops/localBaseline'
 import type { Op } from './lib/ops/types'
 import type { ScheduleMap } from './types'
 
@@ -269,18 +269,25 @@ export default function App() {
             return
           }
         }
-        // 无令牌或私有仓不可读：退回公开快照（只读）
+        // 无令牌：公开快照是只读种子。有令牌但数据仓没拉到时，公开文件通常更旧，
+        // 不能拿它盖掉本机已有日程（否则刚写入的条目会从手机上消失）。
+        const localCount = itemCount(snapshotRef.current)
+        if (!shouldReplaceWithRevlessPublic({ hasWriteToken: !!getWriteToken(), localCount })) {
+          setPhase('ok')
+          setMessage('数据仓暂不可读，仍显示本机（公开课表可能更旧）')
+          return
+        }
         const remote = await pullCloud()
         if (stop) return
         if (remote) {
           applySnapshot(remote.map)
           setPhase('ok')
-          setMessage(
-            getWriteToken()
-              ? '数据仓暂不可读，已用公开快照'
-              : '已加载公开快照；输入口令可读写数据仓',
-          )
-          if (!getWriteToken()) setAskPhrase(true)
+          if (getWriteToken()) {
+            setMessage('数据仓暂不可读，已用公开快照')
+          } else {
+            setMessage('已加载公开快照；输入口令可读写数据仓')
+            setAskPhrase(true)
+          }
           return
         }
         const boot = coerceSchedule(pendingRef.current ?? loadSchedule())

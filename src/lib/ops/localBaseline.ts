@@ -27,3 +27,17 @@ export function shouldApplyRemoteSnapshot(opts: {
   }
   return 'keep-local'
 }
+
+/**
+ * A public schedule file has no reducer rev and is often behind the op log.
+ * Once this device has a write token and a non-empty local baseline, that
+ * file must not replace the baseline (it would drop just-flushed creates).
+ * An empty baseline may still boot from the public file.
+ */
+export function shouldReplaceWithRevlessPublic(opts: {
+  hasWriteToken: boolean
+  localCount: number
+}): boolean {
+  if (opts.hasWriteToken && opts.localCount > 0) return false
+  return true
+}

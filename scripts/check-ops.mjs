@@ -13,7 +13,11 @@ import {
   publicAheadCount,
   unionSchedules,
 } from '../src/lib/ops/importPublic.ts'
-import { absorbFlushedOps, shouldApplyRemoteSnapshot } from '../src/lib/ops/localBaseline.ts'
+import {
+  absorbFlushedOps,
+  shouldApplyRemoteSnapshot,
+  shouldReplaceWithRevlessPublic,
+} from '../src/lib/ops/localBaseline.ts'
 import { coerceSchedule } from '../src/lib/schedule.ts'
 
 function assert(cond, msg) {
@@ -149,6 +153,19 @@ assert(shouldApplyRemoteSnapshot({ remoteRev: 3, optimisticUntilRev: 3 }) === 'k
 assert(shouldApplyRemoteSnapshot({ remoteRev: 2, optimisticUntilRev: 3 }) === 'keep-local', 'older rev → keep local')
 assert(shouldApplyRemoteSnapshot({ remoteRev: 4, optimisticUntilRev: 3 }) === 'apply', 'newer rev → apply')
 assert(shouldApplyRemoteSnapshot({ optimisticUntilRev: null }) === 'apply', 'no optimistic → apply')
+assert(shouldApplyRemoteSnapshot({ optimisticUntilRev: 3 }) === 'keep-local', 'no rev while held → keep local')
+assert(
+  shouldReplaceWithRevlessPublic({ hasWriteToken: true, localCount: 3 }) === false,
+  'token + local baseline → do not apply rev-less public',
+)
+assert(
+  shouldReplaceWithRevlessPublic({ hasWriteToken: true, localCount: 0 }) === true,
+  'token + empty local → public may seed',
+)
+assert(
+  shouldReplaceWithRevlessPublic({ hasWriteToken: false, localCount: 3 }) === true,
+  'no token → public is the read source',
+)
 const stalePull = project(snap, []) // reducer lag: still done=false
 assert(stalePull['2026-09-27']?.[0]?.done === false, 'stale snapshot lacks tick')
 assert(absorbed['2026-09-27']?.[0]?.done === true, 'absorbed baseline still ticked')
